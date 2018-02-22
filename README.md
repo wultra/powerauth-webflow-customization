@@ -11,4 +11,3 @@ Visit our wiki for [technical details about PowerAuth 2.0 Web Flow](https://gith
 ## License
 
 All sources are licensed using Apache 2.0 license, you can use them with no restriction. If you are using PowerAuth 2.0, please let us know. We will be happy to share and promote your project.
-
