@@ -3,18 +3,63 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>io.getlime.security</groupId>
-        <artifactId>powerauth-webflow-parent</artifactId>
-        <version>0.19.0</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-
     <artifactId>powerauth-data-adapter</artifactId>
-    <name>powerauth-data-adapter</name>
-    <description>Sample implementation of Data Adapter for Web Flow</description>
+    <groupId>io.getlime.security</groupId>
     <version>0.19.0</version>
     <packaging>war</packaging>
+
+    <name>powerauth-data-adapter</name>
+    <description>Sample implementation of Data Adapter for Web Flow</description>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.5.8.RELEASE</version>
+        <relativePath /> <!-- lookup parent from repository -->
+    </parent>
+
+    <inceptionYear>2018</inceptionYear>
+    <url>http://powerauth.com/</url>
+
+    <organization>
+        <name>Lime - HighTech Solutions Inc.</name>
+        <url>http://getlime.io/</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>Apache 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Petr Dvorak</name>
+            <email>petr@lime-company.eu</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Roman Strobl</name>
+            <email>roman.strobl@lime-company.eu</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://github.com/lime-company/powerauth-webflow-customization.git</connection>
+        <developerConnection>scm:git:https://github.com/lime-company/powerauth-webflow-customization.git</developerConnection>
+        <url>https://github.com/lime-company/powerauth-webflow-customization</url>
+    </scm>
+
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/lime-company/powerauth-webflow-customization/issues</url>
+    </issueManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
