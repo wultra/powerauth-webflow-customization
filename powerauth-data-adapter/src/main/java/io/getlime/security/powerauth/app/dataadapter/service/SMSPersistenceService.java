@@ -16,19 +16,19 @@
 package io.getlime.security.powerauth.app.dataadapter.service;
 
 import io.getlime.security.powerauth.app.dataadapter.configuration.DataAdapterConfiguration;
+import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
 import io.getlime.security.powerauth.app.dataadapter.exception.SMSAuthorizationFailedException;
-import io.getlime.security.powerauth.app.dataadapter.impl.service.OperationFormDataService;
+import io.getlime.security.powerauth.app.dataadapter.impl.service.DataAdapterService;
 import io.getlime.security.powerauth.app.dataadapter.repository.SMSAuthorizationRepository;
 import io.getlime.security.powerauth.app.dataadapter.repository.model.entity.SMSAuthorizationEntity;
-import io.getlime.security.powerauth.crypto.server.util.DataDigest;
-import io.getlime.security.powerauth.lib.dataadapter.model.entity.FormData;
-import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.AmountAttribute;
+import io.getlime.security.powerauth.lib.dataadapter.model.entity.AuthorizationCode;
+import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.*;
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * Service class for generating SMS with OTP authorization code and verification of authorization code.
@@ -38,77 +38,50 @@ import java.util.*;
 @Service
 public class SMSPersistenceService {
 
+    private final DataAdapterService dataAdapterService;
     private final SMSAuthorizationRepository smsAuthorizationRepository;
-    private final OperationFormDataService operationFormDataService;
     private final DataAdapterConfiguration dataAdapterConfiguration;
-    private final DataAdapterI18NService dataAdapterI18NService;
 
     /**
      * SMS persistence service constructor.
+     * @param dataAdapterService Data adapter service.
      * @param smsAuthorizationRepository SMS authorization repository.
-     * @param operationFormDataService Operation form data service.
      * @param dataAdapterConfiguration Data adapter configuration.
-     * @param dataAdapterI18NService Data adapter I18N service.
      */
     @Autowired
-    public SMSPersistenceService(SMSAuthorizationRepository smsAuthorizationRepository, OperationFormDataService operationFormDataService, DataAdapterConfiguration dataAdapterConfiguration, DataAdapterI18NService dataAdapterI18NService) {
+    public SMSPersistenceService(DataAdapterService dataAdapterService, SMSAuthorizationRepository smsAuthorizationRepository, DataAdapterConfiguration dataAdapterConfiguration) {
+        this.dataAdapterService = dataAdapterService;
         this.smsAuthorizationRepository = smsAuthorizationRepository;
-        this.operationFormDataService = operationFormDataService;
         this.dataAdapterConfiguration = dataAdapterConfiguration;
-        this.dataAdapterI18NService = dataAdapterI18NService;
     }
 
     /**
      * Create an authorization SMS message with OTP authorization code.
      * @param userId User ID.
-     * @param operationId Operation ID.
-     * @param operationName Operation name.
-     * @param formData Operation form data.
+     * @param operationContext Operation context.
      * @param lang Language for message text.
      * @return Created entity with SMS message details.
      */
-    public SMSAuthorizationEntity createAuthorizationSMS(String userId, String operationId, String operationName, FormData formData, String lang) {
+    public SMSAuthorizationEntity createAuthorizationSMS(String userId, OperationContext operationContext, String lang) throws InvalidOperationContextException {
+        String operationId = operationContext.getId();
+        String operationName = operationContext.getName();
+
         // messageId is generated as random UUID, it can be overridden to provide a real message identification
         String messageId = UUID.randomUUID().toString();
 
-        // update names of operationData JSON fields if necessary
-        AmountAttribute amountAttribute = operationFormDataService.getAmount(formData);
+        // generate authorization code
+        AuthorizationCode authorizationCode = dataAdapterService.generateAuthorizationCode(userId, operationContext);
 
-        String[] messageArgs;
-        String authorizationCode;
-        byte[] salt;
-
-        switch (operationName) {
-            case "login": {
-                final DataDigest.Result digestResult = generateAuthorizationCode(operationName);
-                authorizationCode = digestResult.getDigest();
-                salt = digestResult.getSalt();
-                messageArgs = new String[]{authorizationCode};
-                break;
-            }
-            case "authorize_payment": {
-                BigDecimal amount = amountAttribute.getAmount();
-                String currency = amountAttribute.getCurrency();
-                String account = operationFormDataService.getAccount(formData);
-                final DataDigest.Result digestResult = generateAuthorizationCode(amount, currency, account);
-                authorizationCode = digestResult.getDigest();
-                salt = digestResult.getSalt();
-                messageArgs = new String[]{amount.toPlainString(), currency, account, authorizationCode};
-                break;
-            }
-            default:
-                throw new IllegalStateException("Unsupported operation: " + operationName);
-        }
-
-        String messageText = dataAdapterI18NService.messageSource().getMessage(operationName + ".smsText", messageArgs, new Locale(lang));
+        // generate message text, include previously generated authorization code
+        String messageText = dataAdapterService.generateSMSText(userId, operationContext, authorizationCode, lang);
 
         SMSAuthorizationEntity smsEntity = new SMSAuthorizationEntity();
         smsEntity.setMessageId(messageId);
         smsEntity.setOperationId(operationId);
         smsEntity.setUserId(userId);
         smsEntity.setOperationName(operationName);
-        smsEntity.setAuthorizationCode(authorizationCode);
-        smsEntity.setSalt(salt);
+        smsEntity.setAuthorizationCode(authorizationCode.getCode());
+        smsEntity.setSalt(authorizationCode.getSalt());
         smsEntity.setMessageText(messageText);
         smsEntity.setVerifyRequestCount(0);
         smsEntity.setTimestampCreated(new Date());
@@ -164,30 +137,6 @@ public class SMSPersistenceService {
         smsEntity.setVerified(true);
         smsEntity.setTimestampVerified(new Date());
         smsAuthorizationRepository.save(smsEntity);
-    }
-
-    /**
-     * Authorization code generation - login.
-     *
-     * @return Generated authorization code.
-     */
-    private DataDigest.Result generateAuthorizationCode(String operationName) {
-        List<String> digestItems = new ArrayList<>();
-        digestItems.add(operationName);
-        return new DataDigest().generateDigest(digestItems);
-    }
-
-    /**
-     * Authorization code generation - authorize_payment.
-     *
-     * @return Generated authorization code.
-     */
-    private DataDigest.Result generateAuthorizationCode(BigDecimal amount, String currency, String account) {
-        List<String> digestItems = new ArrayList<>();
-        digestItems.add(amount.toPlainString());
-        digestItems.add(currency);
-        digestItems.add(account);
-        return new DataDigest().generateDigest(digestItems);
     }
 
 }

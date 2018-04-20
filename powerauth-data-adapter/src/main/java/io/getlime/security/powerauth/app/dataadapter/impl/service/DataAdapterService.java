@@ -1,12 +1,11 @@
 package io.getlime.security.powerauth.app.dataadapter.impl.service;
 
 import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
-import io.getlime.security.powerauth.app.dataadapter.exception.AuthenticationFailedException;
-import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
-import io.getlime.security.powerauth.app.dataadapter.exception.SMSAuthorizationFailedException;
-import io.getlime.security.powerauth.app.dataadapter.exception.UserNotFoundException;
+import io.getlime.security.powerauth.app.dataadapter.exception.*;
 import io.getlime.security.powerauth.app.dataadapter.service.DataAdapterI18NService;
+import io.getlime.security.powerauth.crypto.server.util.DataDigest;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
+import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.AmountAttribute;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.Attribute;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.FormFieldConfig;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.DecorateOperationFormDataResponse;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,9 +31,11 @@ public class DataAdapterService implements DataAdapter {
     private static final String BANK_ACCOUNT_CHOICE_ID = "operation.bankAccountChoice";
 
     private final DataAdapterI18NService dataAdapterI18NService;
+    private final OperationValueExtractionService operationValueExtractionService;
 
-    public DataAdapterService(DataAdapterI18NService dataAdapterI18NService) {
+    public DataAdapterService(DataAdapterI18NService dataAdapterI18NService, OperationValueExtractionService operationValueExtractionService) {
         this.dataAdapterI18NService = dataAdapterI18NService;
+        this.operationValueExtractionService = operationValueExtractionService;
     }
 
     @Override
@@ -154,6 +156,57 @@ public class DataAdapterService implements DataAdapter {
         String operationId = operationContext.getId();
         // Handle operation change here (e.g. send notification to bank backend).
         Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Operation changed, status: {0}, operation ID: {1}", new String[] {change.toString(), operationContext.getId()});
+    }
+
+    public AuthorizationCode generateAuthorizationCode(String userId, OperationContext operationContext) throws InvalidOperationContextException {
+        String operationName = operationContext.getName();
+        List<String> digestItems = new ArrayList<>();
+        switch (operationName) {
+            case "login": {
+                digestItems.add(operationName);
+                break;
+            }
+            case "authorize_payment": {
+                AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
+                String account = operationValueExtractionService.getAccount(operationContext);
+                BigDecimal amount = amountAttribute.getAmount();
+                String currency = amountAttribute.getCurrency();
+                digestItems.add(amount.toPlainString());
+                digestItems.add(currency);
+                digestItems.add(account);
+                break;
+            }
+            // Add new operations here.
+            default:
+                throw new InvalidOperationContextException("Unsupported operation: " + operationName);
+        }
+
+        final DataDigest.Result digestResult = new DataDigest().generateDigest(digestItems);
+        return new AuthorizationCode(digestResult.getDigest(), digestResult.getSalt());
+    }
+
+    public String generateSMSText(String userId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException {
+        String operationName = operationContext.getName();
+        String[] messageArgs;
+        switch (operationName) {
+            case "login": {
+                messageArgs = new String[]{authorizationCode.getCode()};
+                break;
+            }
+            case "authorize_payment": {
+                AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
+                String account = operationValueExtractionService.getAccount(operationContext);
+                BigDecimal amount = amountAttribute.getAmount();
+                String currency = amountAttribute.getCurrency();
+                messageArgs = new String[]{amount.toPlainString(), currency, account, authorizationCode.getCode()};
+                break;
+            }
+            // Add new operations here.
+            default:
+                throw new InvalidOperationContextException("Unsupported operation: " + operationName);
+        }
+
+        return dataAdapterI18NService.messageSource().getMessage(operationName + ".smsText", messageArgs, new Locale(lang));
     }
 
     @Override

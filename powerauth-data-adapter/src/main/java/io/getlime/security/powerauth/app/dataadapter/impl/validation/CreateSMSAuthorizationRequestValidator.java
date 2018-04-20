@@ -16,7 +16,8 @@
 package io.getlime.security.powerauth.app.dataadapter.impl.validation;
 
 import io.getlime.core.rest.model.base.request.ObjectRequest;
-import io.getlime.security.powerauth.app.dataadapter.impl.service.OperationFormDataService;
+import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
+import io.getlime.security.powerauth.app.dataadapter.impl.service.OperationValueExtractionService;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.AmountAttribute;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSMSAuthorizationRequest;
@@ -38,15 +39,15 @@ import java.math.BigDecimal;
 @Component
 public class CreateSMSAuthorizationRequestValidator implements Validator {
 
-    private OperationFormDataService operationFormDataService;
+    private OperationValueExtractionService operationValueExtractionService;
 
     /**
      * Validator constructor.
-     * @param operationFormDataService Operation form data service.
+     * @param operationValueExtractionService Operation form data service.
      */
     @Autowired
-    public CreateSMSAuthorizationRequestValidator(OperationFormDataService operationFormDataService) {
-        this.operationFormDataService = operationFormDataService;
+    public CreateSMSAuthorizationRequestValidator(OperationValueExtractionService operationValueExtractionService) {
+        this.operationValueExtractionService = operationValueExtractionService;
     }
 
     /**
@@ -95,26 +96,36 @@ public class CreateSMSAuthorizationRequestValidator implements Validator {
                     // no field validation required
                     break;
                 case "authorize_payment":
-                    AmountAttribute amountAttribute = operationFormDataService.getAmount(authRequest.getOperationContext().getFormData());
-                    if (amountAttribute == null) {
-                        errors.rejectValue("requestObject.operationContext.formData", "smsAuthorization.amount.empty");
-                    } else {
-                        BigDecimal amount = amountAttribute.getAmount();
-                        String currency = amountAttribute.getCurrency();
+                    AmountAttribute amountAttribute;
+                    try {
+                        amountAttribute = operationValueExtractionService.getAmount(authRequest.getOperationContext());
+                        if (amountAttribute == null) {
+                            errors.rejectValue("requestObject.operationContext", "smsAuthorization.amount.empty");
+                        } else {
+                            BigDecimal amount = amountAttribute.getAmount();
+                            String currency = amountAttribute.getCurrency();
 
-                        if (amount == null) {
-                            errors.rejectValue("requestObject.operationContext.formData", "smsAuthorization.amount.empty");
-                        } else if (amount.doubleValue() <= 0) {
-                            errors.rejectValue("requestObject.operationContext.formData", "smsAuthorization.amount.invalid");
-                        }
+                            if (amount == null) {
+                                errors.rejectValue("requestObject.operationContext", "smsAuthorization.amount.empty");
+                            } else if (amount.doubleValue() <= 0) {
+                                errors.rejectValue("requestObject.operationContext", "smsAuthorization.amount.invalid");
+                            }
 
-                        if (currency == null || currency.isEmpty()) {
-                            errors.rejectValue("requestObject.operationContext.formData", "smsAuthorization.currency.empty");
+                            if (currency == null || currency.isEmpty()) {
+                                errors.rejectValue("requestObject.operationContext", "smsAuthorization.currency.empty");
+                            }
                         }
+                    } catch (InvalidOperationContextException ex) {
+                        errors.rejectValue("requestObject.operationContext", "smsAuthorization.amount.empty");
                     }
-                    String account = operationFormDataService.getAccount(authRequest.getOperationContext().getFormData());
-                    if (account == null || account.isEmpty()) {
-                        errors.rejectValue("requestObject.operationContext.formData", "smsAuthorization.account.empty");
+                    String account;
+                    try {
+                        account = operationValueExtractionService.getAccount(authRequest.getOperationContext());
+                        if (account == null || account.isEmpty()) {
+                            errors.rejectValue("requestObject.operationContext", "smsAuthorization.account.empty");
+                        }
+                    } catch (InvalidOperationContextException ex) {
+                        errors.rejectValue("requestObject.operationContext", "smsAuthorization.account.empty");
                     }
                     break;
                 default:
