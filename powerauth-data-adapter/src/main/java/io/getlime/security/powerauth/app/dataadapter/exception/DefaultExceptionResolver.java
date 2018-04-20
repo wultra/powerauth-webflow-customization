@@ -150,6 +150,18 @@ public class DefaultExceptionResolver {
     }
 
     /**
+     * Handling of invalid operation context exception.
+     * @param ex Exception.
+     * @return Response with error information.
+     */
+    @ExceptionHandler(InvalidOperationContextException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody ErrorResponse handleInvalidOperationContextException(InvalidOperationContextException ex) {
+        DataAdapterError error = new DataAdapterError(DataAdapterError.Code.OPERATION_CONTEXT_INVALID, ex.getMessage());
+        return new ErrorResponse(error);
+    }
+
+    /**
      * Handling of exceptions occurring during communication with remote backends.
      * @param ex Exception.
      * @return Response with error information.

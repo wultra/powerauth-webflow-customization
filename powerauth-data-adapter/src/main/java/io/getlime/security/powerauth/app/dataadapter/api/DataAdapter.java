@@ -15,10 +15,8 @@
  */
 package io.getlime.security.powerauth.app.dataadapter.api;
 
-import io.getlime.security.powerauth.app.dataadapter.exception.AuthenticationFailedException;
-import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
-import io.getlime.security.powerauth.app.dataadapter.exception.SMSAuthorizationFailedException;
-import io.getlime.security.powerauth.app.dataadapter.exception.UserNotFoundException;
+import io.getlime.security.powerauth.app.dataadapter.exception.*;
+import io.getlime.security.powerauth.lib.dataadapter.model.entity.AuthorizationCode;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.FormDataChange;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationChange;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
@@ -80,6 +78,26 @@ public interface DataAdapter {
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      */
     void operationChangedNotification(String userId, OperationChange operationChange, OperationContext operationContext) throws DataAdapterRemoteException;
+
+    /**
+     * Generate authorization code for SMS authorization.
+     * @param userId User ID.
+     * @param operationContext Operation context.
+     * @return Authorization code.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     */
+    AuthorizationCode generateAuthorizationCode(String userId, OperationContext operationContext) throws InvalidOperationContextException;
+
+    /**
+     * Generate text for SMS authorization.
+     * @param userId User ID.
+     * @param operationContext Operation context.
+     * @param authorizationCode Authorization code.
+     * @param lang Language for localization.
+     * @return Generated SMS text with OTP authorization code.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     */
+    String generateSMSText(String userId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException;
 
     /**
      * Send an authorization SMS with generated OTP.

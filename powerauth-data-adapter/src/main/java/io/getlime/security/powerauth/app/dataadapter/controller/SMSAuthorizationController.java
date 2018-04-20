@@ -19,11 +19,11 @@ import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
 import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
+import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
 import io.getlime.security.powerauth.app.dataadapter.exception.SMSAuthorizationFailedException;
 import io.getlime.security.powerauth.app.dataadapter.impl.validation.CreateSMSAuthorizationRequestValidator;
 import io.getlime.security.powerauth.app.dataadapter.repository.model.entity.SMSAuthorizationEntity;
 import io.getlime.security.powerauth.app.dataadapter.service.SMSPersistenceService;
-import io.getlime.security.powerauth.lib.dataadapter.model.entity.FormData;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSMSAuthorizationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifySMSAuthorizationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.CreateSMSAuthorizationResponse;
@@ -86,7 +86,7 @@ public class SMSAuthorizationController {
      * @throws SMSAuthorizationFailedException Thrown in case that SMS message could not be delivered.
      */
     @RequestMapping(value = "create", method = RequestMethod.POST)
-    public @ResponseBody ObjectResponse<CreateSMSAuthorizationResponse> createAuthorizationSMS(@Valid @RequestBody ObjectRequest<CreateSMSAuthorizationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, SMSAuthorizationFailedException {
+    public @ResponseBody ObjectResponse<CreateSMSAuthorizationResponse> createAuthorizationSMS(@Valid @RequestBody ObjectRequest<CreateSMSAuthorizationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, SMSAuthorizationFailedException, InvalidOperationContextException {
         if (result.hasErrors()) {
             // getEnclosingMethod() on new object returns a reference to current method
             MethodParameter methodParam = new MethodParameter(new Object(){}.getClass().getEnclosingMethod(),0);
@@ -116,13 +116,10 @@ public class SMSAuthorizationController {
      * @param smsRequest Create SMS request.
      * @return SMS entity.
      */
-    private SMSAuthorizationEntity createAuthorizationSMS(@Valid CreateSMSAuthorizationRequest smsRequest) {
+    private SMSAuthorizationEntity createAuthorizationSMS(@Valid CreateSMSAuthorizationRequest smsRequest) throws InvalidOperationContextException {
         String userId = smsRequest.getUserId();
-        String operationId = smsRequest.getOperationContext().getId();
-        String operationName = smsRequest.getOperationContext().getName();
-        FormData formData = smsRequest.getOperationContext().getFormData();
         String lang = smsRequest.getLang();
-        return smsPersistenceService.createAuthorizationSMS(userId, operationId, operationName, formData, lang);
+        return smsPersistenceService.createAuthorizationSMS(userId, smsRequest.getOperationContext(), lang);
     }
 
     /**
