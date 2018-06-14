@@ -66,7 +66,7 @@ public class ServiceController {
         response.setApplicationEnvironment(dataAdapterConfiguration.getApplicationEnvironment());
         response.setTimestamp(new Date());
         response.setVersion(buildProperties.getVersion());
-        response.setBuildTime(buildProperties.getTime());
+        response.setBuildTime(Date.from(buildProperties.getTime()));
         Logger.getLogger(this.getClass().getName()).log(Level.FINE, "The getServiceStatus request succeeded");
         return new ObjectResponse<>(response);
     }
