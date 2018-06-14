@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -102,10 +103,11 @@ public class SMSPersistenceService {
      * @throws SMSAuthorizationFailedException Thrown when SMS authorization fails.
      */
     public void verifyAuthorizationSMS(String messageId, String authorizationCode) throws SMSAuthorizationFailedException {
-        SMSAuthorizationEntity smsEntity = smsAuthorizationRepository.findOne(messageId);
-        if (smsEntity == null) {
+        Optional<SMSAuthorizationEntity> smsEntityOptional = smsAuthorizationRepository.findById(messageId);
+        if (!smsEntityOptional.isPresent()) {
             throw new SMSAuthorizationFailedException("smsAuthorization.invalidMessage");
         }
+        SMSAuthorizationEntity smsEntity = smsEntityOptional.get();
         // increase number of verification tries and save entity
         smsEntity.setVerifyRequestCount(smsEntity.getVerifyRequestCount() + 1);
         smsAuthorizationRepository.save(smsEntity);
