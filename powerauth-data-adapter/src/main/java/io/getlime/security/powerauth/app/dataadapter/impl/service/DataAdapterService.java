@@ -158,6 +158,7 @@ public class DataAdapterService implements DataAdapter {
         Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Operation changed, status: {0}, operation ID: {1}", new String[] {change.toString(), operationContext.getId()});
     }
 
+    @Override
     public AuthorizationCode generateAuthorizationCode(String userId, OperationContext operationContext) throws InvalidOperationContextException {
         String operationName = operationContext.getName();
         List<String> digestItems = new ArrayList<>();
@@ -185,6 +186,7 @@ public class DataAdapterService implements DataAdapter {
         return new AuthorizationCode(digestResult.getDigest(), digestResult.getSalt());
     }
 
+    @Override
     public String generateSMSText(String userId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException {
         String operationName = operationContext.getName();
         String[] messageArgs;
