@@ -17,6 +17,7 @@ package io.getlime.security.powerauth.app.dataadapter.controller;
 
 import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
+import io.getlime.core.rest.model.base.response.Response;
 import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
 import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
 import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
@@ -130,7 +131,7 @@ public class SMSAuthorizationController {
      * @throws SMSAuthorizationFailedException Thrown in case that SMS verification fails.
      */
     @RequestMapping(value = "verify", method = RequestMethod.POST)
-    public @ResponseBody ObjectResponse verifyAuthorizationSMS(@RequestBody ObjectRequest<VerifySMSAuthorizationRequest> request) throws SMSAuthorizationFailedException {
+    public @ResponseBody Response verifyAuthorizationSMS(@RequestBody ObjectRequest<VerifySMSAuthorizationRequest> request) throws SMSAuthorizationFailedException {
         Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Received verifyAuthorizationSMS request, operation ID: "+request.getRequestObject().getOperationContext().getId());
         VerifySMSAuthorizationRequest verifyRequest = request.getRequestObject();
         String messageId = verifyRequest.getMessageId();
@@ -138,7 +139,7 @@ public class SMSAuthorizationController {
         // Verify authorization code.
         smsPersistenceService.verifyAuthorizationSMS(messageId, authorizationCode);
         Logger.getLogger(this.getClass().getName()).log(Level.INFO,"The verifyAuthorizationSMS request succeeded, operation ID: "+request.getRequestObject().getOperationContext().getId());
-        return new ObjectResponse();
+        return new Response();
     }
 
 }
