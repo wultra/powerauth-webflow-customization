@@ -16,7 +16,7 @@
 package io.getlime.security.powerauth.app.dataadapter.controller;
 
 import io.getlime.core.rest.model.base.request.ObjectRequest;
-import io.getlime.core.rest.model.base.response.ObjectResponse;
+import io.getlime.core.rest.model.base.response.Response;
 import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
 import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationChange;
@@ -60,7 +60,7 @@ public class OperationChangeController {
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      */
     @RequestMapping(value = "/change", method = RequestMethod.POST)
-    public @ResponseBody ObjectResponse operationChangedNotification(@RequestBody ObjectRequest<OperationChangeNotificationRequest> request) throws DataAdapterRemoteException {
+    public @ResponseBody Response operationChangedNotification(@RequestBody ObjectRequest<OperationChangeNotificationRequest> request) throws DataAdapterRemoteException {
         Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Received operationChangedNotification request for user: {0}, operation ID: {1}",
                 new String[]{request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId()});
         OperationChangeNotificationRequest notification = request.getRequestObject();
@@ -69,7 +69,7 @@ public class OperationChangeController {
         OperationChange operationChange = notification.getOperationChange();
         dataAdapter.operationChangedNotification(userId, operationChange, operationContext);
         Logger.getLogger(this.getClass().getName()).log(Level.FINE, "The operationChangedNotification request succeeded");
-        return new ObjectResponse();
+        return new Response();
     }
 
 }

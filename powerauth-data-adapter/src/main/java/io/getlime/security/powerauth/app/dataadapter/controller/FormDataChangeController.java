@@ -17,6 +17,7 @@ package io.getlime.security.powerauth.app.dataadapter.controller;
 
 import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
+import io.getlime.core.rest.model.base.response.Response;
 import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
 import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
 import io.getlime.security.powerauth.app.dataadapter.exception.UserNotFoundException;
@@ -63,7 +64,7 @@ public class FormDataChangeController {
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      */
     @RequestMapping(value = "/change", method = RequestMethod.POST)
-    public @ResponseBody ObjectResponse formDataChangedNotification(@RequestBody ObjectRequest<FormDataChangeNotificationRequest> request) throws DataAdapterRemoteException {
+    public @ResponseBody Response formDataChangedNotification(@RequestBody ObjectRequest<FormDataChangeNotificationRequest> request) throws DataAdapterRemoteException {
         Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Received formDataChangedNotification request for user: {0}, operation ID: {1}",
                 new String[]{request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId()});
         FormDataChangeNotificationRequest notification = request.getRequestObject();
@@ -72,7 +73,7 @@ public class FormDataChangeController {
         FormDataChange formDataChange = notification.getFormDataChange();
         dataAdapter.formDataChangedNotification(userId, formDataChange, operationContext);
         Logger.getLogger(this.getClass().getName()).log(Level.FINE, "The formDataChangedNotification request succeeded");
-        return new ObjectResponse();
+        return new Response();
     }
 
     /**
