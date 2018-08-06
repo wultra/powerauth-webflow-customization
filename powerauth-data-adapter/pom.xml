@@ -5,7 +5,7 @@
 
     <artifactId>powerauth-data-adapter</artifactId>
     <groupId>io.getlime.security</groupId>
-    <version>0.19.0</version>
+    <version>0.20.0</version>
     <packaging>war</packaging>
 
     <name>powerauth-data-adapter</name>
@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.10.RELEASE</version>
+        <version>2.0.4.RELEASE</version>
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
 
@@ -64,6 +64,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
+        <maven-war-plugin.version>3.1.0</maven-war-plugin.version>
     </properties>
 
     <dependencies>
@@ -77,21 +78,23 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+        <!-- Set scope of tomcat-embed-websocket to provided to avoid startup errors on WildFly -->
+        <dependency>
+            <artifactId>tomcat-embed-websocket</artifactId>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- PowerAuth Dependencies -->
         <dependency>
             <groupId>io.getlime.security</groupId>
             <artifactId>powerauth-data-adapter-model</artifactId>
-            <version>0.19.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.getlime.security</groupId>
-            <artifactId>powerauth-nextstep-model</artifactId>
-            <version>0.19.0</version>
+            <version>0.20.0</version>
         </dependency>
         <dependency>
             <groupId>io.getlime.security</groupId>
             <artifactId>powerauth-java-crypto</artifactId>
-            <version>0.18.0</version>
+            <version>0.19.0</version>
         </dependency>
 
         <!-- Other Dependencies -->
@@ -103,7 +106,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.59</version>
+            <version>1.60</version>
         </dependency>
 
         <!-- Documentation -->
