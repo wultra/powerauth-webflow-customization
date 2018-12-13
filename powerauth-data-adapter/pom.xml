@@ -22,8 +22,8 @@
     <url>http://powerauth.com/</url>
 
     <organization>
-        <name>Lime - HighTech Solutions Inc.</name>
-        <url>http://getlime.io/</url>
+        <name>Wultra s.r.o.</name>
+        <url>http://wultra.com</url>
     </organization>
 
     <licenses>
@@ -36,14 +36,14 @@
     <developers>
         <developer>
             <name>Petr Dvorak</name>
-            <email>petr@lime-company.eu</email>
+            <email>petr@wultra.com</email>
             <roles>
                 <role>developer</role>
             </roles>
         </developer>
         <developer>
             <name>Roman Strobl</name>
-            <email>roman.strobl@lime-company.eu</email>
+            <email>roman.strobl@wultra.com</email>
             <roles>
                 <role>developer</role>
             </roles>
@@ -51,14 +51,14 @@
     </developers>
 
     <scm>
-        <connection>scm:git:https://github.com/lime-company/powerauth-webflow-customization.git</connection>
-        <developerConnection>scm:git:https://github.com/lime-company/powerauth-webflow-customization.git</developerConnection>
-        <url>https://github.com/lime-company/powerauth-webflow-customization</url>
+        <connection>scm:git:https://github.com/wultra/powerauth-webflow-customization.git</connection>
+        <developerConnection>scm:git:https://github.com/wultra/powerauth-webflow-customization.git</developerConnection>
+        <url>https://github.com/wultra/powerauth-webflow-customization</url>
     </scm>
 
     <issueManagement>
         <system>Github</system>
-        <url>https://github.com/lime-company/powerauth-webflow-customization/issues</url>
+        <url>https://github.com/wultra/powerauth-webflow-customization/issues</url>
     </issueManagement>
 
     <properties>
