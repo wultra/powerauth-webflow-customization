@@ -37,6 +37,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.lang.invoke.MethodHandles;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -89,8 +90,8 @@ public class SMSAuthorizationController {
     @RequestMapping(value = "create", method = RequestMethod.POST)
     public @ResponseBody ObjectResponse<CreateSMSAuthorizationResponse> createAuthorizationSMS(@Valid @RequestBody ObjectRequest<CreateSMSAuthorizationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, SMSAuthorizationFailedException, InvalidOperationContextException {
         if (result.hasErrors()) {
-            // getEnclosingMethod() on new object returns a reference to current method
-            MethodParameter methodParam = new MethodParameter(new Object(){}.getClass().getEnclosingMethod(),0);
+            // Call of getEnclosingMethod() on class found using MethodHandles.lookup() returns a reference to current method
+            MethodParameter methodParam = new MethodParameter(MethodHandles.lookup().lookupClass().getEnclosingMethod(),0);
             Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "The createAuthorizationSMS request failed due to validation errors");
             throw new MethodArgumentNotValidException(methodParam, result);
         }

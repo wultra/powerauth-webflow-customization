@@ -124,9 +124,10 @@ public class DataAdapterService implements DataAdapter {
                 defaultValue = config.getDefaultValue();
             }
         }
-        Attribute attr = formData.addBankAccountChoice(BANK_ACCOUNT_CHOICE_ID, bankAccounts, choiceEnabled, defaultValue);
+        formData.addBankAccountChoice(BANK_ACCOUNT_CHOICE_ID, bankAccounts, choiceEnabled, defaultValue);
 
         // Sample warning banner displayed above the bank account choice field.
+        // Attribute attr = formData.addBankAccountChoice(BANK_ACCOUNT_CHOICE_ID, bankAccounts, choiceEnabled, defaultValue);
         // formData.addBannerBeforeField(BannerType.BANNER_WARNING, "banner.invalidAccount", attr);
 
         return new DecorateOperationFormDataResponse(formData);
@@ -135,27 +136,25 @@ public class DataAdapterService implements DataAdapter {
     @Override
     public void formDataChangedNotification(String userId, FormDataChange change, OperationContext operationContext) throws DataAdapterRemoteException {
         String operationId = operationContext.getId();
-        switch (change.getType()) {
-            case BANK_ACCOUNT_CHOICE:
-                // Handle bank account choice here (e.g. send notification to bank backend).
-                BankAccountChoice bankAccountChoice = (BankAccountChoice) change;
-                Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Bank account chosen: {0}, operation ID: {1}", new String[] {bankAccountChoice.getBankAccountId(), operationContext.getId()});
-                break;
-            case AUTH_METHOD_CHOICE:
-                // Handle authorization method choice here (e.g. send notification to bank backend).
-                AuthMethodChoice authMethodChoice = (AuthMethodChoice) change;
-                Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Authorization method chosen: {0}, operation ID: {1}", new String[] {authMethodChoice.getChosenAuthMethod().toString(), operationContext.getId()});
-                break;
-            default:
-                throw new IllegalStateException("Invalid change entity type: " + change.getType());
+        if (change instanceof BankAccountChoice) {
+            // Handle bank account choice here (e.g. send notification to bank backend).
+            BankAccountChoice bankAccountChoice = (BankAccountChoice) change;
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Bank account chosen: {0}, operation ID: {1}", new String[]{bankAccountChoice.getBankAccountId(), operationId});
+            return;
+        } else if (change instanceof AuthMethodChoice) {
+            // Handle authorization method choice here (e.g. send notification to bank backend).
+            AuthMethodChoice authMethodChoice = (AuthMethodChoice) change;
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Authorization method chosen: {0}, operation ID: {1}", new String[]{authMethodChoice.getChosenAuthMethod().toString(), operationId});
+            return;
         }
+        throw new IllegalStateException("Invalid change entity type: " + change.getType());
     }
 
     @Override
     public void operationChangedNotification(String userId, OperationChange change, OperationContext operationContext) throws DataAdapterRemoteException {
         String operationId = operationContext.getId();
         // Handle operation change here (e.g. send notification to bank backend).
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Operation changed, status: {0}, operation ID: {1}", new String[] {change.toString(), operationContext.getId()});
+        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Operation changed, status: {0}, operation ID: {1}", new String[] {change.toString(), operationId});
     }
 
     @Override
@@ -183,6 +182,9 @@ public class DataAdapterService implements DataAdapter {
         }
 
         final DataDigest.Result digestResult = new DataDigest().generateDigest(digestItems);
+        if (digestResult == null) {
+            throw new InvalidOperationContextException("Digest generation failed");
+        }
         return new AuthorizationCode(digestResult.getDigest(), digestResult.getSalt());
     }
 
