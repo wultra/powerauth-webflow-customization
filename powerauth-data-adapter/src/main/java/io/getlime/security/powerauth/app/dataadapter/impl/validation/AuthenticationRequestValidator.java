@@ -19,6 +19,8 @@ import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthenticationType;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.AuthenticationRequest;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -40,7 +42,7 @@ public class AuthenticationRequestValidator implements Validator {
      * @return Whether validator can validate given class.
      */
     @Override
-    public boolean supports(Class<?> clazz) {
+    public boolean supports(@NonNull Class<?> clazz) {
         return ObjectRequest.class.isAssignableFrom(clazz);
     }
 
@@ -51,15 +53,22 @@ public class AuthenticationRequestValidator implements Validator {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public void validate(Object o, Errors errors) {
+    public void validate(@Nullable Object o, @NonNull Errors errors) {
         ObjectRequest<AuthenticationRequest> requestObject = (ObjectRequest<AuthenticationRequest>) o;
+        if (requestObject == null) {
+            errors.rejectValue("requestObject.operationContext", "operationContext.missing");
+            return;
+        }
+
         AuthenticationRequest authRequest = requestObject.getRequestObject();
 
         // update validation logic based on the real Data Adapter requirements
         String username = authRequest.getUsername();
         String password = authRequest.getPassword();
         OperationContext operationContext = authRequest.getOperationContext();
-
+        if (operationContext == null) {
+            errors.rejectValue("requestObject.operationContext", "operationContext.missing");
+        }
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.username", "login.username.empty");
         if (username!=null && username.length() > 30) {
             errors.rejectValue("requestObject.username", "login.username.long");
@@ -73,10 +82,6 @@ public class AuthenticationRequestValidator implements Validator {
         AuthenticationType authType = authRequest.getType();
         if (authType != AuthenticationType.BASIC) {
             errors.rejectValue("requestObject.type", "login.type.unsupported");
-        }
-
-        if (operationContext == null) {
-            errors.rejectValue("requestObject.operationContext", "operationContext.missing");
         }
     }
 }
