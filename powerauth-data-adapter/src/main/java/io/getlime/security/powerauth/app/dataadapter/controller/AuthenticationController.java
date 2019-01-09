@@ -27,6 +27,8 @@ import io.getlime.security.powerauth.lib.dataadapter.model.request.Authenticatio
 import io.getlime.security.powerauth.lib.dataadapter.model.request.UserDetailRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.AuthenticationResponse;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.UserDetailResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Controller;
@@ -37,8 +39,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.lang.invoke.MethodHandles;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Controller class which handles user authentication.
@@ -48,6 +48,8 @@ import java.util.logging.Logger;
 @Controller
 @RequestMapping("/api/auth/user")
 public class AuthenticationController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
 
     private final AuthenticationRequestValidator requestValidator;
     private final DataAdapter dataAdapter;
@@ -87,17 +89,17 @@ public class AuthenticationController {
         if (result.hasErrors()) {
             // Call of getEnclosingMethod() on class found using MethodHandles.lookup() returns a reference to current method
             MethodParameter methodParam = new MethodParameter(MethodHandles.lookup().lookupClass().getEnclosingMethod(),0);
-            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "The authenticate request failed due to validation errors");
+            logger.warn("The authenticate request failed due to validation errors");
             throw new MethodArgumentNotValidException(methodParam, result);
         }
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Received authenticate request, username: {0}, operation ID: {1}", new String[]{request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId()});
+        logger.info("Received authenticate request, username: {}, operation ID: {}", new String[]{request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId()});
         AuthenticationRequest authenticationRequest = request.getRequestObject();
         String username = authenticationRequest.getUsername();
         String password = authenticationRequest.getPassword();
         OperationContext operationContext = authenticationRequest.getOperationContext();
         UserDetailResponse userDetailResponse = dataAdapter.authenticateUser(username, password, operationContext);
         AuthenticationResponse response = new AuthenticationResponse(userDetailResponse.getId());
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "The authenticate request succeeded, user ID: {0}, operation ID: {1}", new String[]{request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId()});
+        logger.info("The authenticate request succeeded, user ID: {}, operation ID: {}", new String[]{request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId()});
         return new ObjectResponse<>(response);
     }
 
@@ -111,11 +113,11 @@ public class AuthenticationController {
      */
     @RequestMapping(value = "/info", method = RequestMethod.POST)
     public @ResponseBody ObjectResponse<UserDetailResponse> fetchUserDetail(@RequestBody ObjectRequest<UserDetailRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Received fetchUserDetail request, user ID: {0}", request.getRequestObject().getId());
+        logger.info("Received fetchUserDetail request, user ID: {}", request.getRequestObject().getId());
         UserDetailRequest userDetailRequest = request.getRequestObject();
         String userId = userDetailRequest.getId();
         UserDetailResponse response = dataAdapter.fetchUserDetail(userId);
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "The fetchUserDetail request succeeded");
+        logger.info("The fetchUserDetail request succeeded");
         return new ObjectResponse<>(response);
     }
 

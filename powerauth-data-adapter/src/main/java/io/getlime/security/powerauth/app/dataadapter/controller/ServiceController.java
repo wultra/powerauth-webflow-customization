@@ -19,6 +19,8 @@ package io.getlime.security.powerauth.app.dataadapter.controller;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.security.powerauth.app.dataadapter.configuration.DataAdapterConfiguration;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.ServiceStatusResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Controller;
@@ -27,8 +29,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Class representing controller used for service and maintenance purpose.
@@ -38,6 +38,8 @@ import java.util.logging.Logger;
 @Controller
 @RequestMapping(value = "/api/service")
 public class ServiceController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ServiceController.class);
 
     private final DataAdapterConfiguration dataAdapterConfiguration;
     private final BuildProperties buildProperties;
@@ -59,7 +61,7 @@ public class ServiceController {
      */
     @RequestMapping(value = "status", method = RequestMethod.GET)
     public @ResponseBody ObjectResponse<ServiceStatusResponse> getServiceStatus() {
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Received getServiceStatus request");
+        logger.info("Received getServiceStatus request");
         ServiceStatusResponse response = new ServiceStatusResponse();
         response.setApplicationName(dataAdapterConfiguration.getApplicationName());
         response.setApplicationDisplayName(dataAdapterConfiguration.getApplicationDisplayName());
@@ -67,7 +69,7 @@ public class ServiceController {
         response.setTimestamp(new Date());
         response.setVersion(buildProperties.getVersion());
         response.setBuildTime(Date.from(buildProperties.getTime()));
-        Logger.getLogger(this.getClass().getName()).log(Level.FINE, "The getServiceStatus request succeeded");
+        logger.debug("The getServiceStatus request succeeded");
         return new ObjectResponse<>(response);
     }
 }
