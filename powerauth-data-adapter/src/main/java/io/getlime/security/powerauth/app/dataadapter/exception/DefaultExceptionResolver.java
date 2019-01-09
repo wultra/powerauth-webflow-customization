@@ -18,6 +18,8 @@ package io.getlime.security.powerauth.app.dataadapter.exception;
 
 import io.getlime.core.rest.model.base.response.ErrorResponse;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.DataAdapterError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -29,8 +31,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Controller advice responsible for default exception resolving.
@@ -40,6 +40,8 @@ import java.util.logging.Logger;
 @ControllerAdvice
 public class DefaultExceptionResolver {
 
+    private static final Logger logger = LoggerFactory.getLogger(DefaultExceptionResolver.class);
+
     /**
      * Handling of unexpected errors.
      * @param t Throwable.
@@ -48,7 +50,7 @@ public class DefaultExceptionResolver {
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public @ResponseBody ErrorResponse handleDefaultException(Throwable t) {
-        Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Error occurred in Data Adapter", t);
+        logger.error("Error occurred in Data Adapter", t);
         DataAdapterError error = new DataAdapterError(DataAdapterError.Code.ERROR_GENERIC, "Unknown Error");
         return new ErrorResponse(error);
     }
@@ -169,7 +171,7 @@ public class DefaultExceptionResolver {
     @ExceptionHandler(DataAdapterRemoteException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public @ResponseBody ErrorResponse handleDataAdapterRemoteException(DataAdapterRemoteException ex) {
-        Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "Error occurred while communicating with remote system", ex);
+        logger.error("Error occurred while communicating with remote system", ex);
         DataAdapterError error = new DataAdapterError(DataAdapterError.Code.REMOTE_ERROR, "error.remote");
         return new ErrorResponse(error);
     }

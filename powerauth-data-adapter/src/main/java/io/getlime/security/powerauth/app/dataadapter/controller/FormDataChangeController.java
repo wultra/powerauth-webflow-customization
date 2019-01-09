@@ -26,15 +26,14 @@ import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationConte
 import io.getlime.security.powerauth.lib.dataadapter.model.request.DecorateOperationFormDataRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.FormDataChangeNotificationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.DecorateOperationFormDataResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Controller class which handles notifications about changes of operation form data.
@@ -44,6 +43,8 @@ import java.util.logging.Logger;
 @Controller
 @RequestMapping("/api/operation/formdata")
 public class FormDataChangeController {
+
+    private static final Logger logger = LoggerFactory.getLogger(FormDataChangeController.class);
 
     private DataAdapter dataAdapter;
 
@@ -65,14 +66,14 @@ public class FormDataChangeController {
      */
     @RequestMapping(value = "/change", method = RequestMethod.POST)
     public @ResponseBody Response formDataChangedNotification(@RequestBody ObjectRequest<FormDataChangeNotificationRequest> request) throws DataAdapterRemoteException {
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Received formDataChangedNotification request for user: {0}, operation ID: {1}",
+        logger.info("Received formDataChangedNotification request for user: {}, operation ID: {}",
                 new String[]{request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId()});
         FormDataChangeNotificationRequest notification = request.getRequestObject();
         String userId = notification.getUserId();
         OperationContext operationContext = notification.getOperationContext();
         FormDataChange formDataChange = notification.getFormDataChange();
         dataAdapter.formDataChangedNotification(userId, formDataChange, operationContext);
-        Logger.getLogger(this.getClass().getName()).log(Level.FINE, "The formDataChangedNotification request succeeded");
+        logger.debug("The formDataChangedNotification request succeeded");
         return new Response();
     }
 
@@ -86,13 +87,13 @@ public class FormDataChangeController {
      */
     @RequestMapping(value = "/decorate", method = RequestMethod.POST)
     public @ResponseBody ObjectResponse<DecorateOperationFormDataResponse> decorateOperationFormData(@RequestBody ObjectRequest<DecorateOperationFormDataRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Received decorateOperationFormData request for user: {0}, operation ID: {1}",
+        logger.info("Received decorateOperationFormData request for user: {}, operation ID: {}",
                 new String[]{request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId()});
         DecorateOperationFormDataRequest requestObject = request.getRequestObject();
         String userId = requestObject.getUserId();
         OperationContext operationContext = requestObject.getOperationContext();
         DecorateOperationFormDataResponse response = dataAdapter.decorateFormData(userId, operationContext);
-        Logger.getLogger(this.getClass().getName()).log(Level.FINE, "The decorateOperationFormData request succeeded");
+        logger.debug("The decorateOperationFormData request succeeded");
         return new ObjectResponse<>(response);
     }
 }
