@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Lime - HighTech Solutions s.r.o.
+ * Copyright 2017 Wultra s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import io.getlime.security.powerauth.app.dataadapter.service.SMSPersistenceServi
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSMSAuthorizationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifySMSAuthorizationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.CreateSMSAuthorizationResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Controller;
@@ -37,17 +39,18 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.lang.invoke.MethodHandles;
 
 /**
  * Controller class which handles SMS OTP authorization.
  *
- * @author Roman Strobl, roman.strobl@lime-company.eu
+ * @author Roman Strobl, roman.strobl@wultra.com
  */
 @Controller
 @RequestMapping("/api/auth/sms")
 public class SMSAuthorizationController {
+
+    private static final Logger logger = LoggerFactory.getLogger(SMSAuthorizationController.class);
 
     private final SMSPersistenceService smsPersistenceService;
     private final CreateSMSAuthorizationRequestValidator requestValidator;
@@ -89,12 +92,12 @@ public class SMSAuthorizationController {
     @RequestMapping(value = "create", method = RequestMethod.POST)
     public @ResponseBody ObjectResponse<CreateSMSAuthorizationResponse> createAuthorizationSMS(@Valid @RequestBody ObjectRequest<CreateSMSAuthorizationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, SMSAuthorizationFailedException, InvalidOperationContextException {
         if (result.hasErrors()) {
-            // getEnclosingMethod() on new object returns a reference to current method
-            MethodParameter methodParam = new MethodParameter(new Object(){}.getClass().getEnclosingMethod(),0);
-            Logger.getLogger(this.getClass().getName()).log(Level.WARNING, "The createAuthorizationSMS request failed due to validation errors");
+            // Call of getEnclosingMethod() on class found using MethodHandles.lookup() returns a reference to current method
+            MethodParameter methodParam = new MethodParameter(MethodHandles.lookup().lookupClass().getEnclosingMethod(),0);
+            logger.warn("The createAuthorizationSMS request failed due to validation errors");
             throw new MethodArgumentNotValidException(methodParam, result);
         }
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Received createAuthorizationSMS request, operation ID: "+request.getRequestObject().getOperationContext().getId());
+        logger.info("Received createAuthorizationSMS request, operation ID: "+request.getRequestObject().getOperationContext().getId());
         CreateSMSAuthorizationRequest smsRequest = request.getRequestObject();
 
         // Create authorization SMS and persist it.
@@ -108,7 +111,7 @@ public class SMSAuthorizationController {
 
         // Create response.
         CreateSMSAuthorizationResponse response = new CreateSMSAuthorizationResponse(messageId);
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO,"The createAuthorizationSMS request succeeded, operation ID: "+request.getRequestObject().getOperationContext().getId());
+        logger.info("The createAuthorizationSMS request succeeded, operation ID: "+request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
 
@@ -132,13 +135,13 @@ public class SMSAuthorizationController {
      */
     @RequestMapping(value = "verify", method = RequestMethod.POST)
     public @ResponseBody Response verifyAuthorizationSMS(@RequestBody ObjectRequest<VerifySMSAuthorizationRequest> request) throws SMSAuthorizationFailedException {
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Received verifyAuthorizationSMS request, operation ID: "+request.getRequestObject().getOperationContext().getId());
+        logger.info("Received verifyAuthorizationSMS request, operation ID: "+request.getRequestObject().getOperationContext().getId());
         VerifySMSAuthorizationRequest verifyRequest = request.getRequestObject();
         String messageId = verifyRequest.getMessageId();
         String authorizationCode = verifyRequest.getAuthorizationCode();
         // Verify authorization code.
         smsPersistenceService.verifyAuthorizationSMS(messageId, authorizationCode);
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO,"The verifyAuthorizationSMS request succeeded, operation ID: "+request.getRequestObject().getOperationContext().getId());
+        logger.info("The verifyAuthorizationSMS request succeeded, operation ID: "+request.getRequestObject().getOperationContext().getId());
         return new Response();
     }
 

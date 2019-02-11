@@ -6,7 +6,7 @@ and other changes required for customizing Web Flow for clients.
 
 ## Documentation
 
-Visit our wiki for [technical details about PowerAuth 2.0 Web Flow](https://github.com/lime-company/powerauth-webflow/wiki).
+For the most recent documentation and tutorials, please visit [PowerAuth Web Flow Customization Documentation](./docs/Home.md).
 
 ## License
 

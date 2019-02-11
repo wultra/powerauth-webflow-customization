@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Lime - HighTech Solutions s.r.o.
+ * Copyright 2017 Wultra s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationConte
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.AmountAttribute;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSMSAuthorizationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -34,7 +36,7 @@ import java.math.BigDecimal;
  *
  * Additional validation logic can be added if applicable.
  *
- * @author Roman Strobl, roman.strobl@lime-company.eu
+ * @author Roman Strobl, roman.strobl@wultra.com
  */
 @Component
 public class CreateSMSAuthorizationRequestValidator implements Validator {
@@ -56,7 +58,7 @@ public class CreateSMSAuthorizationRequestValidator implements Validator {
      * @return Whether validator can validate given class.
      */
     @Override
-    public boolean supports(Class<?> clazz) {
+    public boolean supports(@NonNull Class<?> clazz) {
         return ObjectRequest.class.isAssignableFrom(clazz);
     }
 
@@ -67,8 +69,12 @@ public class CreateSMSAuthorizationRequestValidator implements Validator {
      */
     @Override
     @SuppressWarnings("unchecked")
-    public void validate(Object o, Errors errors) {
+    public void validate(@Nullable Object o, @NonNull Errors errors) {
         ObjectRequest<CreateSMSAuthorizationRequest> requestObject = (ObjectRequest<CreateSMSAuthorizationRequest>) o;
+        if (requestObject == null) {
+            errors.rejectValue("requestObject.operationContext", "operationContext.missing");
+            return;
+        }
         CreateSMSAuthorizationRequest authRequest = requestObject.getRequestObject();
 
         // update validation logic based on the real Data Adapter requirements

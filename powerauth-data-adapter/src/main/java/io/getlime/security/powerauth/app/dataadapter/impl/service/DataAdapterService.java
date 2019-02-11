@@ -6,10 +6,11 @@ import io.getlime.security.powerauth.app.dataadapter.service.DataAdapterI18NServ
 import io.getlime.security.powerauth.crypto.server.util.DataDigest;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.AmountAttribute;
-import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.Attribute;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.FormFieldConfig;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.DecorateOperationFormDataResponse;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.UserDetailResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -17,16 +18,16 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Sample implementation of DataAdapter interface which should be updated in real implementation.
  *
- * @author Roman Strobl, roman.strobl@lime-company.eu
+ * @author Roman Strobl, roman.strobl@wultra.com
  */
 @Service
 public class DataAdapterService implements DataAdapter {
+
+    private static final Logger logger = LoggerFactory.getLogger(DataAdapterService.class);
 
     private static final String BANK_ACCOUNT_CHOICE_ID = "operation.bankAccountChoice";
 
@@ -124,9 +125,10 @@ public class DataAdapterService implements DataAdapter {
                 defaultValue = config.getDefaultValue();
             }
         }
-        Attribute attr = formData.addBankAccountChoice(BANK_ACCOUNT_CHOICE_ID, bankAccounts, choiceEnabled, defaultValue);
+        formData.addBankAccountChoice(BANK_ACCOUNT_CHOICE_ID, bankAccounts, choiceEnabled, defaultValue);
 
         // Sample warning banner displayed above the bank account choice field.
+        // Attribute attr = formData.addBankAccountChoice(BANK_ACCOUNT_CHOICE_ID, bankAccounts, choiceEnabled, defaultValue);
         // formData.addBannerBeforeField(BannerType.BANNER_WARNING, "banner.invalidAccount", attr);
 
         return new DecorateOperationFormDataResponse(formData);
@@ -135,27 +137,25 @@ public class DataAdapterService implements DataAdapter {
     @Override
     public void formDataChangedNotification(String userId, FormDataChange change, OperationContext operationContext) throws DataAdapterRemoteException {
         String operationId = operationContext.getId();
-        switch (change.getType()) {
-            case BANK_ACCOUNT_CHOICE:
-                // Handle bank account choice here (e.g. send notification to bank backend).
-                BankAccountChoice bankAccountChoice = (BankAccountChoice) change;
-                Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Bank account chosen: {0}, operation ID: {1}", new String[] {bankAccountChoice.getBankAccountId(), operationContext.getId()});
-                break;
-            case AUTH_METHOD_CHOICE:
-                // Handle authorization method choice here (e.g. send notification to bank backend).
-                AuthMethodChoice authMethodChoice = (AuthMethodChoice) change;
-                Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Authorization method chosen: {0}, operation ID: {1}", new String[] {authMethodChoice.getChosenAuthMethod().toString(), operationContext.getId()});
-                break;
-            default:
-                throw new IllegalStateException("Invalid change entity type: " + change.getType());
+        if (change instanceof BankAccountChoice) {
+            // Handle bank account choice here (e.g. send notification to bank backend).
+            BankAccountChoice bankAccountChoice = (BankAccountChoice) change;
+            logger.info("Bank account chosen: {}, operation ID: {}", new String[]{bankAccountChoice.getBankAccountId(), operationId});
+            return;
+        } else if (change instanceof AuthMethodChoice) {
+            // Handle authorization method choice here (e.g. send notification to bank backend).
+            AuthMethodChoice authMethodChoice = (AuthMethodChoice) change;
+            logger.info("Authorization method chosen: {}, operation ID: {}", new String[]{authMethodChoice.getChosenAuthMethod().toString(), operationId});
+            return;
         }
+        throw new IllegalStateException("Invalid change entity type: " + change.getType());
     }
 
     @Override
     public void operationChangedNotification(String userId, OperationChange change, OperationContext operationContext) throws DataAdapterRemoteException {
         String operationId = operationContext.getId();
         // Handle operation change here (e.g. send notification to bank backend).
-        Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Operation changed, status: {0}, operation ID: {1}", new String[] {change.toString(), operationContext.getId()});
+        logger.info("Operation changed, status: {}, operation ID: {}", new String[] {change.toString(), operationId});
     }
 
     @Override
@@ -183,6 +183,9 @@ public class DataAdapterService implements DataAdapter {
         }
 
         final DataDigest.Result digestResult = new DataDigest().generateDigest(digestItems);
+        if (digestResult == null) {
+            throw new InvalidOperationContextException("Digest generation failed");
+        }
         return new AuthorizationCode(digestResult.getDigest(), digestResult.getSalt());
     }
 
