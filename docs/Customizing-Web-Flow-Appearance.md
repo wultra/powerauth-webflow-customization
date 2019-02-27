@@ -8,7 +8,7 @@ Web Flow resources which can be customized are available in the ext-resources fo
 
 The general process of updating Web Flow resources:
 
-- Clone project [powerauth-webflow-customization](https://github.com/wultra/powerauth-webflow-customization) from GitHub.
+- Clone project [powerauth-webflow-customization](https://github.com/wultra/powerauth-webflow-customization#docucheck-keep-link) from GitHub.
 - Update Web Flow resources by overriding existing texts, CSS, fonts and images or by adding additional resources.
 - When deploying Web Flow, configure the following Spring Boot property:
 
