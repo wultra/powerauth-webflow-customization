@@ -36,7 +36,7 @@ Consider which of the following methods need to be implemented in your project:
 
 Implement the actual changes in Data Adapter so that it connects to an actual data source.
 
-  - Clone project [powerauth-webflow-customization](https://github.com/wultra/powerauth-webflow-customization) from GitHub.
+  - Clone project [powerauth-webflow-customization](https://github.com/wultra/powerauth-webflow-customization#docucheck-keep-link) from GitHub.
   - Update the `pom.xml` to add any required additional dependencies.
   - Create a proprietary client (+ client config) for your web services.
   - Implement the Data Adapter interface by providing your own implementation in the [DataAdapterService class](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/impl/service/DataAdapterService.java). You can override the sample implementation.
