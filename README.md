@@ -6,7 +6,7 @@ and other changes required for customizing Web Flow for clients.
 
 ## Documentation
 
-For the most recent documentation and tutorials, please visit [PowerAuth Web Flow Customization Documentation](https://developers.wultra.com/docs/latest/powerauth-webflow-customization/).
+For the most recent documentation and tutorials, please visit [PowerAuth Web Flow Customization Documentation](https://developers.wultra.com/docs/current/powerauth-webflow-customization/).
 
 ## License
 
