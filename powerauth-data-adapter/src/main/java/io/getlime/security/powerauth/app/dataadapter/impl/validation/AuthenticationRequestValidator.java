@@ -65,6 +65,7 @@ public class AuthenticationRequestValidator implements Validator {
         // update validation logic based on the real Data Adapter requirements
         String username = authRequest.getUsername();
         String password = authRequest.getPassword();
+        String organizationId = authRequest.getOrganizationId();
         OperationContext operationContext = authRequest.getOperationContext();
         if (operationContext == null) {
             errors.rejectValue("requestObject.operationContext", "operationContext.missing");
@@ -77,6 +78,11 @@ public class AuthenticationRequestValidator implements Validator {
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.password", "login.password.empty");
         if (password!=null && password.length() > 30) {
             errors.rejectValue("requestObject.password", "login.password.long");
+        }
+
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.organizationId", "login.organizationId.empty");
+        if (username!=null && organizationId.length() > 256) {
+            errors.rejectValue("requestObject.organizationId", "login.organizationId.long");
         }
 
         AuthenticationType authType = authRequest.getType();

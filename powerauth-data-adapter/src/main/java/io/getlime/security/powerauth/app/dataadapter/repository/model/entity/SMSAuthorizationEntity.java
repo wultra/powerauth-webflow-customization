@@ -43,6 +43,9 @@ public class SMSAuthorizationEntity implements Serializable {
     @Column(name = "user_id")
     private String userId;
 
+    @Column(name = "organization_id")
+    private String organizationId;
+
     @Column(name = "operation_name")
     private String operationName;
 
@@ -116,6 +119,22 @@ public class SMSAuthorizationEntity implements Serializable {
      */
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    /**
+     * Get organization ID.
+     * @return Organization ID.
+     */
+    public String getOrganizationId() {
+        return organizationId;
+    }
+
+    /**
+     * Set organization ID.
+     * @param organizationId Organization ID.
+     */
+    public void setOrganizationId(String organizationId) {
+        this.organizationId = organizationId;
     }
 
     /**

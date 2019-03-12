@@ -79,6 +79,7 @@ public class CreateSMSAuthorizationRequestValidator implements Validator {
 
         // update validation logic based on the real Data Adapter requirements
         String userId = authRequest.getUserId();
+        String organizationId = authRequest.getOrganizationId();
         OperationContext operationContext = authRequest.getOperationContext();
         if (operationContext == null) {
             errors.rejectValue("requestObject.operationContext", "operationContext.missing");
@@ -89,6 +90,11 @@ public class CreateSMSAuthorizationRequestValidator implements Validator {
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.userId", "smsAuthorization.userId.empty");
         if (userId != null && userId.length() > 30) {
             errors.rejectValue("requestObject.userId", "smsAuthorization.userId.long");
+        }
+
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.organizationId", "smsAuthorization.organizationId.empty");
+        if (organizationId != null && organizationId.length() > 256) {
+            errors.rejectValue("requestObject.organizationId", "smsAuthorization.organizationId.long");
         }
 
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.operationContext.name", "smsAuthorization.operationName.empty");

@@ -91,14 +91,15 @@ public class AuthenticationController {
             logger.warn("The authenticate request failed due to validation errors");
             throw new MethodArgumentNotValidException(methodParam, result);
         }
-        logger.info("Received authenticate request, username: {}, operation ID: {}", new String[]{request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId()});
+        logger.info("Received authenticate request, username: {}, organization ID: {}, operation ID: {}", request.getRequestObject().getUsername(), request.getRequestObject().getOrganizationId(), request.getRequestObject().getOperationContext().getId());
         AuthenticationRequest authenticationRequest = request.getRequestObject();
         String username = authenticationRequest.getUsername();
         String password = authenticationRequest.getPassword();
+        String organizationId = authenticationRequest.getOrganizationId();
         OperationContext operationContext = authenticationRequest.getOperationContext();
-        UserDetailResponse userDetailResponse = dataAdapter.authenticateUser(username, password, operationContext);
-        AuthenticationResponse response = new AuthenticationResponse(userDetailResponse.getId());
-        logger.info("The authenticate request succeeded, user ID: {}, operation ID: {}", new String[]{request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId()});
+        UserDetailResponse userDetailResponse = dataAdapter.authenticateUser(username, password, organizationId, operationContext);
+        AuthenticationResponse response = new AuthenticationResponse(userDetailResponse.getId(), userDetailResponse.getOrganizationId());
+        logger.info("The authenticate request succeeded, user ID: {}, organization ID: {}, operation ID: {}", userDetailResponse.getId(), userDetailResponse.getOrganizationId(), request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
 

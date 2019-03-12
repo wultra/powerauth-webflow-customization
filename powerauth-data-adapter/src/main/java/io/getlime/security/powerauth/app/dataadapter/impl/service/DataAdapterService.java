@@ -40,12 +40,15 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public UserDetailResponse authenticateUser(String username, String password, OperationContext operationContext) throws DataAdapterRemoteException, AuthenticationFailedException {
+    public UserDetailResponse authenticateUser(String username, String password, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, AuthenticationFailedException {
         // Here will be the real authentication - call to the backend providing authentication.
         // In case that authentication fails, throw an AuthenticationFailedException.
         if ("test".equals(password)) {
             try {
-                return fetchUserDetail(username);
+                UserDetailResponse response = fetchUserDetail(username);
+                // The organization needs to be set in response (e.g. client authenticated against RETAIL organization or SME organization).
+                response.setOrganizationId(organizationId);
+                return response;
             } catch (UserNotFoundException e) {
                 throw new AuthenticationFailedException("login.authenticationFailed");
             }
@@ -73,7 +76,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public DecorateOperationFormDataResponse decorateFormData(String userId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
+    public DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
         String operationName = operationContext.getName();
         FormData formData = operationContext.getFormData();
         // Fetch bank account list for given user here from the bank backend.
@@ -135,31 +138,31 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public void formDataChangedNotification(String userId, FormDataChange change, OperationContext operationContext) throws DataAdapterRemoteException {
+    public void formDataChangedNotification(String userId, String organizationId, FormDataChange change, OperationContext operationContext) throws DataAdapterRemoteException {
         String operationId = operationContext.getId();
         if (change instanceof BankAccountChoice) {
             // Handle bank account choice here (e.g. send notification to bank backend).
             BankAccountChoice bankAccountChoice = (BankAccountChoice) change;
-            logger.info("Bank account chosen: {}, operation ID: {}", new String[]{bankAccountChoice.getBankAccountId(), operationId});
+            logger.info("Bank account chosen: {}, operation ID: {}", bankAccountChoice.getBankAccountId(), operationId);
             return;
         } else if (change instanceof AuthMethodChoice) {
             // Handle authorization method choice here (e.g. send notification to bank backend).
             AuthMethodChoice authMethodChoice = (AuthMethodChoice) change;
-            logger.info("Authorization method chosen: {}, operation ID: {}", new String[]{authMethodChoice.getChosenAuthMethod().toString(), operationId});
+            logger.info("Authorization method chosen: {}, operation ID: {}", authMethodChoice.getChosenAuthMethod().toString(), operationId);
             return;
         }
         throw new IllegalStateException("Invalid change entity type: " + change.getType());
     }
 
     @Override
-    public void operationChangedNotification(String userId, OperationChange change, OperationContext operationContext) throws DataAdapterRemoteException {
+    public void operationChangedNotification(String userId, String organizationId, OperationChange change, OperationContext operationContext) throws DataAdapterRemoteException {
         String operationId = operationContext.getId();
         // Handle operation change here (e.g. send notification to bank backend).
-        logger.info("Operation changed, status: {}, operation ID: {}", new String[] {change.toString(), operationId});
+        logger.info("Operation changed, status: {}, operation ID: {}", change.toString(), operationId);
     }
 
     @Override
-    public AuthorizationCode generateAuthorizationCode(String userId, OperationContext operationContext) throws InvalidOperationContextException {
+    public AuthorizationCode generateAuthorizationCode(String userId, String organizationId, OperationContext operationContext) throws InvalidOperationContextException {
         String operationName = operationContext.getName();
         List<String> digestItems = new ArrayList<>();
         switch (operationName) {
@@ -190,7 +193,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public String generateSMSText(String userId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException {
+    public String generateSMSText(String userId, String organizationId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException {
         String operationName = operationContext.getName();
         String[] messageArgs;
         switch (operationName) {
@@ -215,7 +218,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public void sendAuthorizationSMS(String userId, String messageText,  OperationContext operationContext) throws DataAdapterRemoteException, SMSAuthorizationFailedException {
+    public void sendAuthorizationSMS(String userId, String organizationId, String messageText,  OperationContext operationContext) throws DataAdapterRemoteException, SMSAuthorizationFailedException {
         // Add here code to send the SMS OTP message to user identified by userId with messageText.
         // In case message delivery fails, throw an SMSAuthorizationFailedException.
     }

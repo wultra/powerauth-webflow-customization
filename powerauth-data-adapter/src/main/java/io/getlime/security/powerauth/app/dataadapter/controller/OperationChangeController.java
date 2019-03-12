@@ -62,13 +62,13 @@ public class OperationChangeController {
      */
     @RequestMapping(value = "/change", method = RequestMethod.POST)
     public @ResponseBody Response operationChangedNotification(@RequestBody ObjectRequest<OperationChangeNotificationRequest> request) throws DataAdapterRemoteException {
-        logger.info("Received operationChangedNotification request for user: {}, operation ID: {}",
-                new String[]{request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId()});
+        logger.info("Received operationChangedNotification request for user: {}, operation ID: {}", request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         OperationChangeNotificationRequest notification = request.getRequestObject();
         String userId = notification.getUserId();
+        String organizationId = notification.getOrganizationId();
         OperationContext operationContext = notification.getOperationContext();
         OperationChange operationChange = notification.getOperationChange();
-        dataAdapter.operationChangedNotification(userId, operationChange, operationContext);
+        dataAdapter.operationChangedNotification(userId, organizationId, operationChange, operationContext);
         logger.debug("The operationChangedNotification request succeeded");
         return new Response();
     }
