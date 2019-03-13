@@ -46,11 +46,12 @@ public interface DataAdapter {
     /**
      * Fetch user detail for given user.
      * @param userId User ID.
+     * @param organizationId Organization ID.
      * @return Response with user details.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws UserNotFoundException Thrown when user does not exist.
      */
-    UserDetailResponse fetchUserDetail(String userId) throws DataAdapterRemoteException, UserNotFoundException;
+    UserDetailResponse fetchUserDetail(String userId, String organizationId) throws DataAdapterRemoteException, UserNotFoundException;
 
     /**
      * Decorate operation form data.

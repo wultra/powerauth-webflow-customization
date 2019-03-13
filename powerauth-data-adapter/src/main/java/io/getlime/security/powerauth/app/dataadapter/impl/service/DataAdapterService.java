@@ -45,7 +45,7 @@ public class DataAdapterService implements DataAdapter {
         // In case that authentication fails, throw an AuthenticationFailedException.
         if ("test".equals(password)) {
             try {
-                UserDetailResponse response = fetchUserDetail(username);
+                UserDetailResponse response = fetchUserDetail(username, organizationId);
                 // The organization needs to be set in response (e.g. client authenticated against RETAIL organization or SME organization).
                 response.setOrganizationId(organizationId);
                 return response;
@@ -65,13 +65,14 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public UserDetailResponse fetchUserDetail(String userId) throws DataAdapterRemoteException, UserNotFoundException {
+    public UserDetailResponse fetchUserDetail(String userId, String organizationId) throws DataAdapterRemoteException, UserNotFoundException {
         // Fetch user details here ...
         // In case that user is not found, throw a UserNotFoundException.
         UserDetailResponse responseObject = new UserDetailResponse();
         responseObject.setId(userId);
         responseObject.setGivenName("John");
         responseObject.setFamilyName("Doe");
+        responseObject.setOrganizationId(organizationId);
         return responseObject;
     }
 

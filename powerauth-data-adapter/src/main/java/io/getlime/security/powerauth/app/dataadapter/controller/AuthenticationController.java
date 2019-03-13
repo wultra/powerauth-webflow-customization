@@ -113,10 +113,11 @@ public class AuthenticationController {
      */
     @RequestMapping(value = "/info", method = RequestMethod.POST)
     public @ResponseBody ObjectResponse<UserDetailResponse> fetchUserDetail(@RequestBody ObjectRequest<UserDetailRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
-        logger.info("Received fetchUserDetail request, user ID: {}", request.getRequestObject().getId());
+        logger.info("Received fetchUserDetail request, user ID: {}", request.getRequestObject().getUserId());
         UserDetailRequest userDetailRequest = request.getRequestObject();
-        String userId = userDetailRequest.getId();
-        UserDetailResponse response = dataAdapter.fetchUserDetail(userId);
+        String userId = userDetailRequest.getUserId();
+        String organizationId = userDetailRequest.getOrganizationId();
+        UserDetailResponse response = dataAdapter.fetchUserDetail(userId, organizationId);
         logger.info("The fetchUserDetail request succeeded");
         return new ObjectResponse<>(response);
     }
