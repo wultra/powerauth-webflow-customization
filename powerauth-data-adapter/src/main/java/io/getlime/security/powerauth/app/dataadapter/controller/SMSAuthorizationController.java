@@ -91,8 +91,9 @@ public class SMSAuthorizationController {
     @RequestMapping(value = "create", method = RequestMethod.POST)
     public @ResponseBody ObjectResponse<CreateSMSAuthorizationResponse> createAuthorizationSMS(@Valid @RequestBody ObjectRequest<CreateSMSAuthorizationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, SMSAuthorizationFailedException, InvalidOperationContextException {
         if (result.hasErrors()) {
-            // Call of getEnclosingMethod() on new object returns a reference to current method
-            MethodParameter methodParam = new MethodParameter(new Object(){}.getClass().getEnclosingMethod(), 0);
+            // Call of getEnclosingMethod() on local class returns a reference to current method
+            class Local {}
+            MethodParameter methodParam = new MethodParameter(Local.class.getEnclosingMethod(), 0);
             logger.warn("The createAuthorizationSMS request failed due to validation errors");
             throw new MethodArgumentNotValidException(methodParam, result);
         }

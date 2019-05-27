@@ -86,8 +86,9 @@ public class AuthenticationController {
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public @ResponseBody ObjectResponse<AuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<AuthenticationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, AuthenticationFailedException {
         if (result.hasErrors()) {
-            // Call of getEnclosingMethod() on new object returns a reference to current method
-            MethodParameter methodParam = new MethodParameter(new Object(){}.getClass().getEnclosingMethod(), 0);
+            // Call of getEnclosingMethod() on local class returns a reference to current method
+            class Local {}
+            MethodParameter methodParam = new MethodParameter(Local.class.getEnclosingMethod(), 0);
             logger.warn("The authenticate request failed due to validation errors");
             throw new MethodArgumentNotValidException(methodParam, result);
         }
