@@ -7,8 +7,7 @@ import io.getlime.security.powerauth.crypto.server.util.DataDigest;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.AmountAttribute;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.FormFieldConfig;
-import io.getlime.security.powerauth.lib.dataadapter.model.response.DecorateOperationFormDataResponse;
-import io.getlime.security.powerauth.lib.dataadapter.model.response.UserDetailResponse;
+import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -140,12 +139,12 @@ public class DataAdapterService implements DataAdapter {
         if (change instanceof BankAccountChoice) {
             // Handle bank account choice here (e.g. send notification to bank backend).
             BankAccountChoice bankAccountChoice = (BankAccountChoice) change;
-            logger.info("Bank account chosen: {}, operation ID: {}", new String[]{bankAccountChoice.getBankAccountId(), operationId});
+            logger.info("Bank account chosen: {}, operation ID: {}", bankAccountChoice.getBankAccountId(), operationId);
             return;
         } else if (change instanceof AuthMethodChoice) {
             // Handle authorization method choice here (e.g. send notification to bank backend).
             AuthMethodChoice authMethodChoice = (AuthMethodChoice) change;
-            logger.info("Authorization method chosen: {}, operation ID: {}", new String[]{authMethodChoice.getChosenAuthMethod().toString(), operationId});
+            logger.info("Authorization method chosen: {}, operation ID: {}", authMethodChoice.getChosenAuthMethod().toString(), operationId);
             return;
         }
         throw new IllegalStateException("Invalid change entity type: " + change.getType());
@@ -155,7 +154,7 @@ public class DataAdapterService implements DataAdapter {
     public void operationChangedNotification(String userId, OperationChange change, OperationContext operationContext) throws DataAdapterRemoteException {
         String operationId = operationContext.getId();
         // Handle operation change here (e.g. send notification to bank backend).
-        logger.info("Operation changed, status: {}, operation ID: {}", new String[] {change.toString(), operationId});
+        logger.info("Operation changed, status: {}, operation ID: {}", change.toString(), operationId);
     }
 
     @Override
@@ -218,6 +217,155 @@ public class DataAdapterService implements DataAdapter {
     public void sendAuthorizationSMS(String userId, String messageText,  OperationContext operationContext) throws DataAdapterRemoteException, SMSAuthorizationFailedException {
         // Add here code to send the SMS OTP message to user identified by userId with messageText.
         // In case message delivery fails, throw an SMSAuthorizationFailedException.
+    }
+
+    @Override
+    public CreateConsentFormResponse createConsentForm(String userId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException {
+        if ("login".equals(operationContext.getName())) {
+            // Create default consent
+            CreateConsentFormResponse response = new CreateConsentFormResponse();
+            if ("cs".equals(lang)) {
+                response.setConsentHtml("Tímto potvrzuji, že jsem inicioval tuto žádost o přihlášení a souhlasím s dokončením této operace.");
+            } else {
+                response.setConsentHtml("I consent that I have initiated this authentication request and give consent to complete the operation.<br/><br/>");
+            }
+
+            ConsentOption option1 = new ConsentOption();
+            option1.setId("CONSENT_LOGIN");
+            option1.setRequired(true);
+            if ("cs".equals(lang)) {
+                option1.setDescriptionHtml("Souhlasím s dokončením operace pro přihlášení.");
+            } else {
+                option1.setDescriptionHtml("I give consent to complete the authentication operation.");
+            }
+
+            response.getOptions().add(option1);
+            return response;
+        }
+        if ("authorize_payment".equals(operationContext.getName())) {
+            CreateConsentFormResponse response = new CreateConsentFormResponse();
+            if ("cs".equals(lang)) {
+                response.setConsentHtml("Tímto potvrzuji, že jsem inicioval tuto platební operaci a souhlasím s jejím dokončením.");
+            } else {
+                response.setConsentHtml("I consent that I have initiated this payment request and give consent to complete the operation.");
+            }
+
+            ConsentOption option1 = new ConsentOption();
+            option1.setId("CONSENT_INIT");
+            option1.setRequired(true);
+            if ("cs".equals(lang)) {
+                option1.setDescriptionHtml("Potvrzuji, že jsem inicioval tuto platební operaci.");
+            } else {
+                option1.setDescriptionHtml("I consent that I have initiated this payment operation.");
+            }
+
+            ConsentOption option2 = new ConsentOption();
+            option2.setId("CONSENT_PAYMENT");
+            option2.setRequired(true);
+            if ("cs".equals(lang)) {
+                option2.setDescriptionHtml("Souhlasím s provedením platební operace.");
+            } else {
+                option2.setDescriptionHtml("I give consent to complete this payment operation.");
+            }
+
+            response.getOptions().add(option1);
+            response.getOptions().add(option2);
+            return response;
+        }
+        throw new InvalidOperationContextException("Invalid operation context");
+    }
+
+    @Override
+    public ValidateConsentFormResponse validateConsentForm(String userId, OperationContext operationContext, String lang, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
+        ValidateConsentFormResponse response = new ValidateConsentFormResponse();
+        if (options == null || options.isEmpty()) {
+            throw new InvalidConsentDataException("Missing options for consent");
+        }
+        if ("login".equals(operationContext.getName())) {
+            if (options.size() != 1) {
+                throw new InvalidConsentDataException("Unexpected options count for consent");
+            }
+            // Validate default consent
+            if (options.get(0).getValue() == ConsentOptionValue.CHECKED) {
+                response.setConsentValidationPassed(true);
+                return response;
+            }
+            response.setConsentValidationPassed(false);
+            if ("cs".equals(lang)) {
+                response.setValidationErrorMessage("Prosím vyplňte celý formulář se souhlasem.");
+                if (options.get(0).getValue() != ConsentOptionValue.CHECKED) {
+                    ConsentOptionValidationResult result = new ConsentOptionValidationResult();
+                    result.setId("CONSENT_LOGIN");
+                    result.setValidationPassed(false);
+                    result.setErrorMessage("Pro dokončení operace odsouhlaste tuto volbu.");
+                    response.getOptionValidationResults().add(result);
+                }
+            } else {
+                response.setValidationErrorMessage("Please fill in the whole consent form.");
+                if (options.get(0).getValue() != ConsentOptionValue.CHECKED) {
+                    ConsentOptionValidationResult result = new ConsentOptionValidationResult();
+                    result.setId("CONSENT_LOGIN");
+                    result.setValidationPassed(false);
+                    result.setErrorMessage("Confirm this option to complete the operation.");
+                    response.getOptionValidationResults().add(result);
+                }
+            }
+            return response;
+        }
+        if ("authorize_payment".equals(operationContext.getName())) {
+            if (options.size() != 2) {
+                throw new InvalidConsentDataException("Unexpected options count for consent");
+            }
+            if (options.get(0).getValue() == ConsentOptionValue.CHECKED && options.get(1).getValue() == ConsentOptionValue.CHECKED) {
+                response.setConsentValidationPassed(true);
+                return response;
+            }
+            response.setConsentValidationPassed(false);
+            if ("cs".equals(lang)) {
+                response.setValidationErrorMessage("Prosím vyplňte celý formulář se souhlasem.");
+                if (options.get(0).getValue() != ConsentOptionValue.CHECKED) {
+                    ConsentOptionValidationResult result = new ConsentOptionValidationResult();
+                    result.setId("CONSENT_INIT");
+                    result.setValidationPassed(false);
+                    result.setErrorMessage("Pro dokončení operace odsouhlaste tuto volbu.");
+                    response.getOptionValidationResults().add(result);
+                }
+                if (options.get(1).getValue() != ConsentOptionValue.CHECKED) {
+                    ConsentOptionValidationResult result = new ConsentOptionValidationResult();
+                    result.setId("CONSENT_PAYMENT");
+                    result.setValidationPassed(false);
+                    result.setErrorMessage("Pro dokončení operace odsouhlaste tuto volbu.");
+                    response.getOptionValidationResults().add(result);
+                }
+            } else {
+                response.setValidationErrorMessage("Please fill in the whole consent form.");
+                if (options.get(0).getValue() != ConsentOptionValue.CHECKED) {
+                    ConsentOptionValidationResult result = new ConsentOptionValidationResult();
+                    result.setId("CONSENT_INIT");
+                    result.setValidationPassed(false);
+                    result.setErrorMessage("Confirm this option to complete the operation.");
+                    response.getOptionValidationResults().add(result);
+                }
+                if (options.get(1).getValue() != ConsentOptionValue.CHECKED) {
+                    ConsentOptionValidationResult result = new ConsentOptionValidationResult();
+                    result.setId("CONSENT_PAYMENT");
+                    result.setValidationPassed(false);
+                    result.setErrorMessage("Confirm this option to complete the operation.");
+                    response.getOptionValidationResults().add(result);
+                }
+            }
+            return response;
+        }
+        throw new InvalidOperationContextException("Invalid operation context");
+    }
+
+    @Override
+    public SaveConsentFormResponse saveConsentForm(String userId, OperationContext operationContext, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException {
+        logger.info("Saving consent form for user: {}, operation ID: {}", userId, operationContext.getId());
+        for (ConsentOption option: options) {
+            logger.info("Option {}: {}", option.getId(), option.getValue());
+        }
+        return new SaveConsentFormResponse(true);
     }
 
 }

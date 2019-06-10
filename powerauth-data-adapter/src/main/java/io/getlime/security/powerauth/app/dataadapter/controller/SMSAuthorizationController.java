@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.WebDataBinder;
@@ -45,7 +44,7 @@ import javax.validation.Valid;
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
-@Controller
+@RestController
 @RequestMapping("/api/auth/sms")
 public class SMSAuthorizationController {
 
@@ -68,7 +67,6 @@ public class SMSAuthorizationController {
         this.dataAdapter = dataAdapter;
     }
 
-
     /**
      * Initializes the request validator.
      * @param binder Data binder.
@@ -89,7 +87,7 @@ public class SMSAuthorizationController {
      * @throws SMSAuthorizationFailedException Thrown in case that SMS message could not be delivered.
      */
     @RequestMapping(value = "create", method = RequestMethod.POST)
-    public @ResponseBody ObjectResponse<CreateSMSAuthorizationResponse> createAuthorizationSMS(@Valid @RequestBody ObjectRequest<CreateSMSAuthorizationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, SMSAuthorizationFailedException, InvalidOperationContextException {
+    public ObjectResponse<CreateSMSAuthorizationResponse> createAuthorizationSMS(@Valid @RequestBody ObjectRequest<CreateSMSAuthorizationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, SMSAuthorizationFailedException, InvalidOperationContextException {
         if (result.hasErrors()) {
             // Call of getEnclosingMethod() on local class returns a reference to current method
             class Local {}
@@ -134,7 +132,7 @@ public class SMSAuthorizationController {
      * @throws SMSAuthorizationFailedException Thrown in case that SMS verification fails.
      */
     @RequestMapping(value = "verify", method = RequestMethod.POST)
-    public @ResponseBody Response verifyAuthorizationSMS(@RequestBody ObjectRequest<VerifySMSAuthorizationRequest> request) throws SMSAuthorizationFailedException {
+    public Response verifyAuthorizationSMS(@RequestBody ObjectRequest<VerifySMSAuthorizationRequest> request) throws SMSAuthorizationFailedException {
         logger.info("Received verifyAuthorizationSMS request, operation ID: "+request.getRequestObject().getOperationContext().getId());
         VerifySMSAuthorizationRequest verifyRequest = request.getRequestObject();
         String messageId = verifyRequest.getMessageId();

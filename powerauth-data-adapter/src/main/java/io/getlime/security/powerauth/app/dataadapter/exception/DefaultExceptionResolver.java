@@ -95,7 +95,9 @@ public class DefaultExceptionResolver {
         List<String> errorMessages = new ArrayList<>();
         final List<ObjectError> allErrors = ex.getBindingResult().getAllErrors();
         for (ObjectError objError: allErrors) {
-            errorMessages.addAll(Arrays.asList(objError.getCodes()));
+            if (objError.getCodes() != null){
+                errorMessages.addAll(Arrays.asList(objError.getCodes()));
+            }
         }
 
         // preparation of user friendly error messages for the UI
@@ -160,6 +162,18 @@ public class DefaultExceptionResolver {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody ErrorResponse handleInvalidOperationContextException(InvalidOperationContextException ex) {
         DataAdapterError error = new DataAdapterError(DataAdapterError.Code.OPERATION_CONTEXT_INVALID, ex.getMessage());
+        return new ErrorResponse(error);
+    }
+
+    /**
+     * Handling of invalid consent exception.
+     * @param ex Exception.
+     * @return Response with error information.
+     */
+    @ExceptionHandler(InvalidConsentDataException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody ErrorResponse handleInvalidConsentException(InvalidConsentDataException ex) {
+        DataAdapterError error = new DataAdapterError(DataAdapterError.Code.CONSENT_DATA_INVALID, ex.getMessage());
         return new ErrorResponse(error);
     }
 
