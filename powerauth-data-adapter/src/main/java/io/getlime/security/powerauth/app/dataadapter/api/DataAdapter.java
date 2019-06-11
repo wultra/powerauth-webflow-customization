@@ -16,12 +16,10 @@
 package io.getlime.security.powerauth.app.dataadapter.api;
 
 import io.getlime.security.powerauth.app.dataadapter.exception.*;
-import io.getlime.security.powerauth.lib.dataadapter.model.entity.AuthorizationCode;
-import io.getlime.security.powerauth.lib.dataadapter.model.entity.FormDataChange;
-import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationChange;
-import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
-import io.getlime.security.powerauth.lib.dataadapter.model.response.DecorateOperationFormDataResponse;
-import io.getlime.security.powerauth.lib.dataadapter.model.response.UserDetailResponse;
+import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
+import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
+
+import java.util.List;
 
 /**
  * Interface defines methods which should be implemented for integration of Web Flow with 3rd parties.
@@ -108,5 +106,40 @@ public interface DataAdapter {
      * @throws SMSAuthorizationFailedException Thrown when message could not be created.
      */
     void sendAuthorizationSMS(String userId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException, SMSAuthorizationFailedException;
+
+    /**
+     * Create OAuth 2.0 consent form - prepare HTML text of consent form and add form options.
+     * @param userId User ID.
+     * @param operationContext Operation context.
+     * @param lang Language to use for the text of the consent form.
+     * @return Consent form contents with HTML text and form options.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     */
+    CreateConsentFormResponse createConsentForm(String userId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException;
+
+    /**
+     * Validate consent form values and generate response with validation result with optional error messages in case validation fails.
+     * @param userId User ID.
+     * @param operationContext Operation context.
+     * @param lang Language to use for error messages.
+     * @param options Options selected by the user.
+     * @return Consent form validation result with optional error messages in case validation fails.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     * @throws InvalidConsentDataException In case consent options are invalid.
+     */
+    ValidateConsentFormResponse validateConsentForm(String userId, OperationContext operationContext, String lang, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException;
+
+    /**
+     * Save consent form options selected by the user for an operation.
+     * @param userId User ID.
+     * @param operationContext Operation context.
+     * @param options Options selected by the user.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     * @throws InvalidConsentDataException In case consent options are invalid.
+     */
+    SaveConsentFormResponse saveConsentForm(String userId, OperationContext operationContext, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException;
 
 }

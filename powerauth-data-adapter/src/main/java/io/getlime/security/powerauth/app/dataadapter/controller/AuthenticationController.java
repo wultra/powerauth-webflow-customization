@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.WebDataBinder;
@@ -44,7 +43,7 @@ import javax.validation.Valid;
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
-@Controller
+@RestController
 @RequestMapping("/api/auth/user")
 public class AuthenticationController {
 
@@ -77,29 +76,20 @@ public class AuthenticationController {
      * Authenticate user with given username and password.
      *
      * @param request Authenticate user request.
-     * @param result BindingResult for input validation.
      * @return Response with authenticated user ID.
-     * @throws MethodArgumentNotValidException Thrown in case form parameters are not valid.
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      * @throws AuthenticationFailedException Thrown in case that authentication fails.
      */
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-    public @ResponseBody ObjectResponse<AuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<AuthenticationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, AuthenticationFailedException {
-        if (result.hasErrors()) {
-            // Call of getEnclosingMethod() on local class returns a reference to current method
-            class Local {}
-            MethodParameter methodParam = new MethodParameter(Local.class.getEnclosingMethod(), 0);
-            logger.warn("The authenticate request failed due to validation errors");
-            throw new MethodArgumentNotValidException(methodParam, result);
-        }
-        logger.info("Received authenticate request, username: {}, operation ID: {}", new String[]{request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId()});
+    public ObjectResponse<AuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<AuthenticationRequest> request) throws DataAdapterRemoteException, AuthenticationFailedException {
+        logger.info("Received authenticate request, username: {}, operation ID: {}", request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId());
         AuthenticationRequest authenticationRequest = request.getRequestObject();
         String username = authenticationRequest.getUsername();
         String password = authenticationRequest.getPassword();
         OperationContext operationContext = authenticationRequest.getOperationContext();
         UserDetailResponse userDetailResponse = dataAdapter.authenticateUser(username, password, operationContext);
         AuthenticationResponse response = new AuthenticationResponse(userDetailResponse.getId());
-        logger.info("The authenticate request succeeded, user ID: {}, operation ID: {}", new String[]{request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId()});
+        logger.info("The authenticate request succeeded, user ID: {}, operation ID: {}", request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
 
@@ -112,7 +102,7 @@ public class AuthenticationController {
      * @throws UserNotFoundException Thrown in case user is not found.
      */
     @RequestMapping(value = "/info", method = RequestMethod.POST)
-    public @ResponseBody ObjectResponse<UserDetailResponse> fetchUserDetail(@RequestBody ObjectRequest<UserDetailRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
+    public ObjectResponse<UserDetailResponse> fetchUserDetail(@RequestBody ObjectRequest<UserDetailRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
         logger.info("Received fetchUserDetail request, user ID: {}", request.getRequestObject().getId());
         UserDetailRequest userDetailRequest = request.getRequestObject();
         String userId = userDetailRequest.getId();
