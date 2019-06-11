@@ -80,21 +80,12 @@ public class SMSAuthorizationController {
      * Create a new SMS OTP authorization message.
      *
      * @param request Request data.
-     * @param result BindingResult for input validation.
      * @return Response with message ID.
-     * @throws MethodArgumentNotValidException Thrown in case request is not valid.
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      * @throws SMSAuthorizationFailedException Thrown in case that SMS message could not be delivered.
      */
     @RequestMapping(value = "create", method = RequestMethod.POST)
-    public ObjectResponse<CreateSMSAuthorizationResponse> createAuthorizationSMS(@Valid @RequestBody ObjectRequest<CreateSMSAuthorizationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, SMSAuthorizationFailedException, InvalidOperationContextException {
-        if (result.hasErrors()) {
-            // Call of getEnclosingMethod() on local class returns a reference to current method
-            class Local {}
-            MethodParameter methodParam = new MethodParameter(Local.class.getEnclosingMethod(), 0);
-            logger.warn("The createAuthorizationSMS request failed due to validation errors");
-            throw new MethodArgumentNotValidException(methodParam, result);
-        }
+    public ObjectResponse<CreateSMSAuthorizationResponse> createAuthorizationSMS(@Valid @RequestBody ObjectRequest<CreateSMSAuthorizationRequest> request) throws DataAdapterRemoteException, SMSAuthorizationFailedException, InvalidOperationContextException {
         logger.info("Received createAuthorizationSMS request, operation ID: "+request.getRequestObject().getOperationContext().getId());
         CreateSMSAuthorizationRequest smsRequest = request.getRequestObject();
 

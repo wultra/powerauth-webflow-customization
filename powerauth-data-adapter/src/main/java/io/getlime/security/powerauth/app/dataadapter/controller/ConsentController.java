@@ -85,14 +85,7 @@ public class ConsentController {
      * @throws InvalidOperationContextException In case operation context is invalid.
      */
     @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public ObjectResponse<CreateConsentFormResponse> createConsentForm(@Valid @RequestBody ObjectRequest<CreateConsentFormRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, InvalidOperationContextException {
-        if (result.hasErrors()) {
-            // Call of getEnclosingMethod() on local class returns a reference to current method
-            class Local {}
-            MethodParameter methodParam = new MethodParameter(Local.class.getEnclosingMethod(), 0);
-            logger.warn("The createConsentForm request failed due to validation errors");
-            throw new MethodArgumentNotValidException(methodParam, result);
-        }
+    public ObjectResponse<CreateConsentFormResponse> createConsentForm(@Valid @RequestBody ObjectRequest<CreateConsentFormRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
         logger.info("Received createConsentForm request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         CreateConsentFormRequest createRequest = request.getRequestObject();
@@ -110,16 +103,10 @@ public class ConsentController {
      * @return Validate consent form response.
      * @throws DataAdapterRemoteException In case communication with remote system fails.
      * @throws InvalidOperationContextException In case operation context is invalid.
+     * @throws InvalidConsentDataException In case consent options are invalid.
      */
     @RequestMapping(value = "/validate", method = RequestMethod.POST)
-    public ObjectResponse<ValidateConsentFormResponse> validateConsentForm(@Valid @RequestBody ObjectRequest<ValidateConsentFormRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
-        if (result.hasErrors()) {
-            // Call of getEnclosingMethod() on local class returns a reference to current method
-            class Local {}
-            MethodParameter methodParam = new MethodParameter(Local.class.getEnclosingMethod(), 0);
-            logger.warn("The validateConsentForm request failed due to validation errors");
-            throw new MethodArgumentNotValidException(methodParam, result);
-        }
+    public ObjectResponse<ValidateConsentFormResponse> validateConsentForm(@Valid @RequestBody ObjectRequest<ValidateConsentFormRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
         logger.info("Received validateConsentForm request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         ValidateConsentFormRequest validateRequest = request.getRequestObject();
@@ -138,16 +125,10 @@ public class ConsentController {
      * @return Save consent form response.
      * @throws DataAdapterRemoteException In case communication with remote system fails.
      * @throws InvalidOperationContextException In case operation context is invalid.
+     * @throws InvalidConsentDataException In case consent options are invalid.
      */
     @RequestMapping(value = "/save", method = RequestMethod.POST)
-    public ObjectResponse<SaveConsentFormResponse> saveConsentForm(@Valid @RequestBody ObjectRequest<SaveConsentFormRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, InvalidOperationContextException {
-        if (result.hasErrors()) {
-            // Call of getEnclosingMethod() on local class returns a reference to current method
-            class Local {}
-            MethodParameter methodParam = new MethodParameter(Local.class.getEnclosingMethod(), 0);
-            logger.warn("The saveConsentForm request failed due to validation errors");
-            throw new MethodArgumentNotValidException(methodParam, result);
-        }
+    public ObjectResponse<SaveConsentFormResponse> saveConsentForm(@Valid @RequestBody ObjectRequest<SaveConsentFormRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
         logger.info("Received saveConsentForm request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         SaveConsentFormRequest saveRequest = request.getRequestObject();

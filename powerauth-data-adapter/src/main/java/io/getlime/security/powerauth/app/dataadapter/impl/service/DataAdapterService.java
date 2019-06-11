@@ -360,7 +360,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public SaveConsentFormResponse saveConsentForm(String userId, OperationContext operationContext, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public SaveConsentFormResponse saveConsentForm(String userId, OperationContext operationContext, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
         logger.info("Saving consent form for user: {}, operation ID: {}", userId, operationContext.getId());
         for (ConsentOption option: options) {
             logger.info("Option {}: {}", option.getId(), option.getValue());

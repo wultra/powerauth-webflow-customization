@@ -76,21 +76,12 @@ public class AuthenticationController {
      * Authenticate user with given username and password.
      *
      * @param request Authenticate user request.
-     * @param result BindingResult for input validation.
      * @return Response with authenticated user ID.
-     * @throws MethodArgumentNotValidException Thrown in case form parameters are not valid.
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      * @throws AuthenticationFailedException Thrown in case that authentication fails.
      */
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-    public ObjectResponse<AuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<AuthenticationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, AuthenticationFailedException {
-        if (result.hasErrors()) {
-            // Call of getEnclosingMethod() on local class returns a reference to current method
-            class Local {}
-            MethodParameter methodParam = new MethodParameter(Local.class.getEnclosingMethod(), 0);
-            logger.warn("The authenticate request failed due to validation errors");
-            throw new MethodArgumentNotValidException(methodParam, result);
-        }
+    public ObjectResponse<AuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<AuthenticationRequest> request) throws DataAdapterRemoteException, AuthenticationFailedException {
         logger.info("Received authenticate request, username: {}, operation ID: {}", request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId());
         AuthenticationRequest authenticationRequest = request.getRequestObject();
         String username = authenticationRequest.getUsername();
