@@ -78,6 +78,8 @@ The response should contain following data:
   - `required` - whether the option must be checked in order to complete the operation
   - `defaultValue` - default value of the option
   - `value` - value specified by the user (not used yet)
+  
+_Note that the consent texts do not use automatic resource localization because the HTML texts are expected to be complex and dynamically generated._
 
 ### Validate Consent Form  
 The [validateConsentForm](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/api/DataAdapter.java#L132) method is used to validate the OAuth 2.0 consent form options
@@ -91,6 +93,8 @@ The response should contain following data:
   - `id` - identifier of the consent option
   - `validationPassed` - whether validation of the consent option passed
   - `errorMessage` - localized HTML text of error message for consent option, in case validation of consent option value failed
+  
+_Note that the texts of error messages do not use automatic resource localization because the HTML texts are expected to be complex and dynamically generated._
   
 ### Save Consent Form
 The [saveConsentForm](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/api/DataAdapter.java#L143) method is used to save the OAuth 2.0 consent form options.
