@@ -98,6 +98,6 @@ _Note that the texts of error messages do not use automatic resource localizatio
   
 ### Save Consent Form
 The [saveConsentForm](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/api/DataAdapter.java#L143) method is used to save the OAuth 2.0 consent form options.
-This method is called only when form validation done in `validateConsentForm` method successfully passes. The sample implementation print the consent form option values into log.
+This method is called only when form validation done in `validateConsentForm` method successfully passes. The sample implementation prints the consent form option values into log.
 It is expected that in the real implementation the consent option values are persisted in a database or any other persistent storage of consent options.
  
