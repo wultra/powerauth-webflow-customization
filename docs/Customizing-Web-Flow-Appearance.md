@@ -67,7 +67,7 @@ The OAuth 2.0 consent form used by Web Flow can be customized by implementing fo
 The [createConsentForm](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/api/DataAdapter.java#L119) method is used to specify
 the text of consent form and define options which are available in the options form. The consent form accepts consent text as HTML, scripting of the HTML is not allowed.
 The language of the consent form is specified using parameter `lang`. Each option is identified using an identifier `id`. Individual options in the form can be set as required and their default value can be set.
-The form can use parameters `userId` and `operationContext` including `name`, `formData` and `applicationContext` to create a customized and personalized consent form for given
+The form can use parameters `userId`, `organizationId` and `operationContext` including `name`, `formData` and `applicationContext` to create a customized and personalized consent form for given
 user, operation name, operation parameters and application which initiated the operation. 
 
 The response should contain following data:

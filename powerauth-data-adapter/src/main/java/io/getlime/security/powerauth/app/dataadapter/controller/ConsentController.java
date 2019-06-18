@@ -87,9 +87,10 @@ public class ConsentController {
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         CreateConsentFormRequest createRequest = request.getRequestObject();
         String userId = createRequest.getUserId();
+        String organizationId = createRequest.getOrganizationId();
         OperationContext operationContext = createRequest.getOperationContext();
         String lang = createRequest.getLang();
-        CreateConsentFormResponse response = dataAdapter.createConsentForm(userId, operationContext, lang);
+        CreateConsentFormResponse response = dataAdapter.createConsentForm(userId, organizationId, operationContext, lang);
         logger.debug("The createConsent request succeeded");
         return new ObjectResponse<>(response);
     }
@@ -108,10 +109,11 @@ public class ConsentController {
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         ValidateConsentFormRequest validateRequest = request.getRequestObject();
         String userId = validateRequest.getUserId();
+        String organizationId = validateRequest.getOrganizationId();
         OperationContext operationContext = validateRequest.getOperationContext();
         String lang = validateRequest.getLang();
         List<ConsentOption> options = validateRequest.getOptions();
-        ValidateConsentFormResponse response = dataAdapter.validateConsentForm(userId, operationContext, lang, options);
+        ValidateConsentFormResponse response = dataAdapter.validateConsentForm(userId, organizationId, operationContext, lang, options);
         logger.debug("The validateConsentForm request succeeded");
         return new ObjectResponse<>(response);
     }
@@ -130,9 +132,10 @@ public class ConsentController {
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         SaveConsentFormRequest saveRequest = request.getRequestObject();
         String userId = saveRequest.getUserId();
+        String organizationId = saveRequest.getOrganizationId();
         OperationContext operationContext = saveRequest.getOperationContext();
         List<ConsentOption> options = saveRequest.getOptions();
-        SaveConsentFormResponse response = dataAdapter.saveConsentForm(userId, operationContext, options);
+        SaveConsentFormResponse response = dataAdapter.saveConsentForm(userId, organizationId, operationContext, options);
         logger.debug("The saveConsentForm request succeeded");
         return new ObjectResponse<>(response);
     }

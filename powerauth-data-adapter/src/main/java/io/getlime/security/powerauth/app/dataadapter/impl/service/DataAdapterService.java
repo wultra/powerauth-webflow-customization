@@ -224,7 +224,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public CreateConsentFormResponse createConsentForm(String userId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public CreateConsentFormResponse createConsentForm(String userId, String organizationId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException {
         if ("login".equals(operationContext.getName())) {
             // Create default consent
             CreateConsentFormResponse response = new CreateConsentFormResponse();
@@ -280,7 +280,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public ValidateConsentFormResponse validateConsentForm(String userId, OperationContext operationContext, String lang, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
+    public ValidateConsentFormResponse validateConsentForm(String userId, String organizationId, OperationContext operationContext, String lang, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
         ValidateConsentFormResponse response = new ValidateConsentFormResponse();
         if (options == null || options.isEmpty()) {
             throw new InvalidConsentDataException("Missing options for consent");
@@ -364,7 +364,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public SaveConsentFormResponse saveConsentForm(String userId, OperationContext operationContext, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
+    public SaveConsentFormResponse saveConsentForm(String userId, String organizationId, OperationContext operationContext, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
         logger.info("Saving consent form for user: {}, operation ID: {}", userId, operationContext.getId());
         for (ConsentOption option: options) {
             logger.info("Option {}: {}", option.getId(), option.getValue());
