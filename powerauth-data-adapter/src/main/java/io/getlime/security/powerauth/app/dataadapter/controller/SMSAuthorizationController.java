@@ -32,10 +32,6 @@ import io.getlime.security.powerauth.lib.dataadapter.model.response.CreateSMSAut
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.MethodParameter;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,7 +42,7 @@ import javax.validation.Valid;
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
-@Controller
+@RestController
 @RequestMapping("/api/auth/sms")
 public class SMSAuthorizationController {
 
@@ -69,7 +65,6 @@ public class SMSAuthorizationController {
         this.dataAdapter = dataAdapter;
     }
 
-
     /**
      * Initializes the request validator.
      * @param binder Data binder.
@@ -83,20 +78,12 @@ public class SMSAuthorizationController {
      * Create a new SMS OTP authorization message.
      *
      * @param request Request data.
-     * @param result BindingResult for input validation.
      * @return Response with message ID.
-     * @throws MethodArgumentNotValidException Thrown in case request is not valid.
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      * @throws SMSAuthorizationFailedException Thrown in case that SMS message could not be delivered.
      */
     @RequestMapping(value = "create", method = RequestMethod.POST)
-    public @ResponseBody ObjectResponse<CreateSMSAuthorizationResponse> createAuthorizationSMS(@Valid @RequestBody ObjectRequest<CreateSMSAuthorizationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, SMSAuthorizationFailedException, InvalidOperationContextException {
-        if (result.hasErrors()) {
-            // Call of getEnclosingMethod() on new object returns a reference to current method
-            MethodParameter methodParam = new MethodParameter(new Object(){}.getClass().getEnclosingMethod(), 0);
-            logger.warn("The createAuthorizationSMS request failed due to validation errors");
-            throw new MethodArgumentNotValidException(methodParam, result);
-        }
+    public ObjectResponse<CreateSMSAuthorizationResponse> createAuthorizationSMS(@Valid @RequestBody ObjectRequest<CreateSMSAuthorizationRequest> request) throws DataAdapterRemoteException, SMSAuthorizationFailedException, InvalidOperationContextException {
         logger.info("Received createAuthorizationSMS request, operation ID: "+request.getRequestObject().getOperationContext().getId());
         CreateSMSAuthorizationRequest smsRequest = request.getRequestObject();
 
@@ -138,7 +125,7 @@ public class SMSAuthorizationController {
      * @throws SMSAuthorizationFailedException Thrown in case that SMS verification fails.
      */
     @RequestMapping(value = "verify", method = RequestMethod.POST)
-    public @ResponseBody Response verifyAuthorizationSMS(@RequestBody ObjectRequest<VerifySMSAuthorizationRequest> request) throws SMSAuthorizationFailedException {
+    public Response verifyAuthorizationSMS(@RequestBody ObjectRequest<VerifySMSAuthorizationRequest> request) throws SMSAuthorizationFailedException {
         logger.info("Received verifyAuthorizationSMS request, operation ID: "+request.getRequestObject().getOperationContext().getId());
         VerifySMSAuthorizationRequest verifyRequest = request.getRequestObject();
         String messageId = verifyRequest.getMessageId();

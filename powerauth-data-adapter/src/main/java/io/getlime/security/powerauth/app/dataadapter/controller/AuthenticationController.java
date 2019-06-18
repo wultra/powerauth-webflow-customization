@@ -30,10 +30,6 @@ import io.getlime.security.powerauth.lib.dataadapter.model.response.UserDetailRe
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.MethodParameter;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,7 +40,7 @@ import javax.validation.Valid;
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
-@Controller
+@RestController
 @RequestMapping("/api/auth/user")
 public class AuthenticationController {
 
@@ -77,21 +73,13 @@ public class AuthenticationController {
      * Authenticate user with given username and password.
      *
      * @param request Authenticate user request.
-     * @param result BindingResult for input validation.
      * @return Response with authenticated user ID.
-     * @throws MethodArgumentNotValidException Thrown in case form parameters are not valid.
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      * @throws AuthenticationFailedException Thrown in case that authentication fails.
      */
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-    public @ResponseBody ObjectResponse<AuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<AuthenticationRequest> request, BindingResult result) throws MethodArgumentNotValidException, DataAdapterRemoteException, AuthenticationFailedException {
-        if (result.hasErrors()) {
-            // Call of getEnclosingMethod() on new object returns a reference to current method
-            MethodParameter methodParam = new MethodParameter(new Object(){}.getClass().getEnclosingMethod(), 0);
-            logger.warn("The authenticate request failed due to validation errors");
-            throw new MethodArgumentNotValidException(methodParam, result);
-        }
-        logger.info("Received authenticate request, username: {}, organization ID: {}, operation ID: {}", request.getRequestObject().getUsername(), request.getRequestObject().getOrganizationId(), request.getRequestObject().getOperationContext().getId());
+    public ObjectResponse<AuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<AuthenticationRequest> request) throws DataAdapterRemoteException, AuthenticationFailedException {
+        logger.info("Received authenticate request, username: {}, operation ID: {}", request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId());
         AuthenticationRequest authenticationRequest = request.getRequestObject();
         String username = authenticationRequest.getUsername();
         String password = authenticationRequest.getPassword();
@@ -112,8 +100,8 @@ public class AuthenticationController {
      * @throws UserNotFoundException Thrown in case user is not found.
      */
     @RequestMapping(value = "/info", method = RequestMethod.POST)
-    public @ResponseBody ObjectResponse<UserDetailResponse> fetchUserDetail(@RequestBody ObjectRequest<UserDetailRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
-        logger.info("Received fetchUserDetail request, user ID: {}", request.getRequestObject().getUserId());
+    public ObjectResponse<UserDetailResponse> fetchUserDetail(@RequestBody ObjectRequest<UserDetailRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
+        logger.info("Received fetchUserDetail request, user ID: {}", request.getRequestObject().getId());
         UserDetailRequest userDetailRequest = request.getRequestObject();
         String userId = userDetailRequest.getUserId();
         String organizationId = userDetailRequest.getOrganizationId();
