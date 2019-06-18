@@ -79,8 +79,7 @@ public class AuthenticationController {
      */
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ObjectResponse<AuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<AuthenticationRequest> request) throws DataAdapterRemoteException, AuthenticationFailedException {
-        logger.info("Received authenticate request, username: {}, operation ID: {}", request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId());
-        AuthenticationRequest authenticationRequest = request.getRequestObject();
+        logger.info("Received authenticate request, username: {}, organization ID: {}, operation ID: {}", request.getRequestObject().getUsername(), request.getRequestObject().getOrganizationId(), request.getRequestObject().getOperationContext().getId());        AuthenticationRequest authenticationRequest = request.getRequestObject();
         String username = authenticationRequest.getUsername();
         String password = authenticationRequest.getPassword();
         String organizationId = authenticationRequest.getOrganizationId();
@@ -101,7 +100,7 @@ public class AuthenticationController {
      */
     @RequestMapping(value = "/info", method = RequestMethod.POST)
     public ObjectResponse<UserDetailResponse> fetchUserDetail(@RequestBody ObjectRequest<UserDetailRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
-        logger.info("Received fetchUserDetail request, user ID: {}", request.getRequestObject().getId());
+        logger.info("Received fetchUserDetail request, user ID: {}", request.getRequestObject().getUserId());
         UserDetailRequest userDetailRequest = request.getRequestObject();
         String userId = userDetailRequest.getUserId();
         String organizationId = userDetailRequest.getOrganizationId();
