@@ -66,9 +66,10 @@ public class FormDataChangeController {
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         FormDataChangeNotificationRequest notification = request.getRequestObject();
         String userId = notification.getUserId();
+        String organizationId = notification.getOrganizationId();
         OperationContext operationContext = notification.getOperationContext();
         FormDataChange formDataChange = notification.getFormDataChange();
-        dataAdapter.formDataChangedNotification(userId, formDataChange, operationContext);
+        dataAdapter.formDataChangedNotification(userId, organizationId, formDataChange, operationContext);
         logger.debug("The formDataChangedNotification request succeeded");
         return new Response();
     }
@@ -87,8 +88,9 @@ public class FormDataChangeController {
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         DecorateOperationFormDataRequest requestObject = request.getRequestObject();
         String userId = requestObject.getUserId();
+        String organizationId = requestObject.getOrganizationId();
         OperationContext operationContext = requestObject.getOperationContext();
-        DecorateOperationFormDataResponse response = dataAdapter.decorateFormData(userId, operationContext);
+        DecorateOperationFormDataResponse response = dataAdapter.decorateFormData(userId, organizationId, operationContext);
         logger.debug("The decorateOperationFormData request succeeded");
         return new ObjectResponse<>(response);
     }

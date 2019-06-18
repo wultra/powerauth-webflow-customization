@@ -79,14 +79,14 @@ public class AuthenticationController {
      */
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ObjectResponse<AuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<AuthenticationRequest> request) throws DataAdapterRemoteException, AuthenticationFailedException {
-        logger.info("Received authenticate request, username: {}, operation ID: {}", request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId());
-        AuthenticationRequest authenticationRequest = request.getRequestObject();
+        logger.info("Received authenticate request, username: {}, organization ID: {}, operation ID: {}", request.getRequestObject().getUsername(), request.getRequestObject().getOrganizationId(), request.getRequestObject().getOperationContext().getId());        AuthenticationRequest authenticationRequest = request.getRequestObject();
         String username = authenticationRequest.getUsername();
         String password = authenticationRequest.getPassword();
+        String organizationId = authenticationRequest.getOrganizationId();
         OperationContext operationContext = authenticationRequest.getOperationContext();
-        UserDetailResponse userDetailResponse = dataAdapter.authenticateUser(username, password, operationContext);
-        AuthenticationResponse response = new AuthenticationResponse(userDetailResponse.getId());
-        logger.info("The authenticate request succeeded, user ID: {}, operation ID: {}", request.getRequestObject().getUsername(), request.getRequestObject().getOperationContext().getId());
+        UserDetailResponse userDetailResponse = dataAdapter.authenticateUser(username, password, organizationId, operationContext);
+        AuthenticationResponse response = new AuthenticationResponse(userDetailResponse.getId(), userDetailResponse.getOrganizationId());
+        logger.info("The authenticate request succeeded, user ID: {}, organization ID: {}, operation ID: {}", userDetailResponse.getId(), userDetailResponse.getOrganizationId(), request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
 
@@ -100,10 +100,11 @@ public class AuthenticationController {
      */
     @RequestMapping(value = "/info", method = RequestMethod.POST)
     public ObjectResponse<UserDetailResponse> fetchUserDetail(@RequestBody ObjectRequest<UserDetailRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
-        logger.info("Received fetchUserDetail request, user ID: {}", request.getRequestObject().getId());
+        logger.info("Received fetchUserDetail request, user ID: {}", request.getRequestObject().getUserId());
         UserDetailRequest userDetailRequest = request.getRequestObject();
-        String userId = userDetailRequest.getId();
-        UserDetailResponse response = dataAdapter.fetchUserDetail(userId);
+        String userId = userDetailRequest.getUserId();
+        String organizationId = userDetailRequest.getOrganizationId();
+        UserDetailResponse response = dataAdapter.fetchUserDetail(userId, organizationId);
         logger.info("The fetchUserDetail request succeeded");
         return new ObjectResponse<>(response);
     }

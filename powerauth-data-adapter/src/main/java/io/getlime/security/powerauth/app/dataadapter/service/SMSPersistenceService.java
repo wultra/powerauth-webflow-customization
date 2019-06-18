@@ -59,11 +59,12 @@ public class SMSPersistenceService {
     /**
      * Create an authorization SMS message with OTP authorization code.
      * @param userId User ID.
+     * @param organizationId Organization ID.
      * @param operationContext Operation context.
      * @param lang Language for message text.
      * @return Created entity with SMS message details.
      */
-    public SMSAuthorizationEntity createAuthorizationSMS(String userId, OperationContext operationContext, String lang) throws InvalidOperationContextException {
+    public SMSAuthorizationEntity createAuthorizationSMS(String userId, String organizationId, OperationContext operationContext, String lang) throws InvalidOperationContextException {
         String operationId = operationContext.getId();
         String operationName = operationContext.getName();
 
@@ -71,15 +72,16 @@ public class SMSPersistenceService {
         String messageId = UUID.randomUUID().toString();
 
         // generate authorization code
-        AuthorizationCode authorizationCode = dataAdapterService.generateAuthorizationCode(userId, operationContext);
+        AuthorizationCode authorizationCode = dataAdapterService.generateAuthorizationCode(userId, organizationId, operationContext);
 
         // generate message text, include previously generated authorization code
-        String messageText = dataAdapterService.generateSMSText(userId, operationContext, authorizationCode, lang);
+        String messageText = dataAdapterService.generateSMSText(userId, organizationId, operationContext, authorizationCode, lang);
 
         SMSAuthorizationEntity smsEntity = new SMSAuthorizationEntity();
         smsEntity.setMessageId(messageId);
         smsEntity.setOperationId(operationId);
         smsEntity.setUserId(userId);
+        smsEntity.setOrganizationId(organizationId);
         smsEntity.setOperationName(operationName);
         smsEntity.setAuthorizationCode(authorizationCode.getCode());
         smsEntity.setSalt(authorizationCode.getSalt());

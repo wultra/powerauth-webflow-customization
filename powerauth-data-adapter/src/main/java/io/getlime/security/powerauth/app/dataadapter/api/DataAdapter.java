@@ -33,79 +33,87 @@ public interface DataAdapter {
      *
      * @param username Username for user authentication.
      * @param password Password for user authentication.
+     * @param organizationId Organization ID.
      * @param operationContext Operation context.
      * @return UserDetailResponse Response with user details.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws AuthenticationFailedException Thrown when authentication fails.
      */
-    UserDetailResponse authenticateUser(String username, String password, OperationContext operationContext) throws DataAdapterRemoteException, AuthenticationFailedException;
+    UserDetailResponse authenticateUser(String username, String password, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, AuthenticationFailedException;
 
     /**
      * Fetch user detail for given user.
      * @param userId User ID.
+     * @param organizationId Organization ID.
      * @return Response with user details.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws UserNotFoundException Thrown when user does not exist.
      */
-    UserDetailResponse fetchUserDetail(String userId) throws DataAdapterRemoteException, UserNotFoundException;
+    UserDetailResponse fetchUserDetail(String userId, String organizationId) throws DataAdapterRemoteException, UserNotFoundException;
 
     /**
      * Decorate operation form data.
      * @param userId User ID.
+     * @param organizationId Organization ID.
      * @param operationContext Operation context.
      * @return Response with decorated operation form data
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws UserNotFoundException Thrown when user does not exist.
      */
-    DecorateOperationFormDataResponse decorateFormData(String userId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
+    DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
 
     /**
      * Receive notification about form data change.
      * @param userId User ID.
+     * @param organizationId Organization ID.
      * @param formDataChange Form data change.
      * @param operationContext Operation context.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      */
-    void formDataChangedNotification(String userId, FormDataChange formDataChange, OperationContext operationContext) throws DataAdapterRemoteException;
+    void formDataChangedNotification(String userId, String organizationId, FormDataChange formDataChange, OperationContext operationContext) throws DataAdapterRemoteException;
 
     /**
      * Receive notification about operation change.
      * @param userId User ID.
+     * @param organizationId Organization ID.
      * @param operationChange Operation change.
      * @param operationContext Operation context.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      */
-    void operationChangedNotification(String userId, OperationChange operationChange, OperationContext operationContext) throws DataAdapterRemoteException;
+    void operationChangedNotification(String userId, String organizationId, OperationChange operationChange, OperationContext operationContext) throws DataAdapterRemoteException;
 
     /**
      * Generate authorization code for SMS authorization.
      * @param userId User ID.
+     * @param organizationId Organization ID.
      * @param operationContext Operation context.
      * @return Authorization code.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      */
-    AuthorizationCode generateAuthorizationCode(String userId, OperationContext operationContext) throws InvalidOperationContextException;
+    AuthorizationCode generateAuthorizationCode(String userId, String organizationId, OperationContext operationContext) throws InvalidOperationContextException;
 
     /**
      * Generate text for SMS authorization.
      * @param userId User ID.
+     * @param organizationId Organization ID.
      * @param operationContext Operation context.
      * @param authorizationCode Authorization code.
      * @param lang Language for localization.
      * @return Generated SMS text with OTP authorization code.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      */
-    String generateSMSText(String userId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException;
+    String generateSMSText(String userId, String organizationId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException;
 
     /**
      * Send an authorization SMS with generated OTP.
      * @param userId User ID.
+     * @param organizationId Organization ID.
      * @param messageText Text of SMS message.
      * @param operationContext Operation context.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws SMSAuthorizationFailedException Thrown when message could not be created.
      */
-    void sendAuthorizationSMS(String userId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException, SMSAuthorizationFailedException;
+    void sendAuthorizationSMS(String userId, String organizationId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException, SMSAuthorizationFailedException;
 
     /**
      * Create OAuth 2.0 consent form - prepare HTML text of consent form and add form options.

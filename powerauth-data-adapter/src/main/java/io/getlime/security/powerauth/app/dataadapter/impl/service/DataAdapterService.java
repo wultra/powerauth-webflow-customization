@@ -39,12 +39,15 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public UserDetailResponse authenticateUser(String username, String password, OperationContext operationContext) throws DataAdapterRemoteException, AuthenticationFailedException {
+    public UserDetailResponse authenticateUser(String username, String password, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, AuthenticationFailedException {
         // Here will be the real authentication - call to the backend providing authentication.
         // In case that authentication fails, throw an AuthenticationFailedException.
         if ("test".equals(password)) {
             try {
-                return fetchUserDetail(username);
+                UserDetailResponse response = fetchUserDetail(username, organizationId);
+                // The organization needs to be set in response (e.g. client authenticated against RETAIL organization or SME organization).
+                response.setOrganizationId(organizationId);
+                return response;
             } catch (UserNotFoundException e) {
                 throw new AuthenticationFailedException("login.authenticationFailed");
             }
@@ -61,18 +64,19 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public UserDetailResponse fetchUserDetail(String userId) throws DataAdapterRemoteException, UserNotFoundException {
+    public UserDetailResponse fetchUserDetail(String userId, String organizationId) throws DataAdapterRemoteException, UserNotFoundException {
         // Fetch user details here ...
         // In case that user is not found, throw a UserNotFoundException.
         UserDetailResponse responseObject = new UserDetailResponse();
         responseObject.setId(userId);
         responseObject.setGivenName("John");
         responseObject.setFamilyName("Doe");
+        responseObject.setOrganizationId(organizationId);
         return responseObject;
     }
 
     @Override
-    public DecorateOperationFormDataResponse decorateFormData(String userId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
+    public DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
         String operationName = operationContext.getName();
         FormData formData = operationContext.getFormData();
         // Fetch bank account list for given user here from the bank backend.
@@ -134,7 +138,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public void formDataChangedNotification(String userId, FormDataChange change, OperationContext operationContext) throws DataAdapterRemoteException {
+    public void formDataChangedNotification(String userId, String organizationId, FormDataChange change, OperationContext operationContext) throws DataAdapterRemoteException {
         String operationId = operationContext.getId();
         if (change instanceof BankAccountChoice) {
             // Handle bank account choice here (e.g. send notification to bank backend).
@@ -151,14 +155,14 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public void operationChangedNotification(String userId, OperationChange change, OperationContext operationContext) throws DataAdapterRemoteException {
+    public void operationChangedNotification(String userId, String organizationId, OperationChange change, OperationContext operationContext) throws DataAdapterRemoteException {
         String operationId = operationContext.getId();
         // Handle operation change here (e.g. send notification to bank backend).
         logger.info("Operation changed, status: {}, operation ID: {}", change.toString(), operationId);
     }
 
     @Override
-    public AuthorizationCode generateAuthorizationCode(String userId, OperationContext operationContext) throws InvalidOperationContextException {
+    public AuthorizationCode generateAuthorizationCode(String userId, String organizationId, OperationContext operationContext) throws InvalidOperationContextException {
         String operationName = operationContext.getName();
         List<String> digestItems = new ArrayList<>();
         switch (operationName) {
@@ -189,7 +193,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public String generateSMSText(String userId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException {
+    public String generateSMSText(String userId, String organizationId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException {
         String operationName = operationContext.getName();
         String[] messageArgs;
         switch (operationName) {
@@ -214,7 +218,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public void sendAuthorizationSMS(String userId, String messageText,  OperationContext operationContext) throws DataAdapterRemoteException, SMSAuthorizationFailedException {
+    public void sendAuthorizationSMS(String userId, String organizationId, String messageText,  OperationContext operationContext) throws DataAdapterRemoteException, SMSAuthorizationFailedException {
         // Add here code to send the SMS OTP message to user identified by userId with messageText.
         // In case message delivery fails, throw an SMSAuthorizationFailedException.
     }

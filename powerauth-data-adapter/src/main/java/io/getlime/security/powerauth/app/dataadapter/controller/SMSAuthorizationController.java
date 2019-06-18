@@ -25,6 +25,7 @@ import io.getlime.security.powerauth.app.dataadapter.exception.SMSAuthorizationF
 import io.getlime.security.powerauth.app.dataadapter.impl.validation.CreateSMSAuthorizationRequestValidator;
 import io.getlime.security.powerauth.app.dataadapter.repository.model.entity.SMSAuthorizationEntity;
 import io.getlime.security.powerauth.app.dataadapter.service.SMSPersistenceService;
+import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSMSAuthorizationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifySMSAuthorizationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.CreateSMSAuthorizationResponse;
@@ -91,9 +92,11 @@ public class SMSAuthorizationController {
 
         // Send SMS with generated text to target user.
         String userId = smsEntity.getUserId();
+        String organizationId = smsEntity.getOrganizationId();
+        OperationContext operationContext = smsRequest.getOperationContext();
         String messageId = smsEntity.getMessageId();
         String messageText = smsEntity.getMessageText();
-        dataAdapter.sendAuthorizationSMS(userId, messageText, smsRequest.getOperationContext());
+        dataAdapter.sendAuthorizationSMS(userId, organizationId, messageText, operationContext);
 
         // Create response.
         CreateSMSAuthorizationResponse response = new CreateSMSAuthorizationResponse(messageId);
@@ -108,8 +111,10 @@ public class SMSAuthorizationController {
      */
     private SMSAuthorizationEntity createAuthorizationSMS(@Valid CreateSMSAuthorizationRequest smsRequest) throws InvalidOperationContextException {
         String userId = smsRequest.getUserId();
+        String organizationId = smsRequest.getOrganizationId();
+        OperationContext operationContext = smsRequest.getOperationContext();
         String lang = smsRequest.getLang();
-        return smsPersistenceService.createAuthorizationSMS(userId, smsRequest.getOperationContext(), lang);
+        return smsPersistenceService.createAuthorizationSMS(userId, organizationId, operationContext, lang);
     }
 
     /**

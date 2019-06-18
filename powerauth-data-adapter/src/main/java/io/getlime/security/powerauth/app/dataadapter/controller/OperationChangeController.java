@@ -62,9 +62,10 @@ public class OperationChangeController {
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         OperationChangeNotificationRequest notification = request.getRequestObject();
         String userId = notification.getUserId();
+        String organizationId = notification.getOrganizationId();
         OperationContext operationContext = notification.getOperationContext();
         OperationChange operationChange = notification.getOperationChange();
-        dataAdapter.operationChangedNotification(userId, operationChange, operationContext);
+        dataAdapter.operationChangedNotification(userId, organizationId, operationChange, operationContext);
         logger.debug("The operationChangedNotification request succeeded");
         return new Response();
     }
