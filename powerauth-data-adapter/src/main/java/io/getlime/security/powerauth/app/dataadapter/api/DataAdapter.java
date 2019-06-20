@@ -17,6 +17,7 @@ package io.getlime.security.powerauth.app.dataadapter.api;
 
 import io.getlime.security.powerauth.app.dataadapter.exception.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
+import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthenticationType;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
 
 import java.util.List;
@@ -29,27 +30,37 @@ import java.util.List;
 public interface DataAdapter {
 
     /**
+     * Lookup user account.
+     * @param username Username which user uses for authentication.
+     * @param organizationId Organization ID for this request.
+     * @param operationContext Operation context.
+     */
+    UserDetailResponse lookupUser(String username, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
+
+    /**
      * Authenticate user using provided credentials.
-     *
-     * @param username Username for user authentication.
+     * @param userId User ID for user authentication.
      * @param password Password for user authentication.
+     * @param authenticationType Authentication type specifying optional password encryption.
+     * @param cipherTransformation Cipher transformation used for encryption in case password is encrypted.
      * @param organizationId Organization ID.
      * @param operationContext Operation context.
      * @return UserDetailResponse Response with user details.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws AuthenticationFailedException Thrown when authentication fails.
      */
-    UserDetailResponse authenticateUser(String username, String password, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, AuthenticationFailedException;
+    UserDetailResponse authenticateUser(String userId, String password, AuthenticationType authenticationType, String cipherTransformation, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, AuthenticationFailedException;
 
     /**
      * Fetch user detail for given user.
      * @param userId User ID.
      * @param organizationId Organization ID.
+     * @param operationContext Operation context which can be null in case request is initiated outside of operation scope.
      * @return Response with user details.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws UserNotFoundException Thrown when user does not exist.
      */
-    UserDetailResponse fetchUserDetail(String userId, String organizationId) throws DataAdapterRemoteException, UserNotFoundException;
+    UserDetailResponse fetchUserDetail(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
 
     /**
      * Decorate operation form data.

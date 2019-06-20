@@ -19,6 +19,7 @@ import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthenticationType;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.AuthenticationRequest;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.UserLookupRequest;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
 /**
- * Defines validations for input fields in authentication requests.
+ * Defines validations for input fields in user lookup and authentication requests.
  *
  * Additional validation logic can be added if applicable.
  *
@@ -52,42 +53,62 @@ public class AuthenticationRequestValidator implements Validator {
      * @param errors Errors object.
      */
     @Override
-    @SuppressWarnings("unchecked")
     public void validate(@Nullable Object o, @NonNull Errors errors) {
-        ObjectRequest<AuthenticationRequest> requestObject = (ObjectRequest<AuthenticationRequest>) o;
-        if (requestObject == null) {
+        ObjectRequest objectRequest = (ObjectRequest) o;
+        if (objectRequest == null) {
             errors.rejectValue("requestObject.operationContext", "operationContext.missing");
             return;
         }
 
-        AuthenticationRequest authRequest = requestObject.getRequestObject();
+        if (objectRequest.getRequestObject() instanceof UserLookupRequest) {
+            UserLookupRequest authRequest = (UserLookupRequest) objectRequest.getRequestObject();
 
-        // update validation logic based on the real Data Adapter requirements
-        String username = authRequest.getUsername();
-        String password = authRequest.getPassword();
-        String organizationId = authRequest.getOrganizationId();
-        OperationContext operationContext = authRequest.getOperationContext();
-        if (operationContext == null) {
-            errors.rejectValue("requestObject.operationContext", "operationContext.missing");
-        }
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.username", "login.username.empty");
-        if (username!=null && username.length() > 30) {
-            errors.rejectValue("requestObject.username", "login.username.long");
-        }
+            // update validation logic based on the real Data Adapter requirements
+            String username = authRequest.getUsername();
+            String organizationId = authRequest.getOrganizationId();
+            OperationContext operationContext = authRequest.getOperationContext();
+            if (operationContext == null) {
+                errors.rejectValue("requestObject.operationContext", "operationContext.missing");
+            }
+            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.username", "login.username.empty");
+            if (username!=null && username.length() > 30) {
+                errors.rejectValue("requestObject.username", "login.username.long");
+            }
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.password", "login.password.empty");
-        if (password!=null && password.length() > 30) {
-            errors.rejectValue("requestObject.password", "login.password.long");
-        }
+            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.organizationId", "login.organizationId.empty");
+            if (username!=null && organizationId.length() > 256) {
+                errors.rejectValue("requestObject.organizationId", "login.organizationId.long");
+            }
+        } else if (objectRequest.getRequestObject() instanceof AuthenticationRequest) {
+            AuthenticationRequest authRequest = (AuthenticationRequest) objectRequest.getRequestObject();
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.organizationId", "login.organizationId.empty");
-        if (username!=null && organizationId.length() > 256) {
-            errors.rejectValue("requestObject.organizationId", "login.organizationId.long");
-        }
+            // update validation logic based on the real Data Adapter requirements
+            String userId = authRequest.getUserId();
+            String password = authRequest.getPassword();
+            String organizationId = authRequest.getOrganizationId();
+            OperationContext operationContext = authRequest.getOperationContext();
+            if (operationContext == null) {
+                errors.rejectValue("requestObject.operationContext", "operationContext.missing");
+            }
+            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.userId", "login.userId.empty");
+            if (userId != null && userId.length() > 30) {
+                errors.rejectValue("requestObject.userId", "login.userId.long");
+            }
 
-        AuthenticationType authType = authRequest.getType();
-        if (authType != AuthenticationType.BASIC) {
-            errors.rejectValue("requestObject.type", "login.type.unsupported");
+            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.password", "login.password.empty");
+            if (password != null && password.length() > 30) {
+                errors.rejectValue("requestObject.password", "login.password.long");
+            }
+
+            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.organizationId", "login.organizationId.empty");
+            if (userId != null && organizationId.length() > 256) {
+                errors.rejectValue("requestObject.organizationId", "login.organizationId.long");
+            }
+
+            AuthenticationType authType = authRequest.getAuthenticationType();
+            if (authType != AuthenticationType.BASIC && authType != AuthenticationType.SYMMETRIC_PASSWORD_ENCRYPTION) {
+                errors.rejectValue("requestObject.authenticationType", "login.type.unsupported");
+            }
         }
     }
 }
