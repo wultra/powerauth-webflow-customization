@@ -149,7 +149,7 @@ public class DefaultExceptionResolver {
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody ErrorResponse handleUserNotFoundException(UserNotFoundException ex) {
-        DataAdapterError error = new DataAdapterError(DataAdapterError.Code.INPUT_INVALID, ex.getMessage());
+        DataAdapterError error = new DataAdapterError(DataAdapterError.Code.USER_NOT_FOUND, ex.getMessage());
         return new ErrorResponse(error);
     }
 
