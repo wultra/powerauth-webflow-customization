@@ -95,9 +95,17 @@ public class AuthenticationRequestValidator implements Validator {
                 errors.rejectValue("requestObject.userId", "login.userId.long");
             }
 
+            AuthenticationType authType = authRequest.getAuthenticationType();
             ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.password", "login.password.empty");
-            if (password != null && password.length() > 30) {
-                errors.rejectValue("requestObject.password", "login.password.long");
+            if (authType != AuthenticationType.BASIC) {
+                if (password != null && password.length() > 30) {
+                    errors.rejectValue("requestObject.password", "login.password.long");
+                }
+            } else {
+                // Allow longer values in password field when password is encrypted
+                if (password != null && password.length() > 256) {
+                    errors.rejectValue("requestObject.password", "login.password.long");
+                }
             }
 
             ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.organizationId", "login.organizationId.empty");
@@ -105,8 +113,7 @@ public class AuthenticationRequestValidator implements Validator {
                 errors.rejectValue("requestObject.organizationId", "login.organizationId.long");
             }
 
-            AuthenticationType authType = authRequest.getAuthenticationType();
-            if (authType != AuthenticationType.BASIC && authType != AuthenticationType.SYMMETRIC_PASSWORD_ENCRYPTION) {
+            if (authType != AuthenticationType.BASIC && authType != AuthenticationType.PASSWORD_ENCRYPTION_AES) {
                 errors.rejectValue("requestObject.authenticationType", "login.type.unsupported");
             }
         }
