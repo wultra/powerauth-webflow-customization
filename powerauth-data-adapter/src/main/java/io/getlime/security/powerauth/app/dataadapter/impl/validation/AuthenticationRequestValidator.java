@@ -97,7 +97,7 @@ public class AuthenticationRequestValidator implements Validator {
 
             AuthenticationType authType = authRequest.getAuthenticationType();
             ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.password", "login.password.empty");
-            if (authType != AuthenticationType.BASIC) {
+            if (authType == AuthenticationType.BASIC) {
                 if (password != null && password.length() > 30) {
                     errors.rejectValue("requestObject.password", "login.password.long");
                 }
