@@ -19,6 +19,7 @@ import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
 import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
+import io.getlime.security.powerauth.app.dataadapter.exception.AuthenticationFailedException;
 import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
 import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
 import io.getlime.security.powerauth.app.dataadapter.exception.SMSAuthorizationFailedException;
@@ -26,7 +27,9 @@ import io.getlime.security.powerauth.app.dataadapter.impl.validation.CreateSMSAu
 import io.getlime.security.powerauth.app.dataadapter.repository.model.entity.SMSAuthorizationEntity;
 import io.getlime.security.powerauth.app.dataadapter.service.SMSPersistenceService;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
+import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthenticationType;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSMSAuthorizationRequest;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifySMSAndPasswordRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifySMSAuthorizationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.CreateSMSAuthorizationResponse;
 import org.slf4j.Logger;
@@ -130,9 +133,38 @@ public class SMSAuthorizationController {
         VerifySMSAuthorizationRequest verifyRequest = request.getRequestObject();
         String messageId = verifyRequest.getMessageId();
         String authorizationCode = verifyRequest.getAuthorizationCode();
-        // Verify authorization code.
+        // Verify authorization code
         smsPersistenceService.verifyAuthorizationSMS(messageId, authorizationCode);
         logger.info("The verifyAuthorizationSMS request succeeded, operation ID: "+request.getRequestObject().getOperationContext().getId());
+        return new Response();
+    }
+
+    /**
+     * Verify a SMS OTP authorization code and user password.
+     *
+     * @param request Verify SMS code and password request.
+     * @return Authorization response.
+     * @throws SMSAuthorizationFailedException Thrown in case that SMS verification fails.
+     * @throws AuthenticationFailedException Thrown in case that password verification fails.
+     * @throws DataAdapterRemoteException Thrown in case communication with remote system fails.
+     */
+    @RequestMapping(value = "/password/verify", method = RequestMethod.POST)
+    public Response verifyAuthorizationSMSAndPassword(@RequestBody ObjectRequest<VerifySMSAndPasswordRequest> request) throws SMSAuthorizationFailedException, AuthenticationFailedException, DataAdapterRemoteException {
+        logger.info("Received verifyAuthorizationSMSAndPassword request, operation ID: "+request.getRequestObject().getOperationContext().getId());
+        VerifySMSAndPasswordRequest verifyRequest = request.getRequestObject();
+        // Verify authorization code
+        String messageId = verifyRequest.getMessageId();
+        String authorizationCode = verifyRequest.getAuthorizationCode();
+        smsPersistenceService.verifyAuthorizationSMS(messageId, authorizationCode);
+        // Verify user password
+        String userId = verifyRequest.getUserId();
+        String password = verifyRequest.getPassword();
+        AuthenticationType authenticationType = verifyRequest.getAuthenticationType();
+        String cipherTransformation = verifyRequest.getCipherTransformation();
+        String organizationId = verifyRequest.getOrganizationId();
+        OperationContext operationContext = verifyRequest.getOperationContext();
+        dataAdapter.authenticateUser(userId, password, authenticationType, cipherTransformation, organizationId, operationContext);
+        logger.info("The verifyAuthorizationSMSAndPassword request succeeded, operation ID: "+request.getRequestObject().getOperationContext().getId());
         return new Response();
     }
 

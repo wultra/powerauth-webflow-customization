@@ -7,6 +7,7 @@ import io.getlime.security.powerauth.crypto.server.util.DataDigest;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.AmountAttribute;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.FormFieldConfig;
+import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthenticationType;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +40,18 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public UserDetailResponse authenticateUser(String username, String password, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, AuthenticationFailedException {
+    public UserDetailResponse lookupUser(String username, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
+        // The sample Data Adapter code uses 1:1 mapping of username to userId. In real implementation the userId usually differs from the username, so translation of username to user ID is required.
+        return fetchUserDetail(username, organizationId, operationContext);
+    }
+
+    @Override
+    public UserDetailResponse authenticateUser(String userId, String password, AuthenticationType authenticationType, String cipherTransformation, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, AuthenticationFailedException {
         // Here will be the real authentication - call to the backend providing authentication.
         // In case that authentication fails, throw an AuthenticationFailedException.
-        if ("test".equals(password)) {
+        if (authenticationType == AuthenticationType.BASIC && "test".equals(password)) {
             try {
-                UserDetailResponse response = fetchUserDetail(username, organizationId);
+                UserDetailResponse response = fetchUserDetail(userId, organizationId, operationContext);
                 // The organization needs to be set in response (e.g. client authenticated against RETAIL organization or SME organization).
                 response.setOrganizationId(organizationId);
                 return response;
@@ -64,9 +71,10 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public UserDetailResponse fetchUserDetail(String userId, String organizationId) throws DataAdapterRemoteException, UserNotFoundException {
+    public UserDetailResponse fetchUserDetail(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
         // Fetch user details here ...
         // In case that user is not found, throw a UserNotFoundException.
+        // The operation context may be null in case the method is called outside of an active operation (e.g. OAuth user profile request).
         UserDetailResponse responseObject = new UserDetailResponse();
         responseObject.setId(userId);
         responseObject.setGivenName("John");
@@ -218,7 +226,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public void sendAuthorizationSMS(String userId, String organizationId, String messageText,  OperationContext operationContext) throws DataAdapterRemoteException, SMSAuthorizationFailedException {
+    public void sendAuthorizationSMS(String userId, String organizationId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException, SMSAuthorizationFailedException {
         // Add here code to send the SMS OTP message to user identified by userId with messageText.
         // In case message delivery fails, throw an SMSAuthorizationFailedException.
     }
