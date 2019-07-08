@@ -21,14 +21,14 @@ package io.getlime.security.powerauth.app.dataadapter.exception;
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
-public class SMSAuthorizationFailedException extends Exception {
+public class SmsAuthorizationFailedException extends Exception {
 
     private Integer remainingAttempts;
 
     /**
      * Default constructor.
      */
-    public SMSAuthorizationFailedException() {
+    public SmsAuthorizationFailedException() {
     }
 
     /**
@@ -36,7 +36,7 @@ public class SMSAuthorizationFailedException extends Exception {
      *
      * @param message Authorization failure message.
      */
-    public SMSAuthorizationFailedException(String message) {
+    public SmsAuthorizationFailedException(String message) {
         super(message);
     }
 
@@ -46,7 +46,7 @@ public class SMSAuthorizationFailedException extends Exception {
      * @param message Authorization failure message.
      * @param cause   Cause, original exception.
      */
-    public SMSAuthorizationFailedException(String message, Throwable cause) {
+    public SmsAuthorizationFailedException(String message, Throwable cause) {
         super(message, cause);
     }
 
@@ -55,7 +55,7 @@ public class SMSAuthorizationFailedException extends Exception {
      *
      * @param cause Cause, original exception.
      */
-    public SMSAuthorizationFailedException(Throwable cause) {
+    public SmsAuthorizationFailedException(Throwable cause) {
         super(cause);
     }
 

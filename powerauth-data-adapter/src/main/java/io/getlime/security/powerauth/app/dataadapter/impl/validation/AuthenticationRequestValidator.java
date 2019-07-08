@@ -76,7 +76,7 @@ public class AuthenticationRequestValidator implements Validator {
             }
 
             ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.organizationId", "login.organizationId.empty");
-            if (username!=null && organizationId.length() > 256) {
+            if (organizationId!=null && organizationId.length() > 256) {
                 errors.rejectValue("requestObject.organizationId", "login.organizationId.long");
             }
         } else if (objectRequest.getRequestObject() instanceof AuthenticationRequest) {

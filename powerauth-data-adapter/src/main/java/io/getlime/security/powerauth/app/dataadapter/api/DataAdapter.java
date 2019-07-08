@@ -113,7 +113,7 @@ public interface DataAdapter {
      * @return Generated SMS text with OTP authorization code.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      */
-    String generateSMSText(String userId, String organizationId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException;
+    String generateSmsText(String userId, String organizationId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException;
 
     /**
      * Send an authorization SMS with generated OTP.
@@ -122,9 +122,9 @@ public interface DataAdapter {
      * @param messageText Text of SMS message.
      * @param operationContext Operation context.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
-     * @throws SMSAuthorizationFailedException Thrown when message could not be created.
+     * @throws SmsAuthorizationFailedException Thrown when message could not be created.
      */
-    void sendAuthorizationSMS(String userId, String organizationId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException, SMSAuthorizationFailedException;
+    void sendAuthorizationSms(String userId, String organizationId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException, SmsAuthorizationFailedException;
 
     /**
      * Create OAuth 2.0 consent form - prepare HTML text of consent form and add form options.
