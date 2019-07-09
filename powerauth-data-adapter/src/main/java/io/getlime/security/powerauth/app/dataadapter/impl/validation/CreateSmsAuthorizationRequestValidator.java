@@ -105,10 +105,11 @@ public class CreateSmsAuthorizationRequestValidator implements Validator {
         if (operationName != null) {
             switch (operationName) {
                 case "login":
-                case "login_2fa":
+                case "login_sca":
                     // no field validation required
                     break;
                 case "authorize_payment":
+                case "authorize_payment_sca":
                     AmountAttribute amountAttribute;
                     try {
                         amountAttribute = operationValueExtractionService.getAmount(authRequest.getOperationContext());
