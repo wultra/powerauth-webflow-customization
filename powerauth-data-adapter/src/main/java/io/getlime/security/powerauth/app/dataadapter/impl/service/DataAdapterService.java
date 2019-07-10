@@ -92,8 +92,8 @@ public class DataAdapterService implements DataAdapter {
         // Replace mock bank account data with real data loaded from the bank backend.
         // In case the bank account selection is disabled, return an empty list.
 
-        if (!"authorize_payment".equals(operationName) && !"authorize_payment_sca".equals(operationName)) {
-            // return empty list for operations other than authorize_payment
+        if ((!"authorize_payment".equals(operationName) && !"authorize_payment_sca".equals(operationName))) {
+            // return empty list for operations other than authorize_payment or authorize_payment_sca
             return new DecorateOperationFormDataResponse(formData);
         }
 
