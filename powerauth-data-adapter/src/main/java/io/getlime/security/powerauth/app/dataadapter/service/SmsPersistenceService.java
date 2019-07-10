@@ -17,10 +17,10 @@ package io.getlime.security.powerauth.app.dataadapter.service;
 
 import io.getlime.security.powerauth.app.dataadapter.configuration.DataAdapterConfiguration;
 import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
-import io.getlime.security.powerauth.app.dataadapter.exception.SMSAuthorizationFailedException;
+import io.getlime.security.powerauth.app.dataadapter.exception.SmsAuthorizationFailedException;
 import io.getlime.security.powerauth.app.dataadapter.impl.service.DataAdapterService;
-import io.getlime.security.powerauth.app.dataadapter.repository.SMSAuthorizationRepository;
-import io.getlime.security.powerauth.app.dataadapter.repository.model.entity.SMSAuthorizationEntity;
+import io.getlime.security.powerauth.app.dataadapter.repository.SmsAuthorizationRepository;
+import io.getlime.security.powerauth.app.dataadapter.repository.model.entity.SmsAuthorizationEntity;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.AuthorizationCode;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import org.joda.time.DateTime;
@@ -37,10 +37,10 @@ import java.util.UUID;
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 @Service
-public class SMSPersistenceService {
+public class SmsPersistenceService {
 
     private final DataAdapterService dataAdapterService;
-    private final SMSAuthorizationRepository smsAuthorizationRepository;
+    private final SmsAuthorizationRepository smsAuthorizationRepository;
     private final DataAdapterConfiguration dataAdapterConfiguration;
 
     /**
@@ -50,7 +50,7 @@ public class SMSPersistenceService {
      * @param dataAdapterConfiguration Data adapter configuration.
      */
     @Autowired
-    public SMSPersistenceService(DataAdapterService dataAdapterService, SMSAuthorizationRepository smsAuthorizationRepository, DataAdapterConfiguration dataAdapterConfiguration) {
+    public SmsPersistenceService(DataAdapterService dataAdapterService, SmsAuthorizationRepository smsAuthorizationRepository, DataAdapterConfiguration dataAdapterConfiguration) {
         this.dataAdapterService = dataAdapterService;
         this.smsAuthorizationRepository = smsAuthorizationRepository;
         this.dataAdapterConfiguration = dataAdapterConfiguration;
@@ -64,7 +64,7 @@ public class SMSPersistenceService {
      * @param lang Language for message text.
      * @return Created entity with SMS message details.
      */
-    public SMSAuthorizationEntity createAuthorizationSMS(String userId, String organizationId, OperationContext operationContext, String lang) throws InvalidOperationContextException {
+    public SmsAuthorizationEntity createAuthorizationSms(String userId, String organizationId, OperationContext operationContext, String lang) throws InvalidOperationContextException {
         String operationId = operationContext.getId();
         String operationName = operationContext.getName();
 
@@ -75,9 +75,9 @@ public class SMSPersistenceService {
         AuthorizationCode authorizationCode = dataAdapterService.generateAuthorizationCode(userId, organizationId, operationContext);
 
         // generate message text, include previously generated authorization code
-        String messageText = dataAdapterService.generateSMSText(userId, organizationId, operationContext, authorizationCode, lang);
+        String messageText = dataAdapterService.generateSmsText(userId, organizationId, operationContext, authorizationCode, lang);
 
-        SMSAuthorizationEntity smsEntity = new SMSAuthorizationEntity();
+        SmsAuthorizationEntity smsEntity = new SmsAuthorizationEntity();
         smsEntity.setMessageId(messageId);
         smsEntity.setOperationId(operationId);
         smsEntity.setUserId(userId);
@@ -102,14 +102,15 @@ public class SMSPersistenceService {
      * Verify an OTP authorization code.
      * @param messageId Message ID.
      * @param authorizationCode Authorization code.
-     * @throws SMSAuthorizationFailedException Thrown when SMS authorization fails.
+     * @param smsAndPasswordCombined Whether SMS code is used together with password.
+     * @throws SmsAuthorizationFailedException Thrown when SMS authorization fails.
      */
-    public void verifyAuthorizationSMS(String messageId, String authorizationCode) throws SMSAuthorizationFailedException {
-        Optional<SMSAuthorizationEntity> smsEntityOptional = smsAuthorizationRepository.findById(messageId);
+    public void verifyAuthorizationSms(String messageId, String authorizationCode, boolean smsAndPasswordCombined) throws SmsAuthorizationFailedException {
+        Optional<SmsAuthorizationEntity> smsEntityOptional = smsAuthorizationRepository.findById(messageId);
         if (!smsEntityOptional.isPresent()) {
-            throw new SMSAuthorizationFailedException("smsAuthorization.invalidMessage");
+            throw new SmsAuthorizationFailedException("smsAuthorization.invalidMessage");
         }
-        SMSAuthorizationEntity smsEntity = smsEntityOptional.get();
+        SmsAuthorizationEntity smsEntity = smsEntityOptional.get();
         // increase number of verification tries and save entity
         smsEntity.setVerifyRequestCount(smsEntity.getVerifyRequestCount() + 1);
         smsAuthorizationRepository.save(smsEntity);
@@ -117,22 +118,28 @@ public class SMSPersistenceService {
         final Integer remainingAttempts = dataAdapterConfiguration.getSmsOtpMaxVerifyTriesPerMessage() - smsEntity.getVerifyRequestCount();
 
         if (smsEntity.getAuthorizationCode() == null || smsEntity.getAuthorizationCode().isEmpty()) {
-            SMSAuthorizationFailedException ex = new SMSAuthorizationFailedException("smsAuthorization.invalidCode");
+            SmsAuthorizationFailedException ex = new SmsAuthorizationFailedException("smsAuthorization.invalidCode");
             ex.setRemainingAttempts(remainingAttempts);
             throw ex;
         }
         if (smsEntity.isExpired()) {
-            throw new SMSAuthorizationFailedException("smsAuthorization.expired");
+            throw new SmsAuthorizationFailedException("smsAuthorization.expired");
         }
-        if (smsEntity.isVerified()) {
-            throw new SMSAuthorizationFailedException("smsAuthorization.alreadyVerified");
+        if (!smsAndPasswordCombined && smsEntity.isVerified()) {
+            throw new SmsAuthorizationFailedException("smsAuthorization.alreadyVerified");
         }
         if (smsEntity.getVerifyRequestCount() > dataAdapterConfiguration.getSmsOtpMaxVerifyTriesPerMessage()) {
-            throw new SMSAuthorizationFailedException("smsAuthorization.maxAttemptsExceeded");
+            throw new SmsAuthorizationFailedException("smsAuthorization.maxAttemptsExceeded");
         }
         String authorizationCodeExpected = smsEntity.getAuthorizationCode();
         if (!authorizationCode.equals(authorizationCodeExpected)) {
-            SMSAuthorizationFailedException ex = new SMSAuthorizationFailedException("smsAuthorization.failed");
+            if (smsAndPasswordCombined) {
+                // Use authentication error so that attacker cannot determine whether password or SMS code was invalid
+                SmsAuthorizationFailedException ex = new SmsAuthorizationFailedException("login.authenticationFailed");
+                ex.setRemainingAttempts(remainingAttempts);
+                throw ex;
+            }
+            SmsAuthorizationFailedException ex = new SmsAuthorizationFailedException("smsAuthorization.failed");
             ex.setRemainingAttempts(remainingAttempts);
             throw ex;
         }

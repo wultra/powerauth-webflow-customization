@@ -20,7 +20,7 @@ import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationC
 import io.getlime.security.powerauth.app.dataadapter.impl.service.OperationValueExtractionService;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.AmountAttribute;
-import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSMSAuthorizationRequest;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSmsAuthorizationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -39,7 +39,7 @@ import java.math.BigDecimal;
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 @Component
-public class CreateSMSAuthorizationRequestValidator implements Validator {
+public class CreateSmsAuthorizationRequestValidator implements Validator {
 
     private OperationValueExtractionService operationValueExtractionService;
 
@@ -48,7 +48,7 @@ public class CreateSMSAuthorizationRequestValidator implements Validator {
      * @param operationValueExtractionService Operation form data service.
      */
     @Autowired
-    public CreateSMSAuthorizationRequestValidator(OperationValueExtractionService operationValueExtractionService) {
+    public CreateSmsAuthorizationRequestValidator(OperationValueExtractionService operationValueExtractionService) {
         this.operationValueExtractionService = operationValueExtractionService;
     }
 
@@ -70,12 +70,12 @@ public class CreateSMSAuthorizationRequestValidator implements Validator {
     @Override
     @SuppressWarnings("unchecked")
     public void validate(@Nullable Object o, @NonNull Errors errors) {
-        ObjectRequest<CreateSMSAuthorizationRequest> requestObject = (ObjectRequest<CreateSMSAuthorizationRequest>) o;
+        ObjectRequest<CreateSmsAuthorizationRequest> requestObject = (ObjectRequest<CreateSmsAuthorizationRequest>) o;
         if (requestObject == null) {
             errors.rejectValue("requestObject.operationContext", "operationContext.missing");
             return;
         }
-        CreateSMSAuthorizationRequest authRequest = requestObject.getRequestObject();
+        CreateSmsAuthorizationRequest authRequest = requestObject.getRequestObject();
 
         // update validation logic based on the real Data Adapter requirements
         String userId = authRequest.getUserId();
@@ -105,6 +105,7 @@ public class CreateSMSAuthorizationRequestValidator implements Validator {
         if (operationName != null) {
             switch (operationName) {
                 case "login":
+                case "login_2fa":
                     // no field validation required
                     break;
                 case "authorize_payment":

@@ -174,7 +174,8 @@ public class DataAdapterService implements DataAdapter {
         String operationName = operationContext.getName();
         List<String> digestItems = new ArrayList<>();
         switch (operationName) {
-            case "login": {
+            case "login":
+            case "login_2fa": {
                 digestItems.add(operationName);
                 break;
             }
@@ -201,11 +202,12 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public String generateSMSText(String userId, String organizationId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException {
+    public String generateSmsText(String userId, String organizationId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException {
         String operationName = operationContext.getName();
         String[] messageArgs;
         switch (operationName) {
-            case "login": {
+            case "login":
+            case "login_2fa": {
                 messageArgs = new String[]{authorizationCode.getCode()};
                 break;
             }
@@ -226,14 +228,14 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public void sendAuthorizationSMS(String userId, String organizationId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException, SMSAuthorizationFailedException {
+    public void sendAuthorizationSms(String userId, String organizationId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException, SmsAuthorizationFailedException {
         // Add here code to send the SMS OTP message to user identified by userId with messageText.
-        // In case message delivery fails, throw an SMSAuthorizationFailedException.
+        // In case message delivery fails, throw an SmsAuthorizationFailedException.
     }
 
     @Override
     public CreateConsentFormResponse createConsentForm(String userId, String organizationId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException {
-        if ("login".equals(operationContext.getName())) {
+        if ("login".equals(operationContext.getName()) || "login_2fa".equals(operationContext.getName())) {
             // Create default consent
             CreateConsentFormResponse response = new CreateConsentFormResponse();
             if ("cs".equals(lang)) {
@@ -293,7 +295,7 @@ public class DataAdapterService implements DataAdapter {
         if (options == null || options.isEmpty()) {
             throw new InvalidConsentDataException("Missing options for consent");
         }
-        if ("login".equals(operationContext.getName())) {
+        if ("login".equals(operationContext.getName()) || "login_2fa".equals(operationContext.getName())) {
             if (options.size() != 1) {
                 throw new InvalidConsentDataException("Unexpected options count for consent");
             }

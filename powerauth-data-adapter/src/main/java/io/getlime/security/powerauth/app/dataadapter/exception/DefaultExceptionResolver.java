@@ -75,9 +75,9 @@ public class DefaultExceptionResolver {
      * @param ex Authorization failure exception, with exception details.
      * @return Response with error information.
      */
-    @ExceptionHandler(SMSAuthorizationFailedException.class)
+    @ExceptionHandler(SmsAuthorizationFailedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public @ResponseBody ErrorResponse handleAuthenticationError(SMSAuthorizationFailedException ex) {
+    public @ResponseBody ErrorResponse handleAuthenticationError(SmsAuthorizationFailedException ex) {
         // regular sms authorization failed error
         DataAdapterError error = new DataAdapterError(DataAdapterError.Code.SMS_AUTHORIZATION_FAILED, ex.getMessage());
         error.setRemainingAttempts(ex.getRemainingAttempts());
