@@ -71,12 +71,12 @@ public class AuthenticationRequestValidator implements Validator {
                 errors.rejectValue("requestObject.operationContext", "operationContext.missing");
             }
             ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.username", "login.username.empty");
-            if (username!=null && username.length() > 30) {
+            if (username != null && username.length() > 30) {
                 errors.rejectValue("requestObject.username", "login.username.long");
             }
 
             ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.organizationId", "login.organizationId.empty");
-            if (organizationId!=null && organizationId.length() > 256) {
+            if (organizationId != null && organizationId.length() > 256) {
                 errors.rejectValue("requestObject.organizationId", "login.organizationId.long");
             }
         } else if (objectRequest.getRequestObject() instanceof AuthenticationRequest) {
