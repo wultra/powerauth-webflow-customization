@@ -92,8 +92,8 @@ public class DataAdapterService implements DataAdapter {
         // Replace mock bank account data with real data loaded from the bank backend.
         // In case the bank account selection is disabled, return an empty list.
 
-        if (!"authorize_payment".equals(operationName)) {
-            // return empty list for operations other than authorize_payment
+        if ((!"authorize_payment".equals(operationName) && !"authorize_payment_sca".equals(operationName))) {
+            // return empty list for operations other than authorize_payment or authorize_payment_sca
             return new DecorateOperationFormDataResponse(formData);
         }
 
@@ -175,11 +175,12 @@ public class DataAdapterService implements DataAdapter {
         List<String> digestItems = new ArrayList<>();
         switch (operationName) {
             case "login":
-            case "login_2fa": {
+            case "login_sca": {
                 digestItems.add(operationName);
                 break;
             }
-            case "authorize_payment": {
+            case "authorize_payment":
+            case "authorize_payment_sca": {
                 AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
                 String account = operationValueExtractionService.getAccount(operationContext);
                 BigDecimal amount = amountAttribute.getAmount();
@@ -207,11 +208,12 @@ public class DataAdapterService implements DataAdapter {
         String[] messageArgs;
         switch (operationName) {
             case "login":
-            case "login_2fa": {
+            case "login_sca": {
                 messageArgs = new String[]{authorizationCode.getCode()};
                 break;
             }
-            case "authorize_payment": {
+            case "authorize_payment":
+            case "authorize_payment_sca": {
                 AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
                 String account = operationValueExtractionService.getAccount(operationContext);
                 BigDecimal amount = amountAttribute.getAmount();
@@ -235,7 +237,7 @@ public class DataAdapterService implements DataAdapter {
 
     @Override
     public CreateConsentFormResponse createConsentForm(String userId, String organizationId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException {
-        if ("login".equals(operationContext.getName()) || "login_2fa".equals(operationContext.getName())) {
+        if ("login".equals(operationContext.getName()) || "login_sca".equals(operationContext.getName())) {
             // Create default consent
             CreateConsentFormResponse response = new CreateConsentFormResponse();
             if ("cs".equals(lang)) {
@@ -256,7 +258,7 @@ public class DataAdapterService implements DataAdapter {
             response.getOptions().add(option1);
             return response;
         }
-        if ("authorize_payment".equals(operationContext.getName())) {
+        if ("authorize_payment".equals(operationContext.getName()) || "authorize_payment_sca".equals(operationContext.getName())) {
             CreateConsentFormResponse response = new CreateConsentFormResponse();
             if ("cs".equals(lang)) {
                 response.setConsentHtml("Tímto potvrzuji, že jsem inicioval tuto platební operaci a souhlasím s jejím dokončením.");
@@ -295,7 +297,7 @@ public class DataAdapterService implements DataAdapter {
         if (options == null || options.isEmpty()) {
             throw new InvalidConsentDataException("Missing options for consent");
         }
-        if ("login".equals(operationContext.getName()) || "login_2fa".equals(operationContext.getName())) {
+        if ("login".equals(operationContext.getName()) || "login_sca".equals(operationContext.getName())) {
             if (options.size() != 1) {
                 throw new InvalidConsentDataException("Unexpected options count for consent");
             }
@@ -326,7 +328,7 @@ public class DataAdapterService implements DataAdapter {
             }
             return response;
         }
-        if ("authorize_payment".equals(operationContext.getName())) {
+        if ("authorize_payment".equals(operationContext.getName()) || "authorize_payment_sca".equals(operationContext.getName())) {
             if (options.size() != 2) {
                 throw new InvalidConsentDataException("Unexpected options count for consent");
             }
