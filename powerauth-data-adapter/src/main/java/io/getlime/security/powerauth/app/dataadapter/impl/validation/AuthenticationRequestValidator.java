@@ -16,9 +16,10 @@
 package io.getlime.security.powerauth.app.dataadapter.impl.validation;
 
 import io.getlime.core.rest.model.base.request.ObjectRequest;
+import io.getlime.security.powerauth.lib.dataadapter.model.entity.AuthenticationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
-import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthenticationType;
-import io.getlime.security.powerauth.lib.dataadapter.model.request.AuthenticationRequest;
+import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.PasswordProtectionType;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.UserAuthenticationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.UserLookupRequest;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -79,8 +80,8 @@ public class AuthenticationRequestValidator implements Validator {
             if (organizationId != null && organizationId.length() > 256) {
                 errors.rejectValue("requestObject.organizationId", "login.organizationId.long");
             }
-        } else if (objectRequest.getRequestObject() instanceof AuthenticationRequest) {
-            AuthenticationRequest authRequest = (AuthenticationRequest) objectRequest.getRequestObject();
+        } else if (objectRequest.getRequestObject() instanceof UserAuthenticationRequest) {
+            UserAuthenticationRequest authRequest = (UserAuthenticationRequest) objectRequest.getRequestObject();
 
             // update validation logic based on the real Data Adapter requirements
             String userId = authRequest.getUserId();
@@ -95,9 +96,10 @@ public class AuthenticationRequestValidator implements Validator {
                 errors.rejectValue("requestObject.userId", "login.userId.long");
             }
 
-            AuthenticationType authType = authRequest.getAuthenticationType();
             ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.password", "login.password.empty");
-            if (authType == AuthenticationType.BASIC) {
+            AuthenticationContext authenticationContext = authRequest.getAuthenticationContext();
+            PasswordProtectionType passwordProtection = authenticationContext.getPasswordProtection();
+            if (passwordProtection == PasswordProtectionType.NO_PROTECTION) {
                 if (password != null && password.length() > 30) {
                     errors.rejectValue("requestObject.password", "login.password.long");
                 }
@@ -113,8 +115,8 @@ public class AuthenticationRequestValidator implements Validator {
                 errors.rejectValue("requestObject.organizationId", "login.organizationId.long");
             }
 
-            if (authType != AuthenticationType.BASIC && authType != AuthenticationType.PASSWORD_ENCRYPTION_AES) {
-                errors.rejectValue("requestObject.authenticationType", "login.type.unsupported");
+            if (passwordProtection != PasswordProtectionType.NO_PROTECTION && passwordProtection != PasswordProtectionType.PASSWORD_ENCRYPTION_AES) {
+                errors.rejectValue("requestObject.authenticationContext", "login.type.unsupported");
             }
         }
     }

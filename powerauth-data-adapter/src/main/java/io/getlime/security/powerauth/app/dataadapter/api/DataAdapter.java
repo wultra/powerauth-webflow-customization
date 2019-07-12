@@ -17,7 +17,6 @@ package io.getlime.security.powerauth.app.dataadapter.api;
 
 import io.getlime.security.powerauth.app.dataadapter.exception.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
-import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthenticationType;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
 
 import java.util.List;
@@ -34,6 +33,8 @@ public interface DataAdapter {
      * @param username Username which user uses for authentication.
      * @param organizationId Organization ID for this request.
      * @param operationContext Operation context.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     * @throws UserNotFoundException Thrown when user does not exist.
      */
     UserDetailResponse lookupUser(String username, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
 
@@ -41,15 +42,13 @@ public interface DataAdapter {
      * Authenticate user using provided credentials.
      * @param userId User ID for user authentication.
      * @param password Password for user authentication.
-     * @param authenticationType Authentication type specifying optional password encryption.
-     * @param cipherTransformation Cipher transformation used for encryption in case password is encrypted.
+     * @param authenticationContext Authentication context.
      * @param organizationId Organization ID.
      * @param operationContext Operation context.
-     * @return UserDetailResponse Response with user details.
+     * @return User authentication result.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
-     * @throws AuthenticationFailedException Thrown when authentication fails.
      */
-    UserDetailResponse authenticateUser(String userId, String password, AuthenticationType authenticationType, String cipherTransformation, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, AuthenticationFailedException;
+    UserAuthenticationResponse authenticateUser(String userId, String password, AuthenticationContext authenticationContext, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException;
 
     /**
      * Fetch user detail for given user.
@@ -94,6 +93,17 @@ public interface DataAdapter {
     void operationChangedNotification(String userId, String organizationId, OperationChange operationChange, OperationContext operationContext) throws DataAdapterRemoteException;
 
     /**
+     * Create authorization SMS.
+     * @param userId User ID.
+     * @param organizationId Organization ID.
+     * @param operationContext Operation context.
+     * @param lang Language for localization.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails or SMS message could not be delivered.
+     */
+    String createAuthorizationSms(String userId, String organizationId, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
+
+    /**
      * Generate authorization code for SMS authorization.
      * @param userId User ID.
      * @param organizationId Organization ID.
@@ -110,21 +120,60 @@ public interface DataAdapter {
      * @param operationContext Operation context.
      * @param authorizationCode Authorization code.
      * @param lang Language for localization.
-     * @return Generated SMS text with OTP authorization code.
+     * @return Generated SMS text with authorization code.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      */
     String generateSmsText(String userId, String organizationId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException;
 
     /**
-     * Send an authorization SMS with generated OTP.
+     * Send an authorization SMS with generated authorization code.
      * @param userId User ID.
      * @param organizationId Organization ID.
+     * @param messageId Message ID.
      * @param messageText Text of SMS message.
      * @param operationContext Operation context.
-     * @throws DataAdapterRemoteException Thrown when remote communication fails.
-     * @throws SmsAuthorizationFailedException Thrown when message could not be created.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails or SMS message could not be delivered.
      */
-    void sendAuthorizationSms(String userId, String organizationId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException, SmsAuthorizationFailedException;
+    void sendAuthorizationSms(String userId, String organizationId, String messageId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException;
+
+    /**
+     * Verify authorization code from SMS message.
+     * @param userId User ID.
+     * @param organizationId Organization ID.
+     * @param messageId Message ID.
+     * @param authorizationCode Authorization code.
+     * @param operationContext Operation context.
+     * @return SMS authorization code verification response.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     */
+    VerifySmsAuthorizationResponse verifyAuthorizationSms(String userId, String organizationId, String messageId, String authorizationCode, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException;
+
+    /**
+     * Verify authorization code from SMS message together with user password.
+     * @param userId User ID.
+     * @param organizationId Organization ID.
+     * @param messageId Message ID.
+     * @param authorizationCode Authorization code.
+     * @param operationContext Operation context.
+     * @param authenticationContext Authentication context.
+     * @param password User password.
+     * @return SMS authorization code and password verification response.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     */
+    VerifySmsAndPasswordResponse verifyAuthorizationSmsAndPassword(String userId, String organizationId, String messageId, String authorizationCode, OperationContext operationContext, AuthenticationContext authenticationContext, String password) throws DataAdapterRemoteException, InvalidOperationContextException;
+
+    /**
+     * Decide whether OAuth 2.0 consent form should be displayed based on operation context.
+     * @param userId User ID.
+     * @param organizationId Organization ID.
+     * @param operationContext Operation context.
+     * @return Response with information whether consent form should be displayed.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     */
+    InitConsentFormResponse initConsentForm(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException;
 
     /**
      * Create OAuth 2.0 consent form - prepare HTML text of consent form and add form options.

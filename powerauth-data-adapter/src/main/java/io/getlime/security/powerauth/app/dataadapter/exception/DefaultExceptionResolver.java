@@ -56,35 +56,6 @@ public class DefaultExceptionResolver {
     }
 
     /**
-     * Handling of authentication failures.
-     * @param ex Authentication failure exception, with exception details.
-     * @return Response with error information.
-     */
-    @ExceptionHandler(AuthenticationFailedException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public @ResponseBody ErrorResponse handleAuthenticationError(AuthenticationFailedException ex) {
-        // regular authentication failed error
-        DataAdapterError error = new DataAdapterError(DataAdapterError.Code.AUTHENTICATION_FAILED, ex.getMessage());
-        error.setRemainingAttempts(ex.getRemainingAttempts());
-        return new ErrorResponse(error);
-    }
-
-    /**
-     * Handling of SMS OTP authorization failures.
-     *
-     * @param ex Authorization failure exception, with exception details.
-     * @return Response with error information.
-     */
-    @ExceptionHandler(SmsAuthorizationFailedException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public @ResponseBody ErrorResponse handleAuthenticationError(SmsAuthorizationFailedException ex) {
-        // regular sms authorization failed error
-        DataAdapterError error = new DataAdapterError(DataAdapterError.Code.SMS_AUTHORIZATION_FAILED, ex.getMessage());
-        error.setRemainingAttempts(ex.getRemainingAttempts());
-        return new ErrorResponse(error);
-    }
-
-    /**
      * Handling of validation errors.
      * @param ex Exception.
      * @return Response with error information.
