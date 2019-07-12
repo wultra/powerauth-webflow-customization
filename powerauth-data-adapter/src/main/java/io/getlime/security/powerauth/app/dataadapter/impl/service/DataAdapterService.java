@@ -98,7 +98,7 @@ public class DataAdapterService implements DataAdapter {
         // In case that user is not found, throw a UserNotFoundException.
         // The operation context may be null in case the method is called outside of an active operation (e.g. OAuth user profile request).
         UserDetailResponse responseObject = new UserDetailResponse();
-        responseObject.setId(null);
+        responseObject.setId(userId);
         responseObject.setGivenName("John");
         responseObject.setFamilyName("Doe");
         responseObject.setOrganizationId(organizationId);
