@@ -50,6 +50,8 @@ public class DataAdapterService implements DataAdapter {
     @Override
     public UserDetailResponse lookupUser(String username, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
         // The sample Data Adapter code uses 1:1 mapping of username to userId. In real implementation the userId usually differs from the username, so translation of username to user ID is required.
+        // If user does not exist or user account is blocked and such error needs to be silent, return null values for user ID and organization ID.
+        // The SCA login moves fakes SMS message delivery even for case when user ID is null to disallow fishing of usernames.
         return fetchUserDetail(username, organizationId, operationContext);
     }
 
@@ -95,7 +97,7 @@ public class DataAdapterService implements DataAdapter {
         // In case that user is not found, throw a UserNotFoundException.
         // The operation context may be null in case the method is called outside of an active operation (e.g. OAuth user profile request).
         UserDetailResponse responseObject = new UserDetailResponse();
-        responseObject.setId(userId);
+        responseObject.setId(null);
         responseObject.setGivenName("John");
         responseObject.setFamilyName("Doe");
         responseObject.setOrganizationId(organizationId);
