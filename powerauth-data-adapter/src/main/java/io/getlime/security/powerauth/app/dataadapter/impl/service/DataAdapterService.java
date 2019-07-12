@@ -193,6 +193,11 @@ public class DataAdapterService implements DataAdapter {
         // messageId is generated as random UUID, it can be overridden to provide a real message identification
         String messageId = UUID.randomUUID().toString();
 
+        // fake SMS message delivery for null user ID
+        if (userId == null) {
+            return messageId;
+        }
+
         // generate authorization code
         AuthorizationCode authorizationCode = generateAuthorizationCode(userId, organizationId, operationContext);
 
