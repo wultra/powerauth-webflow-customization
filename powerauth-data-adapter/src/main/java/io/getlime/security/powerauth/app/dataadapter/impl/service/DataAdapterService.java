@@ -56,7 +56,8 @@ public class DataAdapterService implements DataAdapter {
     @Override
     public UserAuthenticationResponse authenticateUser(String userId, String password, AuthenticationContext authenticationContext, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException {
         // Here will be the real authentication - call to the backend providing authentication.
-        // In case that authentication fails, throw an AuthenticationFailedException.
+        // Return a response with UserAuthenticationResult based on the actual authentication result.
+        // The password is optionally encrypted, the authentication context contains information about encryption.
         PasswordProtectionType passwordProtection = authenticationContext.getPasswordProtection();
         UserAuthenticationResponse authResponse = new UserAuthenticationResponse();
         if (passwordProtection == PasswordProtectionType.NO_PROTECTION && "test".equals(password)) {
@@ -279,6 +280,8 @@ public class DataAdapterService implements DataAdapter {
     public VerifySmsAuthorizationResponse verifyAuthorizationSms(String userId, String organizationId, String messageId, String authorizationCode, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
         // You can override this logic in case more complex handling of SMS verification si required.
         VerifySmsAuthorizationResponse response = smsPersistenceService.verifyAuthorizationSms(messageId, authorizationCode, false);
+        // Set number of remaining attempts for verification in case it is available.
+        // authResponse.setRemainingAttempts(5);
         // You can enable showing of remaining attempts for the operation.
         // response.setShowRemainingAttempts(true);
         return response;
