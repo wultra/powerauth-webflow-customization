@@ -98,6 +98,7 @@ public interface DataAdapter {
      * @param organizationId Organization ID.
      * @param operationContext Operation context.
      * @param lang Language for localization.
+     * @return Message ID.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      * @throws DataAdapterRemoteException Thrown when remote communication fails or SMS message could not be delivered.
      */
