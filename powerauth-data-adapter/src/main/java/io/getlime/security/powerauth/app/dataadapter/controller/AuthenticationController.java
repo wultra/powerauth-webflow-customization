@@ -86,7 +86,7 @@ public class AuthenticationController {
         String organizationId = lookupRequest.getOrganizationId();
         OperationContext operationContext = lookupRequest.getOperationContext();
         UserDetailResponse response = dataAdapter.lookupUser(username, organizationId, operationContext);
-        logger.info("The user lookup request succeeded, user name: {}, organization ID: {}, operation ID: {}", response.getId(), response.getOrganizationId(), request.getRequestObject().getOperationContext().getId());
+        logger.info("The user lookup request succeeded, user ID: {}, organization ID: {}, operation ID: {}", response.getId(), response.getOrganizationId(), request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
 
