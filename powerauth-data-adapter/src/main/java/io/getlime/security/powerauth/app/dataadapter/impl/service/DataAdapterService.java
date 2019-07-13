@@ -154,7 +154,7 @@ public class DataAdapterService implements DataAdapter {
 
         List<FormFieldConfig> configs = formData.getConfig();
         for (FormFieldConfig config: configs) {
-            if ("operation.bankAccountChoice".equals(config.getId())) {
+            if (BANK_ACCOUNT_CHOICE_ID.equals(config.getId())) {
                 choiceEnabled = config.isEnabled();
                 // You should check the default value against list of available accounts.
                 defaultValue = config.getDefaultValue();
