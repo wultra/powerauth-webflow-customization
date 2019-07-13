@@ -18,16 +18,15 @@ package io.getlime.security.powerauth.app.dataadapter.controller;
 import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
-import io.getlime.security.powerauth.app.dataadapter.exception.AuthenticationFailedException;
 import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
 import io.getlime.security.powerauth.app.dataadapter.exception.UserNotFoundException;
 import io.getlime.security.powerauth.app.dataadapter.impl.validation.AuthenticationRequestValidator;
+import io.getlime.security.powerauth.lib.dataadapter.model.entity.AuthenticationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
-import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthenticationType;
-import io.getlime.security.powerauth.lib.dataadapter.model.request.AuthenticationRequest;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.UserAuthenticationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.UserDetailRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.UserLookupRequest;
-import io.getlime.security.powerauth.lib.dataadapter.model.response.AuthenticationResponse;
+import io.getlime.security.powerauth.lib.dataadapter.model.response.UserAuthenticationResponse;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.UserDetailResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +86,7 @@ public class AuthenticationController {
         String organizationId = lookupRequest.getOrganizationId();
         OperationContext operationContext = lookupRequest.getOperationContext();
         UserDetailResponse response = dataAdapter.lookupUser(username, organizationId, operationContext);
-        logger.info("The user lookup request succeeded, user name: {}, organization ID: {}, operation ID: {}", response.getId(), response.getOrganizationId(), request.getRequestObject().getOperationContext().getId());
+        logger.info("The user lookup request succeeded, user ID: {}, organization ID: {}, operation ID: {}", response.getId(), response.getOrganizationId(), request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
 
@@ -97,21 +96,18 @@ public class AuthenticationController {
      * @param request Authenticate user request.
      * @return Response with authenticated user ID.
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
-     * @throws AuthenticationFailedException Thrown in case that authentication fails.
      */
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-    public ObjectResponse<AuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<AuthenticationRequest> request) throws DataAdapterRemoteException, AuthenticationFailedException {
+    public ObjectResponse<UserAuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<UserAuthenticationRequest> request) throws DataAdapterRemoteException {
         logger.info("Received authenticate request, user ID: {}, organization ID: {}, operation ID: {}", request.getRequestObject().getUserId(), request.getRequestObject().getOrganizationId(), request.getRequestObject().getOperationContext().getId());
-        AuthenticationRequest authenticationRequest = request.getRequestObject();
+        UserAuthenticationRequest authenticationRequest = request.getRequestObject();
         String userId = authenticationRequest.getUserId();
         String password = authenticationRequest.getPassword();
-        AuthenticationType authenticationType = authenticationRequest.getAuthenticationType();
-        String cipherTransformation = authenticationRequest.getCipherTransformation();
+        AuthenticationContext authenticationContext = authenticationRequest.getAuthenticationContext();
         String organizationId = authenticationRequest.getOrganizationId();
         OperationContext operationContext = authenticationRequest.getOperationContext();
-        UserDetailResponse userDetailResponse = dataAdapter.authenticateUser(userId, password, authenticationType, cipherTransformation, organizationId, operationContext);
-        AuthenticationResponse response = new AuthenticationResponse(userDetailResponse.getId(), userDetailResponse.getOrganizationId());
-        logger.info("The authenticate request succeeded, user ID: {}, organization ID: {}, operation ID: {}", userDetailResponse.getId(), userDetailResponse.getOrganizationId(), request.getRequestObject().getOperationContext().getId());
+        UserAuthenticationResponse response = dataAdapter.authenticateUser(userId, password, authenticationContext, organizationId, operationContext);
+        logger.info("The authenticate request succeeded, user ID: {}, organization ID: {}, operation ID: {}", userId, organizationId, request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
 

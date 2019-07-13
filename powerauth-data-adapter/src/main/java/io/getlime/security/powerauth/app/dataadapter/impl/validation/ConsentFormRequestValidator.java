@@ -19,6 +19,7 @@ import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.ConsentOption;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateConsentFormRequest;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.InitConsentFormRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.SaveConsentFormRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.ValidateConsentFormRequest;
 import org.springframework.lang.NonNull;
@@ -65,7 +66,15 @@ public class ConsentFormRequestValidator implements Validator {
         }
 
         // update validation logic based on the real Data Adapter requirements
-        if (objectRequest.getRequestObject() instanceof CreateConsentFormRequest) {
+        if (objectRequest.getRequestObject() instanceof InitConsentFormRequest) {
+            ObjectRequest<InitConsentFormRequest> requestObject = (ObjectRequest<InitConsentFormRequest>) o;
+            InitConsentFormRequest request = requestObject.getRequestObject();
+            validateOperationContext(request.getOperationContext(), errors);
+            validateUserId(request.getUserId(), errors);
+            if (request.getOperationContext() != null) {
+                validateOperationName(request.getOperationContext().getName(), errors);
+            }
+        } else if (objectRequest.getRequestObject() instanceof CreateConsentFormRequest) {
             ObjectRequest<CreateConsentFormRequest> requestObject = (ObjectRequest<CreateConsentFormRequest>) o;
             CreateConsentFormRequest request = requestObject.getRequestObject();
             validateOperationContext(request.getOperationContext(), errors);

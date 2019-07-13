@@ -87,12 +87,12 @@ public class CreateSmsAuthorizationRequestValidator implements Validator {
 
         String operationName = authRequest.getOperationContext().getName();
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.userId", "smsAuthorization.userId.empty");
+        // Allow null user ID for case when fake SMS message is sent
         if (userId != null && userId.length() > 30) {
             errors.rejectValue("requestObject.userId", "smsAuthorization.userId.long");
         }
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.organizationId", "smsAuthorization.organizationId.empty");
+        // Allow null organization ID for case when fake SMS message is sent
         if (organizationId != null && organizationId.length() > 256) {
             errors.rejectValue("requestObject.organizationId", "smsAuthorization.organizationId.long");
         }

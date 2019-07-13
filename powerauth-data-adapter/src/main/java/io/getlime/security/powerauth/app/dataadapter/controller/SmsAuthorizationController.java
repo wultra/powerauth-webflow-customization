@@ -17,21 +17,19 @@ package io.getlime.security.powerauth.app.dataadapter.controller;
 
 import io.getlime.core.rest.model.base.request.ObjectRequest;
 import io.getlime.core.rest.model.base.response.ObjectResponse;
-import io.getlime.core.rest.model.base.response.Response;
 import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
-import io.getlime.security.powerauth.app.dataadapter.exception.AuthenticationFailedException;
 import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
 import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
-import io.getlime.security.powerauth.app.dataadapter.exception.SmsAuthorizationFailedException;
 import io.getlime.security.powerauth.app.dataadapter.impl.validation.CreateSmsAuthorizationRequestValidator;
-import io.getlime.security.powerauth.app.dataadapter.repository.model.entity.SmsAuthorizationEntity;
 import io.getlime.security.powerauth.app.dataadapter.service.SmsPersistenceService;
+import io.getlime.security.powerauth.lib.dataadapter.model.entity.AuthenticationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
-import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthenticationType;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSmsAuthorizationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifySmsAndPasswordRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifySmsAuthorizationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.CreateSmsAuthorizationResponse;
+import io.getlime.security.powerauth.lib.dataadapter.model.response.VerifySmsAndPasswordResponse;
+import io.getlime.security.powerauth.lib.dataadapter.model.response.VerifySmsAuthorizationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,60 +81,47 @@ public class SmsAuthorizationController {
      * @param request Request data.
      * @return Response with message ID.
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
-     * @throws SmsAuthorizationFailedException Thrown in case that SMS message could not be delivered.
+     * @throws InvalidOperationContextException Thrown in case operation context is invalid.
      */
     @RequestMapping(value = "create", method = RequestMethod.POST)
-    public ObjectResponse<CreateSmsAuthorizationResponse> createAuthorizationSms(@Valid @RequestBody ObjectRequest<CreateSmsAuthorizationRequest> request) throws DataAdapterRemoteException, SmsAuthorizationFailedException, InvalidOperationContextException {
-        logger.info("Received createAuthorizationSms request, operation ID: "+request.getRequestObject().getOperationContext().getId());
+    public ObjectResponse<CreateSmsAuthorizationResponse> createAuthorizationSms(@Valid @RequestBody ObjectRequest<CreateSmsAuthorizationRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
+        logger.info("Received createAuthorizationSms request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         CreateSmsAuthorizationRequest smsRequest = request.getRequestObject();
 
         // Create authorization SMS and persist it.
-        SmsAuthorizationEntity smsEntity = createAuthorizationSms(smsRequest);
-
-        // Send SMS with generated text to target user.
-        String userId = smsEntity.getUserId();
-        String organizationId = smsEntity.getOrganizationId();
-        OperationContext operationContext = smsRequest.getOperationContext();
-        String messageId = smsEntity.getMessageId();
-        String messageText = smsEntity.getMessageText();
-        dataAdapter.sendAuthorizationSms(userId, organizationId, messageText, operationContext);
-
-        // Create response.
-        CreateSmsAuthorizationResponse response = new CreateSmsAuthorizationResponse(messageId);
-        logger.info("The createAuthorizationSms request succeeded, operation ID: "+request.getRequestObject().getOperationContext().getId());
-        return new ObjectResponse<>(response);
-    }
-
-    /**
-     * Validates the request and sends SMS.
-     * @param smsRequest Create SMS request.
-     * @return SMS entity.
-     */
-    private SmsAuthorizationEntity createAuthorizationSms(@Valid CreateSmsAuthorizationRequest smsRequest) throws InvalidOperationContextException {
         String userId = smsRequest.getUserId();
         String organizationId = smsRequest.getOrganizationId();
         OperationContext operationContext = smsRequest.getOperationContext();
         String lang = smsRequest.getLang();
-        return smsPersistenceService.createAuthorizationSms(userId, organizationId, operationContext, lang);
+        String messageId = dataAdapter.createAuthorizationSms(userId, organizationId, operationContext, lang);
+
+        // Create response.
+        CreateSmsAuthorizationResponse response = new CreateSmsAuthorizationResponse(messageId);
+        logger.info("The createAuthorizationSms request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
+        return new ObjectResponse<>(response);
     }
 
     /**
-     * Verify a SMS OTP authorization code.
+     * Verify authorization code from SMS message.
      *
      * @param request Request data.
      * @return Authorization response.
-     * @throws SmsAuthorizationFailedException Thrown in case that SMS verification fails.
+     * @throws DataAdapterRemoteException Thrown in case communication with remote system fails.
+     * @throws InvalidOperationContextException Thrown in case operation context is invalid.
      */
     @RequestMapping(value = "verify", method = RequestMethod.POST)
-    public Response verifyAuthorizationSms(@RequestBody ObjectRequest<VerifySmsAuthorizationRequest> request) throws SmsAuthorizationFailedException {
-        logger.info("Received verifyAuthorizationSms request, operation ID: "+request.getRequestObject().getOperationContext().getId());
+    public ObjectResponse<VerifySmsAuthorizationResponse> verifyAuthorizationSms(@RequestBody ObjectRequest<VerifySmsAuthorizationRequest> request) throws InvalidOperationContextException, DataAdapterRemoteException {
+        logger.info("Received verifyAuthorizationSms request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         VerifySmsAuthorizationRequest verifyRequest = request.getRequestObject();
+        String userId = verifyRequest.getUserId();
+        String organizationId = verifyRequest.getOrganizationId();
         String messageId = verifyRequest.getMessageId();
         String authorizationCode = verifyRequest.getAuthorizationCode();
+        OperationContext operationContext = verifyRequest.getOperationContext();
         // Verify authorization code
-        smsPersistenceService.verifyAuthorizationSms(messageId, authorizationCode, false);
-        logger.info("The verifyAuthorizationSms request succeeded, operation ID: "+request.getRequestObject().getOperationContext().getId());
-        return new Response();
+        VerifySmsAuthorizationResponse response = dataAdapter.verifyAuthorizationSms(userId, organizationId, messageId, authorizationCode, operationContext);
+        logger.info("The verifyAuthorizationSms request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
+        return new ObjectResponse<>(response);
     }
 
     /**
@@ -144,28 +129,23 @@ public class SmsAuthorizationController {
      *
      * @param request Verify SMS code and password request.
      * @return Authorization response.
-     * @throws SmsAuthorizationFailedException Thrown in case that SMS verification fails.
-     * @throws AuthenticationFailedException Thrown in case that password verification fails.
      * @throws DataAdapterRemoteException Thrown in case communication with remote system fails.
+     * @throws InvalidOperationContextException Thrown in case operation context is invalid.
      */
     @RequestMapping(value = "/password/verify", method = RequestMethod.POST)
-    public Response verifyAuthorizationSmsAndPassword(@RequestBody ObjectRequest<VerifySmsAndPasswordRequest> request) throws SmsAuthorizationFailedException, AuthenticationFailedException, DataAdapterRemoteException {
-        logger.info("Received verifyAuthorizationSmsAndPassword request, operation ID: "+request.getRequestObject().getOperationContext().getId());
+    public ObjectResponse<VerifySmsAndPasswordResponse> verifyAuthorizationSmsAndPassword(@RequestBody ObjectRequest<VerifySmsAndPasswordRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
+        logger.info("Received verifyAuthorizationSmsAndPassword request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         VerifySmsAndPasswordRequest verifyRequest = request.getRequestObject();
-        // Verify authorization code
+        String userId = verifyRequest.getUserId();
+        String organizationId = verifyRequest.getOrganizationId();
         String messageId = verifyRequest.getMessageId();
         String authorizationCode = verifyRequest.getAuthorizationCode();
-        smsPersistenceService.verifyAuthorizationSms(messageId, authorizationCode, true);
-        // Verify user password
-        String userId = verifyRequest.getUserId();
-        String password = verifyRequest.getPassword();
-        AuthenticationType authenticationType = verifyRequest.getAuthenticationType();
-        String cipherTransformation = verifyRequest.getCipherTransformation();
-        String organizationId = verifyRequest.getOrganizationId();
         OperationContext operationContext = verifyRequest.getOperationContext();
-        dataAdapter.authenticateUser(userId, password, authenticationType, cipherTransformation, organizationId, operationContext);
-        logger.info("The verifyAuthorizationSmsAndPassword request succeeded, operation ID: "+request.getRequestObject().getOperationContext().getId());
-        return new Response();
+        String password = verifyRequest.getPassword();
+        AuthenticationContext authenticationContext = verifyRequest.getAuthenticationContext();
+        VerifySmsAndPasswordResponse response = dataAdapter.verifyAuthorizationSmsAndPassword(userId, organizationId, messageId, authorizationCode, operationContext, authenticationContext, password);
+        logger.info("The verifyAuthorizationSmsAndPassword request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
+        return new ObjectResponse<>(response);
     }
 
 }

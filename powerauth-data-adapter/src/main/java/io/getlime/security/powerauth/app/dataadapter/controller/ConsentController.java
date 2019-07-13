@@ -26,9 +26,11 @@ import io.getlime.security.powerauth.app.dataadapter.impl.validation.ConsentForm
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.ConsentOption;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateConsentFormRequest;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.InitConsentFormRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.SaveConsentFormRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.ValidateConsentFormRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.CreateConsentFormResponse;
+import io.getlime.security.powerauth.lib.dataadapter.model.response.InitConsentFormResponse;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.SaveConsentFormResponse;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.ValidateConsentFormResponse;
 import org.slf4j.Logger;
@@ -72,6 +74,26 @@ public class ConsentController {
     @InitBinder
     private void initBinder(WebDataBinder binder) {
         binder.setValidator(requestValidator);
+    }
+
+    /**
+     * Initialize OAuth 2.0 consent form - verify that consent form is required.
+     * @param request Initialize consent form request.
+     * @return Initialize consent form response.
+     * @throws DataAdapterRemoteException In case communication with remote system fails.
+     * @throws InvalidOperationContextException In case operation context is invalid.
+     */
+    @RequestMapping(value = "/init", method = RequestMethod.POST)
+    public ObjectResponse<InitConsentFormResponse> initConsentForm(@Valid @RequestBody ObjectRequest<InitConsentFormRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
+        logger.info("Received initConsentForm request for user: {}, operation ID: {}",
+                request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
+        InitConsentFormRequest createRequest = request.getRequestObject();
+        String userId = createRequest.getUserId();
+        String organizationId = createRequest.getOrganizationId();
+        OperationContext operationContext = createRequest.getOperationContext();
+        InitConsentFormResponse response = dataAdapter.initConsentForm(userId, organizationId, operationContext);
+        logger.debug("The initConsentForm request succeeded");
+        return new ObjectResponse<>(response);
     }
 
     /**

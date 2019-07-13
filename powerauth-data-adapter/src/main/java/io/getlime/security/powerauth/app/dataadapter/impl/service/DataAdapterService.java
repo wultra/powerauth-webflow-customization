@@ -3,14 +3,18 @@ package io.getlime.security.powerauth.app.dataadapter.impl.service;
 import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
 import io.getlime.security.powerauth.app.dataadapter.exception.*;
 import io.getlime.security.powerauth.app.dataadapter.service.DataAdapterI18NService;
+import io.getlime.security.powerauth.app.dataadapter.service.SmsPersistenceService;
 import io.getlime.security.powerauth.crypto.server.util.DataDigest;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.AmountAttribute;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.FormFieldConfig;
-import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthenticationType;
+import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.PasswordProtectionType;
+import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.SmsAuthorizationResult;
+import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.UserAuthenticationResult;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +22,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * Sample implementation of DataAdapter interface which should be updated in real implementation.
@@ -33,41 +38,60 @@ public class DataAdapterService implements DataAdapter {
 
     private final DataAdapterI18NService dataAdapterI18NService;
     private final OperationValueExtractionService operationValueExtractionService;
+    private final SmsPersistenceService smsPersistenceService;
 
-    public DataAdapterService(DataAdapterI18NService dataAdapterI18NService, OperationValueExtractionService operationValueExtractionService) {
+    @Autowired
+    public DataAdapterService(DataAdapterI18NService dataAdapterI18NService, OperationValueExtractionService operationValueExtractionService, SmsPersistenceService smsPersistenceService) {
         this.dataAdapterI18NService = dataAdapterI18NService;
         this.operationValueExtractionService = operationValueExtractionService;
+        this.smsPersistenceService = smsPersistenceService;
     }
 
     @Override
     public UserDetailResponse lookupUser(String username, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
         // The sample Data Adapter code uses 1:1 mapping of username to userId. In real implementation the userId usually differs from the username, so translation of username to user ID is required.
+        // If user does not exist or user account is blocked and such error needs to be silent, return null values for user ID and organization ID.
+        // The SCA login fakes SMS message delivery even for case when user ID is null to disallow fishing of usernames.
+        // For case when an error should appear instead, throw a UserNotFoundException.
         return fetchUserDetail(username, organizationId, operationContext);
     }
 
     @Override
-    public UserDetailResponse authenticateUser(String userId, String password, AuthenticationType authenticationType, String cipherTransformation, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, AuthenticationFailedException {
+    public UserAuthenticationResponse authenticateUser(String userId, String password, AuthenticationContext authenticationContext, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException {
         // Here will be the real authentication - call to the backend providing authentication.
-        // In case that authentication fails, throw an AuthenticationFailedException.
-        if (authenticationType == AuthenticationType.BASIC && "test".equals(password)) {
+        // Return a response with UserAuthenticationResult based on the actual authentication result.
+        // The password is optionally encrypted, the authentication context contains information about encryption.
+        // In case of combined user authentication with SMS authorization the authentication context contains information
+        // about result of SMS authorization.
+        PasswordProtectionType passwordProtection = authenticationContext.getPasswordProtection();
+        UserAuthenticationResponse authResponse = new UserAuthenticationResponse();
+        if (passwordProtection == PasswordProtectionType.NO_PROTECTION && "test".equals(password)) {
             try {
-                UserDetailResponse response = fetchUserDetail(userId, organizationId, operationContext);
+                UserDetailResponse userDetail = fetchUserDetail(userId, organizationId, operationContext);
                 // The organization needs to be set in response (e.g. client authenticated against RETAIL organization or SME organization).
-                response.setOrganizationId(organizationId);
-                return response;
+                userDetail.setOrganizationId(organizationId);
+                authResponse.setUserDetail(userDetail);
+                authResponse.setAuthenticationResult(UserAuthenticationResult.VERIFIED_SUCCEEDED);
+                return authResponse;
             } catch (UserNotFoundException e) {
-                throw new AuthenticationFailedException("login.authenticationFailed");
+                authResponse.setAuthenticationResult(UserAuthenticationResult.VERIFIED_FAILED);
+                authResponse.setErrorMessage("login.authenticationFailed");
+                return authResponse;
             }
         }
-        AuthenticationFailedException authFailedException = new AuthenticationFailedException("login.authenticationFailed");
-        // Set number of remaining attempts for this userId in case it is available.
-        // authFailedException.setRemainingAttempts(5);
+        authResponse.setAuthenticationResult(UserAuthenticationResult.VERIFIED_FAILED);
+        authResponse.setErrorMessage("login.authenticationFailed");
+        // Set number of remaining attempts for this user ID in case it is available.
+        // authResponse.setRemainingAttempts(5);
+
+        // To enable showing of remaining attempts for operation, use:
+        // authResponse.setShowRemainingAttempts(true);
 
         // Use the following code to let the user know that the account has been blocked temporarily.
-        // final AuthenticationFailedException authFailedException = new AuthenticationFailedException("login.authenticationBlocked");
-        // authFailedException.setRemainingAttempts(0);
+        // authResponse.setErrorMessage("login.authenticationBlocked");
+        // authResponse.setRemainingAttempts(0);
 
-        throw authFailedException;
+        return authResponse;
     }
 
     @Override
@@ -130,7 +154,7 @@ public class DataAdapterService implements DataAdapter {
 
         List<FormFieldConfig> configs = formData.getConfig();
         for (FormFieldConfig config: configs) {
-            if ("operation.bankAccountChoice".equals(config.getId())) {
+            if (BANK_ACCOUNT_CHOICE_ID.equals(config.getId())) {
                 choiceEnabled = config.isEnabled();
                 // You should check the default value against list of available accounts.
                 defaultValue = config.getDefaultValue();
@@ -167,6 +191,32 @@ public class DataAdapterService implements DataAdapter {
         String operationId = operationContext.getId();
         // Handle operation change here (e.g. send notification to bank backend).
         logger.info("Operation changed, status: {}, operation ID: {}", change.toString(), operationId);
+    }
+
+    @Override
+    public String createAuthorizationSms(String userId, String organizationId, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
+        // messageId is generated as random UUID, it can be overridden to provide a real message identification
+        String messageId = UUID.randomUUID().toString();
+
+        // fake SMS message delivery for null user ID
+        if (userId == null) {
+            return messageId;
+        }
+
+        // generate authorization code
+        AuthorizationCode authorizationCode = generateAuthorizationCode(userId, organizationId, operationContext);
+
+        // generate message text, include previously generated authorization code
+        String messageText = generateSmsText(userId, organizationId, operationContext, authorizationCode, lang);
+
+        // persist authorization SMS message
+        smsPersistenceService.createAuthorizationSms(userId, organizationId, messageId, operationContext, authorizationCode, messageText);
+
+        // Send SMS with generated text to target user.
+        sendAuthorizationSms(userId, organizationId, messageId, messageText, operationContext);
+
+        // return generated message ID
+        return messageId;
     }
 
     @Override
@@ -230,9 +280,53 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public void sendAuthorizationSms(String userId, String organizationId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException, SmsAuthorizationFailedException {
+    public void sendAuthorizationSms(String userId, String organizationId, String messageId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException {
         // Add here code to send the SMS OTP message to user identified by userId with messageText.
-        // In case message delivery fails, throw an SmsAuthorizationFailedException.
+        // The message entity can be extracted using message ID from table da_sms_authorization.
+        // In case message delivery fails, throw a DataAdapterRemoteException.
+    }
+
+    @Override
+    public VerifySmsAuthorizationResponse verifyAuthorizationSms(String userId, String organizationId, String messageId, String authorizationCode, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+        // You can override this logic in case more complex handling of SMS verification is required.
+        VerifySmsAuthorizationResponse response = smsPersistenceService.verifyAuthorizationSms(messageId, authorizationCode, false);
+        // Set number of remaining attempts for verification in case it is available.
+        // authResponse.setRemainingAttempts(5);
+        // You can enable showing of remaining attempts for the operation.
+        // response.setShowRemainingAttempts(true);
+        return response;
+    }
+
+    @Override
+    public VerifySmsAndPasswordResponse verifyAuthorizationSmsAndPassword(String userId, String organizationId, String messageId, String authorizationCode, OperationContext operationContext, AuthenticationContext authenticationContext, String password) throws DataAdapterRemoteException, InvalidOperationContextException {
+        VerifySmsAndPasswordResponse response = new VerifySmsAndPasswordResponse();
+
+        // Verify authorization code from SMS
+        VerifySmsAuthorizationResponse smsResponse = smsPersistenceService.verifyAuthorizationSms(messageId, authorizationCode, true);
+        authenticationContext.setSmsAuthorizationResult(smsResponse.getSmsAuthorizationResult());
+
+        // Authenticate user
+        UserAuthenticationResponse authResponse = authenticateUser(userId, password, authenticationContext, organizationId, operationContext);
+
+        // Create aggregate response
+        response.setSmsAuthorizationResult(smsResponse.getSmsAuthorizationResult());
+        response.setUserAuthenticationResult(authResponse.getAuthenticationResult());
+        if (smsResponse.getSmsAuthorizationResult() != SmsAuthorizationResult.VERIFIED_SUCCEEDED
+                || authResponse.getAuthenticationResult() != UserAuthenticationResult.VERIFIED_SUCCEEDED) {
+            // Provide an error message which does not allow to find out reason of failed verification.
+            response.setErrorMessage("login.authenticationFailed");
+        }
+        // Optionally set the number of remaining attempts, e.g. using lower of the two remaining attempt counts.
+        // response.setRemainingAttempts(Math.min(smsResponse.getRemainingAttempts(), authResponse.getRemainingAttempts()));
+        // You can enable showing of remaining attempts for the operation.
+        // response.setShowRemainingAttempts(true);
+        return response;
+    }
+
+    @Override
+    public InitConsentFormResponse initConsentForm(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+        // Override this logic in case consent form should be displayed conditionally for given operation context.
+        return new InitConsentFormResponse(true);
     }
 
     @Override
