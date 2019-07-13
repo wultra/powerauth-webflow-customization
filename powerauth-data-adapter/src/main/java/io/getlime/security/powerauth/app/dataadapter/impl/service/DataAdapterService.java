@@ -61,6 +61,8 @@ public class DataAdapterService implements DataAdapter {
         // Here will be the real authentication - call to the backend providing authentication.
         // Return a response with UserAuthenticationResult based on the actual authentication result.
         // The password is optionally encrypted, the authentication context contains information about encryption.
+        // In case of combined user authentication with SMS authorization the authentication context contains information
+        // about result of SMS authorization.
         PasswordProtectionType passwordProtection = authenticationContext.getPasswordProtection();
         UserAuthenticationResponse authResponse = new UserAuthenticationResponse();
         if (passwordProtection == PasswordProtectionType.NO_PROTECTION && "test".equals(password)) {
