@@ -29,7 +29,7 @@ import java.util.List;
 public interface DataAdapter {
 
     /**
-     * Lookup user account.
+     * Lookup user account - map username to user ID.
      * @param username Username which user uses for authentication.
      * @param organizationId Organization ID for this request.
      * @param operationContext Operation context.
@@ -93,7 +93,7 @@ public interface DataAdapter {
     void operationChangedNotification(String userId, String organizationId, OperationChange operationChange, OperationContext operationContext) throws DataAdapterRemoteException;
 
     /**
-     * Create authorization SMS.
+     * Create authorization SMS message and send it.
      * @param userId User ID.
      * @param organizationId Organization ID.
      * @param operationContext Operation context.
@@ -115,7 +115,7 @@ public interface DataAdapter {
     AuthorizationCode generateAuthorizationCode(String userId, String organizationId, OperationContext operationContext) throws InvalidOperationContextException;
 
     /**
-     * Generate text for SMS authorization.
+     * Generate text for SMS authorization message.
      * @param userId User ID.
      * @param organizationId Organization ID.
      * @param operationContext Operation context.

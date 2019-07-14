@@ -63,8 +63,15 @@ After you make a copy of the `powerauth-webflow-customization` project, you can 
 
 The OAuth 2.0 consent form used by Web Flow can be customized by implementing following methods from Data Adapter interface:
 
+### Initialize Consent Form
+
+The [initConsentForm](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/api/DataAdapter.java#L177) method is used to
+allow to decide whether consent form for should be displayed for given operation context. Based on values of parameters `userId`, `organizationId`
+and `operationContext` a decision can be made whether to display the consent form or not. In case the consent form is always displayed,
+return true in response unconditionally.
+
 ### Create Consent Form 
-The [createConsentForm](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/api/DataAdapter.java#L119) method is used to specify
+The [createConsentForm](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/api/DataAdapter.java#L189) method is used to specify
 the text of consent form and define options which are available in the options form. The consent form accepts consent text as HTML, scripting of the HTML is not allowed.
 The language of the consent form is specified using parameter `lang`. Each option is identified using an identifier `id`. Individual options in the form can be set as required and their default value can be set.
 The form can use parameters `userId`, `organizationId` and `operationContext` including `name`, `formData` and `applicationContext` to create a customized and personalized consent form for given
@@ -82,7 +89,7 @@ The response should contain following data:
 _Note that the consent texts do not use automatic resource localization because the HTML texts are expected to be complex and dynamically generated._
 
 ### Validate Consent Form  
-The [validateConsentForm](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/api/DataAdapter.java#L132) method is used to validate the OAuth 2.0 consent form options
+The [validateConsentForm](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/api/DataAdapter.java#L203) method is used to validate the OAuth 2.0 consent form options
 before the response is persisted. The identifiers of consent options match identifiers created in the `createConsentForm` step. The error messages produced by this method should
 take into account language specified using parameter `lang`.
 
@@ -97,7 +104,7 @@ The response should contain following data:
 _Note that the texts of error messages do not use automatic resource localization because the HTML texts are expected to be complex and dynamically generated._
   
 ### Save Consent Form
-The [saveConsentForm](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/api/DataAdapter.java#L143) method is used to save the OAuth 2.0 consent form options.
+The [saveConsentForm](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/api/DataAdapter.java#L215) method is used to save the OAuth 2.0 consent form options.
 This method is called only when form validation done in `validateConsentForm` method successfully passes. The sample implementation prints the consent form option values into log.
 It is expected that in the real implementation the consent option values are persisted in a database or any other persistent storage of consent options.
  
