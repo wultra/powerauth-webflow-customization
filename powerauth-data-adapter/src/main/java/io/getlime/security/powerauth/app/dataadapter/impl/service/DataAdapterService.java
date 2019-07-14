@@ -117,7 +117,7 @@ public class DataAdapterService implements DataAdapter {
         // In case the bank account selection is disabled, return an empty list.
 
         if ((!"authorize_payment".equals(operationName) && !"authorize_payment_sca".equals(operationName))) {
-            // return empty list for operations other than authorize_payment or authorize_payment_sca
+            // return empty list for operations other than authorize_payment and authorize_payment_sca
             return new DecorateOperationFormDataResponse(formData);
         }
 
@@ -331,6 +331,7 @@ public class DataAdapterService implements DataAdapter {
 
     @Override
     public CreateConsentFormResponse createConsentForm(String userId, String organizationId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException {
+        // Generate response with consent text and options based on requested language.
         if ("login".equals(operationContext.getName()) || "login_sca".equals(operationContext.getName())) {
             // Create default consent
             CreateConsentFormResponse response = new CreateConsentFormResponse();
@@ -387,6 +388,7 @@ public class DataAdapterService implements DataAdapter {
 
     @Override
     public ValidateConsentFormResponse validateConsentForm(String userId, String organizationId, OperationContext operationContext, String lang, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
+        // Validate consent form options and return response with result of validation and optional error messages.
         ValidateConsentFormResponse response = new ValidateConsentFormResponse();
         if (options == null || options.isEmpty()) {
             throw new InvalidConsentDataException("Missing options for consent");
@@ -471,6 +473,7 @@ public class DataAdapterService implements DataAdapter {
 
     @Override
     public SaveConsentFormResponse saveConsentForm(String userId, String organizationId, OperationContext operationContext, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
+        // Save consent form options selected by the user. The sample implementation only logs the selected options.
         logger.info("Saving consent form for user: {}, operation ID: {}", userId, operationContext.getId());
         for (ConsentOption option: options) {
             logger.info("Option {}: {}", option.getId(), option.getValue());

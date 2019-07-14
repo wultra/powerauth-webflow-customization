@@ -17,7 +17,7 @@ package io.getlime.security.powerauth.app.dataadapter.repository;
 
 import io.getlime.security.powerauth.app.dataadapter.repository.model.entity.SmsAuthorizationEntity;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 
 /**
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
-@Component
+@Repository
 public interface SmsAuthorizationRepository extends CrudRepository<SmsAuthorizationEntity, String> {
 
 }
