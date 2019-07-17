@@ -80,13 +80,16 @@ public class AuthenticationController {
      */
     @RequestMapping(value = "/lookup", method = RequestMethod.POST)
     public ObjectResponse<UserDetailResponse> lookupUser(@Valid @RequestBody ObjectRequest<UserLookupRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
-        logger.info("Received user lookup request, username: {}, organization ID: {}, operation ID: {}", request.getRequestObject().getUsername(), request.getRequestObject().getOrganizationId(), request.getRequestObject().getOperationContext().getId());
+        logger.info("Received user lookup request, username: {}, organization ID: {}, operation ID: {}",
+                request.getRequestObject().getUsername(), request.getRequestObject().getOrganizationId(),
+                request.getRequestObject().getOperationContext().getId());
         UserLookupRequest lookupRequest = request.getRequestObject();
         String username = lookupRequest.getUsername();
         String organizationId = lookupRequest.getOrganizationId();
         OperationContext operationContext = lookupRequest.getOperationContext();
         UserDetailResponse response = dataAdapter.lookupUser(username, organizationId, operationContext);
-        logger.info("The user lookup request succeeded, user ID: {}, organization ID: {}, operation ID: {}", response.getId(), response.getOrganizationId(), request.getRequestObject().getOperationContext().getId());
+        logger.info("The user lookup request succeeded, user ID: {}, organization ID: {}, operation ID: {}",
+                response.getId(), response.getOrganizationId(), request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
 
@@ -99,7 +102,9 @@ public class AuthenticationController {
      */
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ObjectResponse<UserAuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<UserAuthenticationRequest> request) throws DataAdapterRemoteException {
-        logger.info("Received authenticate request, user ID: {}, organization ID: {}, operation ID: {}", request.getRequestObject().getUserId(), request.getRequestObject().getOrganizationId(), request.getRequestObject().getOperationContext().getId());
+        logger.info("Received authenticate request, user ID: {}, organization ID: {}, operation ID: {}",
+                request.getRequestObject().getUserId(), request.getRequestObject().getOrganizationId(),
+                request.getRequestObject().getOperationContext().getId());
         UserAuthenticationRequest authenticationRequest = request.getRequestObject();
         String userId = authenticationRequest.getUserId();
         String password = authenticationRequest.getPassword();
@@ -107,7 +112,8 @@ public class AuthenticationController {
         String organizationId = authenticationRequest.getOrganizationId();
         OperationContext operationContext = authenticationRequest.getOperationContext();
         UserAuthenticationResponse response = dataAdapter.authenticateUser(userId, password, authenticationContext, organizationId, operationContext);
-        logger.info("The authenticate request succeeded, user ID: {}, organization ID: {}, operation ID: {}", userId, organizationId, request.getRequestObject().getOperationContext().getId());
+        logger.info("The authenticate request succeeded, user ID: {}, organization ID: {}, operation ID: {}", userId,
+                organizationId, request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
 
