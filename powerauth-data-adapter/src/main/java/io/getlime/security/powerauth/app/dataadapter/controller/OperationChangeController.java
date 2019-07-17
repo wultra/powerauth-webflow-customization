@@ -38,7 +38,7 @@ public class OperationChangeController {
 
     private static final Logger logger = LoggerFactory.getLogger(OperationChangeController.class);
 
-    private DataAdapter dataAdapter;
+    private final DataAdapter dataAdapter;
 
     /**
      * Controller constructor.

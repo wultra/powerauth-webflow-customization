@@ -21,7 +21,6 @@ import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
 import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
 import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
 import io.getlime.security.powerauth.app.dataadapter.impl.validation.CreateSmsAuthorizationRequestValidator;
-import io.getlime.security.powerauth.app.dataadapter.service.SmsPersistenceService;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.AuthenticationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSmsAuthorizationRequest;
@@ -49,19 +48,16 @@ public class SmsAuthorizationController {
 
     private static final Logger logger = LoggerFactory.getLogger(SmsAuthorizationController.class);
 
-    private final SmsPersistenceService smsPersistenceService;
     private final CreateSmsAuthorizationRequestValidator requestValidator;
     private final DataAdapter dataAdapter;
 
     /**
      * Controller constructor.
-     * @param smsPersistenceService SMS persistence service.
      * @param requestValidator Validator for SMS requests.
      * @param dataAdapter Data adapter.
      */
     @Autowired
-    public SmsAuthorizationController(SmsPersistenceService smsPersistenceService, CreateSmsAuthorizationRequestValidator requestValidator, DataAdapter dataAdapter) {
-        this.smsPersistenceService = smsPersistenceService;
+    public SmsAuthorizationController(CreateSmsAuthorizationRequestValidator requestValidator, DataAdapter dataAdapter) {
         this.requestValidator = requestValidator;
         this.dataAdapter = dataAdapter;
     }

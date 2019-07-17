@@ -42,7 +42,7 @@ public class FormDataChangeController {
 
     private static final Logger logger = LoggerFactory.getLogger(FormDataChangeController.class);
 
-    private DataAdapter dataAdapter;
+    private final DataAdapter dataAdapter;
 
     /**
      * Controller constructor.

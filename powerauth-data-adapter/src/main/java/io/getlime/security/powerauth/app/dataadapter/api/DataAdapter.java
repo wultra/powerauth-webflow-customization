@@ -33,6 +33,7 @@ public interface DataAdapter {
      * @param username Username which user uses for authentication.
      * @param organizationId Organization ID for this request.
      * @param operationContext Operation context.
+     * @return Detail about the user.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws UserNotFoundException Thrown when user does not exist.
      */

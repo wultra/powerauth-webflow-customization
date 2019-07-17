@@ -61,10 +61,9 @@ public class SmsPersistenceService {
      * @param authorizationCode Authorization code for SMS message.
      * @param messageText Localized SMS message text.
      * @return Created entity with SMS message details.
-     * @throws InvalidOperationContextException In case operation context is invalid.
      */
     public SmsAuthorizationEntity createAuthorizationSms(String userId, String organizationId, String messageId, OperationContext operationContext,
-                                                         AuthorizationCode authorizationCode, String messageText) throws InvalidOperationContextException {
+                                                         AuthorizationCode authorizationCode, String messageText) {
 
         SmsAuthorizationEntity smsEntity = new SmsAuthorizationEntity();
         smsEntity.setMessageId(messageId);
@@ -92,6 +91,7 @@ public class SmsPersistenceService {
      * @param messageId Message ID.
      * @param authorizationCode Authorization code.
      * @param allowMultipleVerifications Whether authorization code can be verified multiple times.
+     * @return Result of SMS verification.
      */
     public VerifySmsAuthorizationResponse verifyAuthorizationSms(String messageId, String authorizationCode, boolean allowMultipleVerifications) {
         Optional<SmsAuthorizationEntity> smsEntityOptional = smsAuthorizationRepository.findById(messageId);
