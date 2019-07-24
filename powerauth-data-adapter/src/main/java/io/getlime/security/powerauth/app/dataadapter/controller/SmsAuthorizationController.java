@@ -89,10 +89,8 @@ public class SmsAuthorizationController {
         String organizationId = smsRequest.getOrganizationId();
         OperationContext operationContext = smsRequest.getOperationContext();
         String lang = smsRequest.getLang();
-        String messageId = dataAdapter.createAuthorizationSms(userId, organizationId, operationContext, lang);
+        CreateSmsAuthorizationResponse response = dataAdapter.createAndSendAuthorizationSms(userId, organizationId, operationContext, lang);
 
-        // Create response.
-        CreateSmsAuthorizationResponse response = new CreateSmsAuthorizationResponse(messageId);
         logger.info("The createAuthorizationSms request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
