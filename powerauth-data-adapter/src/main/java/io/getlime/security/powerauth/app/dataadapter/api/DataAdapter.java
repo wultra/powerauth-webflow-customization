@@ -103,40 +103,7 @@ public interface DataAdapter {
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      * @throws DataAdapterRemoteException Thrown when remote communication fails or SMS message could not be delivered.
      */
-    String createAuthorizationSms(String userId, String organizationId, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
-
-    /**
-     * Generate authorization code for SMS authorization.
-     * @param userId User ID.
-     * @param organizationId Organization ID.
-     * @param operationContext Operation context.
-     * @return Authorization code.
-     * @throws InvalidOperationContextException Thrown when operation context is invalid.
-     */
-    AuthorizationCode generateAuthorizationCode(String userId, String organizationId, OperationContext operationContext) throws InvalidOperationContextException;
-
-    /**
-     * Generate text for SMS authorization message.
-     * @param userId User ID.
-     * @param organizationId Organization ID.
-     * @param operationContext Operation context.
-     * @param authorizationCode Authorization code.
-     * @param lang Language for localization.
-     * @return Generated SMS text with authorization code.
-     * @throws InvalidOperationContextException Thrown when operation context is invalid.
-     */
-    String generateSmsText(String userId, String organizationId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException;
-
-    /**
-     * Send an authorization SMS with generated authorization code.
-     * @param userId User ID.
-     * @param organizationId Organization ID.
-     * @param messageId Message ID.
-     * @param messageText Text of SMS message.
-     * @param operationContext Operation context.
-     * @throws DataAdapterRemoteException Thrown when remote communication fails or SMS message could not be delivered.
-     */
-    void sendAuthorizationSms(String userId, String organizationId, String messageId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException;
+    CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
 
     /**
      * Verify authorization code from SMS message.

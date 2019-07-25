@@ -4,12 +4,11 @@ import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
 import io.getlime.security.powerauth.app.dataadapter.exception.*;
 import io.getlime.security.powerauth.app.dataadapter.service.DataAdapterI18NService;
 import io.getlime.security.powerauth.app.dataadapter.service.SmsPersistenceService;
-import io.getlime.security.powerauth.crypto.server.util.DataDigest;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
-import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.AmountAttribute;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.FormFieldConfig;
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.PasswordProtectionType;
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.SmsAuthorizationResult;
+import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.SmsDeliveryResult;
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.UserAuthenticationResult;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
 import org.slf4j.Logger;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -35,16 +33,19 @@ public class DataAdapterService implements DataAdapter {
     private static final Logger logger = LoggerFactory.getLogger(DataAdapterService.class);
 
     private static final String BANK_ACCOUNT_CHOICE_ID = "operation.bankAccountChoice";
+    private static final String AUTHENTICATION_FAILED = "login.authenticationFailed";
+    private static final String SMS_DELIVERY_FAILED = "smsAuthorization.deliveryFailed";
+    private static final String SMS_AUTHORIZATION_FAILED = "smsAuthorization.failed";
 
     private final DataAdapterI18NService dataAdapterI18NService;
-    private final OperationValueExtractionService operationValueExtractionService;
     private final SmsPersistenceService smsPersistenceService;
+    private final SmsDeliveryService smsDeliveryService;
 
     @Autowired
-    public DataAdapterService(DataAdapterI18NService dataAdapterI18NService, OperationValueExtractionService operationValueExtractionService, SmsPersistenceService smsPersistenceService) {
+    public DataAdapterService(DataAdapterI18NService dataAdapterI18NService, SmsPersistenceService smsPersistenceService, SmsDeliveryService smsDeliveryService) {
         this.dataAdapterI18NService = dataAdapterI18NService;
-        this.operationValueExtractionService = operationValueExtractionService;
         this.smsPersistenceService = smsPersistenceService;
+        this.smsDeliveryService = smsDeliveryService;
     }
 
     @Override
@@ -75,12 +76,12 @@ public class DataAdapterService implements DataAdapter {
                 return authResponse;
             } catch (UserNotFoundException e) {
                 authResponse.setAuthenticationResult(UserAuthenticationResult.VERIFIED_FAILED);
-                authResponse.setErrorMessage("login.authenticationFailed");
+                authResponse.setErrorMessage(AUTHENTICATION_FAILED);
                 return authResponse;
             }
         }
         authResponse.setAuthenticationResult(UserAuthenticationResult.VERIFIED_FAILED);
-        authResponse.setErrorMessage("login.authenticationFailed");
+        authResponse.setErrorMessage(AUTHENTICATION_FAILED);
         // Set number of remaining attempts for this user ID in case it is available.
         // authResponse.setRemainingAttempts(5);
 
@@ -194,96 +195,37 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public String createAuthorizationSms(String userId, String organizationId, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
-        // messageId is generated as random UUID, it can be overridden to provide a real message identification
+    public CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
+        CreateSmsAuthorizationResponse response = new CreateSmsAuthorizationResponse();
+        // MessageId is generated as random UUID, it can be overridden to provide a real message identification
         String messageId = UUID.randomUUID().toString();
+        response.setMessageId(messageId);
 
-        // fake SMS message delivery for null user ID
+        // Fake SMS message delivery for null user ID in case of non-existent account or blocked user account
         if (userId == null) {
-            return messageId;
+            // Make sure that user cannot recognize that the SMS was not sent, even the result is sent as fake success
+            response.setSmsDeliveryResult(SmsDeliveryResult.SUCCEEDED);
+            return response;
         }
 
-        // generate authorization code
-        AuthorizationCode authorizationCode = generateAuthorizationCode(userId, organizationId, operationContext);
+        // Generate authorization code
+        AuthorizationCode authorizationCode = smsDeliveryService.generateAuthorizationCode(userId, organizationId, operationContext);
 
-        // generate message text, include previously generated authorization code
-        String messageText = generateSmsText(userId, organizationId, operationContext, authorizationCode, lang);
+        // Generate message text, include previously generated authorization code
+        String messageText = smsDeliveryService.generateSmsText(userId, organizationId, operationContext, authorizationCode, lang);
 
-        // persist authorization SMS message
+        // Persist authorization SMS message
         smsPersistenceService.createAuthorizationSms(userId, organizationId, messageId, operationContext, authorizationCode, messageText);
 
         // Send SMS with generated text to target user.
-        sendAuthorizationSms(userId, organizationId, messageId, messageText, operationContext);
-
-        // return generated message ID
-        return messageId;
-    }
-
-    @Override
-    public AuthorizationCode generateAuthorizationCode(String userId, String organizationId, OperationContext operationContext) throws InvalidOperationContextException {
-        String operationName = operationContext.getName();
-        List<String> digestItems = new ArrayList<>();
-        switch (operationName) {
-            case "login":
-            case "login_sca": {
-                digestItems.add(operationName);
-                break;
-            }
-            case "authorize_payment":
-            case "authorize_payment_sca": {
-                AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
-                String account = operationValueExtractionService.getAccount(operationContext);
-                BigDecimal amount = amountAttribute.getAmount();
-                String currency = amountAttribute.getCurrency();
-                digestItems.add(amount.toPlainString());
-                digestItems.add(currency);
-                digestItems.add(account);
-                break;
-            }
-            // Add new operations here.
-            default:
-                throw new InvalidOperationContextException("Unsupported operation: " + operationName);
+        SmsDeliveryResult deliveryResult = smsDeliveryService.sendAuthorizationSms(userId, organizationId, messageId, messageText, operationContext);
+        response.setSmsDeliveryResult(deliveryResult);
+        if (!SmsDeliveryResult.SUCCEEDED.equals(deliveryResult)) {
+            response.setErrorMessage(SMS_DELIVERY_FAILED);
         }
 
-        final DataDigest.Result digestResult = new DataDigest().generateDigest(digestItems);
-        if (digestResult == null) {
-            throw new InvalidOperationContextException("Digest generation failed");
-        }
-        return new AuthorizationCode(digestResult.getDigest(), digestResult.getSalt());
-    }
-
-    @Override
-    public String generateSmsText(String userId, String organizationId, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException {
-        String operationName = operationContext.getName();
-        String[] messageArgs;
-        switch (operationName) {
-            case "login":
-            case "login_sca": {
-                messageArgs = new String[]{authorizationCode.getCode()};
-                break;
-            }
-            case "authorize_payment":
-            case "authorize_payment_sca": {
-                AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
-                String account = operationValueExtractionService.getAccount(operationContext);
-                BigDecimal amount = amountAttribute.getAmount();
-                String currency = amountAttribute.getCurrency();
-                messageArgs = new String[]{amount.toPlainString(), currency, account, authorizationCode.getCode()};
-                break;
-            }
-            // Add new operations here.
-            default:
-                throw new InvalidOperationContextException("Unsupported operation: " + operationName);
-        }
-
-        return dataAdapterI18NService.messageSource().getMessage(operationName + ".smsText", messageArgs, new Locale(lang));
-    }
-
-    @Override
-    public void sendAuthorizationSms(String userId, String organizationId, String messageId, String messageText, OperationContext operationContext) throws DataAdapterRemoteException {
-        // Add here code to send the SMS OTP message to user identified by userId with messageText.
-        // The message entity can be extracted using message ID from table da_sms_authorization.
-        // In case message delivery fails, throw a DataAdapterRemoteException.
+        // Return generated message ID
+        return response;
     }
 
     @Override
@@ -314,7 +256,7 @@ public class DataAdapterService implements DataAdapter {
         if (smsResponse.getSmsAuthorizationResult() != SmsAuthorizationResult.VERIFIED_SUCCEEDED
                 || authResponse.getAuthenticationResult() != UserAuthenticationResult.VERIFIED_SUCCEEDED) {
             // Provide an error message which does not allow to find out reason of failed verification.
-            response.setErrorMessage("login.authenticationFailed");
+            response.setErrorMessage(AUTHENTICATION_FAILED);
         }
         // Optionally set the number of remaining attempts, e.g. using lower of the two remaining attempt counts.
         // response.setRemainingAttempts(Math.min(smsResponse.getRemainingAttempts(), authResponse.getRemainingAttempts()));
