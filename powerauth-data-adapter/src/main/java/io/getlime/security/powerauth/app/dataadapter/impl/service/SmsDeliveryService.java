@@ -64,11 +64,13 @@ public class SmsDeliveryService {
         String operationName = operationContext.getName();
         List<String> digestItems = new ArrayList<>();
         switch (operationName) {
-            case "login": {
+            case "login":
+            case "login_sca": {
                 digestItems.add(operationName);
                 break;
             }
-            case "authorize_payment": {
+            case "authorize_payment":
+            case "authorize_payment_sca": {
                 AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
                 String account = operationValueExtractionService.getAccount(operationContext);
                 BigDecimal amount = amountAttribute.getAmount();
@@ -105,11 +107,13 @@ public class SmsDeliveryService {
         String operationName = operationContext.getName();
         String[] messageArgs;
         switch (operationName) {
-            case "login": {
+            case "login":
+            case "login_sca": {
                 messageArgs = new String[]{authorizationCode.getCode()};
                 break;
             }
-            case "authorize_payment": {
+            case "authorize_payment":
+            case "authorize_payment_sca": {
                 AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
                 String account = operationValueExtractionService.getAccount(operationContext);
                 BigDecimal amount = amountAttribute.getAmount();
