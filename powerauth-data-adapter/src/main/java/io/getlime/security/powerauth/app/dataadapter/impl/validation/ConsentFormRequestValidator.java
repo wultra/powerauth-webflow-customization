@@ -82,7 +82,7 @@ public class ConsentFormRequestValidator implements Validator {
             if (request.getOperationContext() != null) {
                 validateOperationName(request.getOperationContext().getName(), errors);
             }
-            validateLanguage(request.getLang(), errors);
+            validateLanguage(errors);
         } else if (objectRequest.getRequestObject() instanceof ValidateConsentFormRequest) {
             ObjectRequest<ValidateConsentFormRequest> requestObject = (ObjectRequest<ValidateConsentFormRequest>) o;
             ValidateConsentFormRequest request = requestObject.getRequestObject();
@@ -91,7 +91,7 @@ public class ConsentFormRequestValidator implements Validator {
             if (request.getOperationContext() != null) {
                 validateOperationName(request.getOperationContext().getName(), errors);
             }
-            validateLanguage(request.getLang(), errors);
+            validateLanguage(errors);
             validateOptions(request.getOptions(), errors);
         } else if (objectRequest.getRequestObject() instanceof SaveConsentFormRequest) {
             ObjectRequest<SaveConsentFormRequest> requestObject = (ObjectRequest<SaveConsentFormRequest>) o;
@@ -125,11 +125,9 @@ public class ConsentFormRequestValidator implements Validator {
         }
     }
 
-    private void validateLanguage(String lang, Errors errors) {
+    private void validateLanguage(Errors errors) {
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.lang", "consent.invalidRequest");
-        if (lang != null && !lang.equals("cs") && !lang.equals("en")) {
-            errors.rejectValue("requestObject.lang", "consent.invalidRequest");
-        }
+        // Do not validate lang parameter, fallback to "en" instead, see: https://github.com/wultra/powerauth-webflow-customization/issues/104
     }
 
     private void validateOptions(List<ConsentOption> options, Errors errors) {
