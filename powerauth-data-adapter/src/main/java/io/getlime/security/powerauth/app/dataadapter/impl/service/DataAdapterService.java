@@ -273,6 +273,10 @@ public class DataAdapterService implements DataAdapter {
 
     @Override
     public CreateConsentFormResponse createConsentForm(String userId, String organizationId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException {
+        // Fallback to English for unsupported languages, see: https://github.com/wultra/powerauth-webflow-customization/issues/104
+        if (!"cs".equals(lang) && !"en".equals(lang)) {
+            lang = "en";
+        }
         // Generate response with consent text and options based on requested language.
         if ("login".equals(operationContext.getName()) || "login_sca".equals(operationContext.getName())) {
             // Create default consent
@@ -330,6 +334,10 @@ public class DataAdapterService implements DataAdapter {
 
     @Override
     public ValidateConsentFormResponse validateConsentForm(String userId, String organizationId, OperationContext operationContext, String lang, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
+        // Fallback to English for unsupported languages, see: https://github.com/wultra/powerauth-webflow-customization/issues/104
+        if (!"cs".equals(lang) && !"en".equals(lang)) {
+            lang = "en";
+        }
         // Validate consent form options and return response with result of validation and optional error messages.
         ValidateConsentFormResponse response = new ValidateConsentFormResponse();
         if (options == null || options.isEmpty()) {
