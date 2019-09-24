@@ -6,10 +6,8 @@ import io.getlime.security.powerauth.app.dataadapter.service.DataAdapterI18NServ
 import io.getlime.security.powerauth.app.dataadapter.service.SmsPersistenceService;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.FormFieldConfig;
-import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.PasswordProtectionType;
-import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.SmsAuthorizationResult;
-import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.SmsDeliveryResult;
-import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.UserAuthenticationResult;
+import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.*;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.AfsRequestParameters;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -429,6 +428,38 @@ public class DataAdapterService implements DataAdapter {
             logger.info("Option {}: {}", option.getId(), option.getValue());
         }
         return new SaveConsentFormResponse(true);
+    }
+
+    @Override
+    public AfsResponse executeAfsAction(String userId, String organizationId, OperationContext operationContext, AfsRequestParameters afsRequestParameters, List<AuthInstrument> authInstruments, Map<String, Object> extras) throws DataAdapterRemoteException, InvalidOperationContextException {
+        // Call anti-fraud system and return response for Web Flow.
+        // In default implementation of Data Adapter a mocked response is returned with static 2FA AFS label.
+        AfsResponse response = new AfsResponse();
+        switch (afsRequestParameters.getAfsAction()) {
+            case LOGIN_INIT:
+            case APPROVAL_AUTH:
+                // Return AFS label, but do not apply response parameters on authentication form
+                response.setApplyAfsResponse(false);
+                response.setAfsLabel("2FA");
+                break;
+
+            case APPROVAL_INIT:
+                // Apply AFS response parameters on authentication form.
+                // This example performs step-down from 2FA to 1FA.
+                response.setApplyAfsResponse(true);
+                response.setAfsLabel("1FA");
+                response.getAuthStepOptions().setPasswordRequired(false);
+                response.getAuthStepOptions().setSmsOtpRequired(true);
+                break;
+
+            case LOGIN_AUTH:
+            case LOGOUT:
+                // Do not apply response parameters
+                response.setApplyAfsResponse(false);
+                break;
+
+        }
+        return response;
     }
 
 }
