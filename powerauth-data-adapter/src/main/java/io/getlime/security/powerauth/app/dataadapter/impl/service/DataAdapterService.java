@@ -5,6 +5,7 @@ import io.getlime.security.powerauth.app.dataadapter.exception.*;
 import io.getlime.security.powerauth.app.dataadapter.service.DataAdapterI18NService;
 import io.getlime.security.powerauth.app.dataadapter.service.SmsPersistenceService;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
+import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.AmountAttribute;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.FormFieldConfig;
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.AfsRequestParameters;
@@ -445,11 +446,19 @@ public class DataAdapterService implements DataAdapter {
 
             case APPROVAL_INIT:
                 // Apply AFS response parameters on authentication form.
-                // This example performs step-down from 2FA to 1FA.
-                response.setApplyAfsResponse(true);
-                response.setAfsLabel("1FA");
-                response.getAuthStepOptions().setPasswordRequired(false);
-                response.getAuthStepOptions().setSmsOtpRequired(true);
+                // This example performs step-down from 2FA to 1FA in case of payment in CZK with low amount.
+                AmountAttribute amountAttr = operationContext.getFormData().getAmount();
+                if (amountAttr.getCurrency().equals("CZK") && amountAttr.getAmount().intValue() < 500) {
+                    // Disable password verification for low amounts
+                    response.setApplyAfsResponse(true);
+                    response.setAfsLabel("1FA");
+                    response.getAuthStepOptions().setPasswordRequired(false);
+                    response.getAuthStepOptions().setSmsOtpRequired(true);
+                } else {
+                    // For higher amounts keep the password verification
+                    response.setApplyAfsResponse(false);
+                    response.setAfsLabel("2FA");
+                }
                 break;
 
             case LOGIN_AUTH:
