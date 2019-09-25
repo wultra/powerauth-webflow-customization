@@ -440,7 +440,7 @@ public class DataAdapterService implements DataAdapter {
             case LOGIN_INIT:
             case APPROVAL_AUTH:
                 // Return AFS label, but do not apply response parameters on authentication form
-                response.setApplyAfsResponse(false);
+                response.setAfsResponseApplied(false);
                 response.setAfsLabel("2FA");
                 break;
 
@@ -450,13 +450,13 @@ public class DataAdapterService implements DataAdapter {
                 AmountAttribute amountAttr = operationContext.getFormData().getAmount();
                 if (amountAttr.getCurrency().equals("CZK") && amountAttr.getAmount().intValue() < 500) {
                     // Disable password verification for low amounts
-                    response.setApplyAfsResponse(true);
+                    response.setAfsResponseApplied(true);
                     response.setAfsLabel("1FA");
                     response.getAuthStepOptions().setPasswordRequired(false);
                     response.getAuthStepOptions().setSmsOtpRequired(true);
                 } else {
                     // For higher amounts keep the password verification
-                    response.setApplyAfsResponse(false);
+                    response.setAfsResponseApplied(false);
                     response.setAfsLabel("2FA");
                 }
                 break;
@@ -464,7 +464,7 @@ public class DataAdapterService implements DataAdapter {
             case LOGIN_AUTH:
             case LOGOUT:
                 // Do not apply response parameters
-                response.setApplyAfsResponse(false);
+                response.setAfsResponseApplied(false);
                 break;
 
         }
