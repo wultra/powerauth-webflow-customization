@@ -433,8 +433,8 @@ public class DataAdapterService implements DataAdapter {
 
     @Override
     public AfsResponse executeAfsAction(String userId, String organizationId, OperationContext operationContext, AfsRequestParameters afsRequestParameters, List<AuthInstrument> authInstruments, Map<String, Object> extras) throws DataAdapterRemoteException, InvalidOperationContextException {
-        // Call anti-fraud system and return response for Web Flow.
-        // In default implementation of Data Adapter a mocked response is returned with static 2FA AFS label.
+        // Call anti-fraud system and return response for Web Flow. In default implementation of Data Adapter
+        // a mocked response is returned with static 2FA AFS label except for the case of payment with low amount.
         AfsResponse response = new AfsResponse();
         switch (afsRequestParameters.getAfsAction()) {
             case LOGIN_INIT:
