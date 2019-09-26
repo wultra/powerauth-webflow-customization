@@ -72,9 +72,8 @@ public class AfsController {
         String organizationId = afsRequest.getOrganizationId();
         OperationContext operationContext = afsRequest.getOperationContext();
         AfsRequestParameters requestParameters = afsRequest.getAfsRequestParameters();
-        List<AuthInstrument> authInstruments = afsRequest.getAuthInstruments();
         Map<String, Object> extras = afsRequest.getExtras();
-        AfsResponse response = dataAdapter.executeAfsAction(userId, organizationId, operationContext, requestParameters, authInstruments, extras);
+        AfsResponse response = dataAdapter.executeAfsAction(userId, organizationId, operationContext, requestParameters, extras);
         logger.debug("The executeAfsAction request succeeded");
         return new ObjectResponse<>(response);
     }

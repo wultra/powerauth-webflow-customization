@@ -192,12 +192,11 @@ public interface DataAdapter {
      * @param organizationId Organization ID.
      * @param operationContext Operation context.
      * @param afsRequestParameters Request parameters for AFS.
-     * @param authInstruments Authentication instruments used during this authentication step.
      * @param extras Extra parameters for AFS.
      * @return Response from AFS for usage in Web Flow.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      */
-    AfsResponse executeAfsAction(String userId, String organizationId, OperationContext operationContext, AfsRequestParameters afsRequestParameters, List<AuthInstrument> authInstruments, Map<String, Object> extras) throws DataAdapterRemoteException, InvalidOperationContextException;
+    AfsResponse executeAfsAction(String userId, String organizationId, OperationContext operationContext, AfsRequestParameters afsRequestParameters, Map<String, Object> extras) throws DataAdapterRemoteException, InvalidOperationContextException;
 
 }
