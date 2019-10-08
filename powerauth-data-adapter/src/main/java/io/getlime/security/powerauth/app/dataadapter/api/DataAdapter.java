@@ -17,9 +17,12 @@ package io.getlime.security.powerauth.app.dataadapter.api;
 
 import io.getlime.security.powerauth.app.dataadapter.exception.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
+import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthInstrument;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.AfsRequestParameters;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Interface defines methods which should be implemented for integration of Web Flow with 3rd parties.
@@ -176,10 +179,24 @@ public interface DataAdapter {
      * @param organizationId Organization ID.
      * @param operationContext Operation context.
      * @param options Options selected by the user.
+     * @return Response with result of saving the consent form.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      * @throws InvalidConsentDataException In case consent options are invalid.
      */
     SaveConsentFormResponse saveConsentForm(String userId, String organizationId, OperationContext operationContext, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException;
+
+    /**
+     * Execute an anti-fraud system action and return response for usage in Web Flow.
+     * @param userId User ID.
+     * @param organizationId Organization ID.
+     * @param operationContext Operation context.
+     * @param afsRequestParameters Request parameters for AFS.
+     * @param extras Extra parameters for AFS.
+     * @return Response from AFS for usage in Web Flow.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     */
+    AfsResponse executeAfsAction(String userId, String organizationId, OperationContext operationContext, AfsRequestParameters afsRequestParameters, Map<String, Object> extras) throws DataAdapterRemoteException, InvalidOperationContextException;
 
 }
