@@ -79,7 +79,7 @@ public class SmsAuthorizationController {
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      * @throws InvalidOperationContextException Thrown in case operation context is invalid.
      */
-    @RequestMapping(value = "create", method = RequestMethod.POST)
+    @PostMapping(value = "create")
     public ObjectResponse<CreateSmsAuthorizationResponse> createAuthorizationSms(@Valid @RequestBody ObjectRequest<CreateSmsAuthorizationRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
         logger.info("Received createAuthorizationSms request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         CreateSmsAuthorizationRequest smsRequest = request.getRequestObject();
@@ -103,7 +103,7 @@ public class SmsAuthorizationController {
      * @throws DataAdapterRemoteException Thrown in case communication with remote system fails.
      * @throws InvalidOperationContextException Thrown in case operation context is invalid.
      */
-    @RequestMapping(value = "verify", method = RequestMethod.POST)
+    @PostMapping(value = "verify")
     public ObjectResponse<VerifySmsAuthorizationResponse> verifyAuthorizationSms(@RequestBody ObjectRequest<VerifySmsAuthorizationRequest> request) throws InvalidOperationContextException, DataAdapterRemoteException {
         logger.info("Received verifyAuthorizationSms request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         VerifySmsAuthorizationRequest verifyRequest = request.getRequestObject();
@@ -126,7 +126,7 @@ public class SmsAuthorizationController {
      * @throws DataAdapterRemoteException Thrown in case communication with remote system fails.
      * @throws InvalidOperationContextException Thrown in case operation context is invalid.
      */
-    @RequestMapping(value = "/password/verify", method = RequestMethod.POST)
+    @PostMapping(value = "/password/verify")
     public ObjectResponse<VerifySmsAndPasswordResponse> verifyAuthorizationSmsAndPassword(@RequestBody ObjectRequest<VerifySmsAndPasswordRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
         logger.info("Received verifyAuthorizationSmsAndPassword request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         VerifySmsAndPasswordRequest verifyRequest = request.getRequestObject();

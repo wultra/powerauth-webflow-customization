@@ -60,7 +60,7 @@ public class FormDataChangeController {
      * @return Object response.
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      */
-    @RequestMapping(value = "/change", method = RequestMethod.POST)
+    @PostMapping(value = "/change")
     public Response formDataChangedNotification(@RequestBody ObjectRequest<FormDataChangeNotificationRequest> request) throws DataAdapterRemoteException {
         logger.info("Received formDataChangedNotification request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
@@ -82,7 +82,7 @@ public class FormDataChangeController {
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      * @throws UserNotFoundException Thrown in case user is not found.
      */
-    @RequestMapping(value = "/decorate", method = RequestMethod.POST)
+    @PostMapping(value = "/decorate")
     public ObjectResponse<DecorateOperationFormDataResponse> decorateOperationFormData(@RequestBody ObjectRequest<DecorateOperationFormDataRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
         logger.info("Received decorateOperationFormData request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());

@@ -56,7 +56,7 @@ public class OperationChangeController {
      * @return Object response.
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      */
-    @RequestMapping(value = "/change", method = RequestMethod.POST)
+    @PostMapping(value = "/change")
     public Response operationChangedNotification(@RequestBody ObjectRequest<OperationChangeNotificationRequest> request) throws DataAdapterRemoteException {
         logger.info("Received operationChangedNotification request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
