@@ -111,9 +111,11 @@ public class CreateSmsAuthorizationRequestValidator implements Validator {
         
         switch (operationName) {
             case "login":
+            case "login_sca":
                 // no field validation required
                 break;
             case "authorize_payment":
+            case "authorize_payment_sca":
                 validateFieldsForPayment(authRequest, errors);
                 break;
             default:
