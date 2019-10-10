@@ -38,7 +38,7 @@ import org.springframework.validation.Validator;
 @Component
 public class AuthenticationRequestValidator implements Validator {
 
-§    private static final String OPERATION_CONTEXT_FIELD = "requestObject.operationContext";
+    private static final String OPERATION_CONTEXT_FIELD = "requestObject.operationContext";
     private static final String MISSING_OPERATION_CONTEXT_ERROR_CODE = "operationContext.missing";
     private static final String PASS_FIELD = "requestObject.password";
     private static final String ORGANIZATION_ID_FIELD = "requestObject.organizationId";
