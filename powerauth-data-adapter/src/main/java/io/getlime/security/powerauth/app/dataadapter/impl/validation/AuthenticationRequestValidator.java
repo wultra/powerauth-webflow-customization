@@ -38,6 +38,11 @@ import org.springframework.validation.Validator;
 @Component
 public class AuthenticationRequestValidator implements Validator {
 
+§    private static final String OPERATION_CONTEXT_FIELD = "requestObject.operationContext";
+    private static final String MISSING_OPERATION_CONTEXT_ERROR_CODE = "operationContext.missing";
+    private static final String PASS_FIELD = "requestObject.password";
+    private static final String ORGANIZATION_ID_FIELD = "requestObject.organizationId";
+    
     /**
      * Return whether validator can validate given class.
      * @param clazz Validated class.
@@ -57,67 +62,74 @@ public class AuthenticationRequestValidator implements Validator {
     public void validate(@Nullable Object o, @NonNull Errors errors) {
         ObjectRequest objectRequest = (ObjectRequest) o;
         if (objectRequest == null) {
-            errors.rejectValue("requestObject.operationContext", "operationContext.missing");
+            errors.rejectValue(OPERATION_CONTEXT_FIELD, MISSING_OPERATION_CONTEXT_ERROR_CODE);
             return;
         }
-
         if (objectRequest.getRequestObject() instanceof UserLookupRequest) {
-            UserLookupRequest authRequest = (UserLookupRequest) objectRequest.getRequestObject();
-
-            // update validation logic based on the real Data Adapter requirements
-            String username = authRequest.getUsername();
-            String organizationId = authRequest.getOrganizationId();
-            OperationContext operationContext = authRequest.getOperationContext();
-            if (operationContext == null) {
-                errors.rejectValue("requestObject.operationContext", "operationContext.missing");
-            }
-            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.username", "login.username.empty");
-            if (username != null && username.length() > 30) {
-                errors.rejectValue("requestObject.username", "login.username.long");
-            }
-
-            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.organizationId", "login.organizationId.empty");
-            if (organizationId != null && organizationId.length() > 256) {
-                errors.rejectValue("requestObject.organizationId", "login.organizationId.long");
-            }
+            validateUserLookupRequest(objectRequest, errors);
         } else if (objectRequest.getRequestObject() instanceof UserAuthenticationRequest) {
-            UserAuthenticationRequest authRequest = (UserAuthenticationRequest) objectRequest.getRequestObject();
+            validateUserAuthenticationRequest(objectRequest, errors);
+        }
+    }
+    
+    private void validateUserLookupRequest(ObjectRequest objectRequest, Errors errors) {
+        UserLookupRequest authRequest = (UserLookupRequest) objectRequest.getRequestObject();
 
-            // update validation logic based on the real Data Adapter requirements
-            String userId = authRequest.getUserId();
-            String password = authRequest.getPassword();
-            String organizationId = authRequest.getOrganizationId();
-            OperationContext operationContext = authRequest.getOperationContext();
-            if (operationContext == null) {
-                errors.rejectValue("requestObject.operationContext", "operationContext.missing");
-            }
-            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.userId", "login.userId.empty");
-            if (userId != null && userId.length() > 30) {
-                errors.rejectValue("requestObject.userId", "login.userId.long");
-            }
+        // update validation logic based on the real Data Adapter requirements
+        String username = authRequest.getUsername();
+        String organizationId = authRequest.getOrganizationId();
+        OperationContext operationContext = authRequest.getOperationContext();
+        if (operationContext == null) {
+            errors.rejectValue(OPERATION_CONTEXT_FIELD, MISSING_OPERATION_CONTEXT_ERROR_CODE);
+        }
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.username", "login.username.empty");
+        if (username != null && username.length() > 30) {
+            errors.rejectValue("requestObject.username", "login.username.long");
+        }
 
-            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.password", "login.password.empty");
-            AuthenticationContext authenticationContext = authRequest.getAuthenticationContext();
-            PasswordProtectionType passwordProtection = authenticationContext.getPasswordProtection();
-            if (passwordProtection == PasswordProtectionType.NO_PROTECTION) {
-                if (password != null && password.length() > 30) {
-                    errors.rejectValue("requestObject.password", "login.password.long");
-                }
-            } else {
-                // Allow longer values in password field when password is encrypted
-                if (password != null && password.length() > 256) {
-                    errors.rejectValue("requestObject.password", "login.password.long");
-                }
-            }
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, ORGANIZATION_ID_FIELD, "login.organizationId.empty");
+        if (organizationId != null && organizationId.length() > 256) {
+            errors.rejectValue(ORGANIZATION_ID_FIELD, "login.organizationId.long");
+        }
+    }
+    
+    private void validateUserAuthenticationRequest(ObjectRequest objectRequest, Errors errors) {
+        UserAuthenticationRequest authRequest = (UserAuthenticationRequest) objectRequest.getRequestObject();
 
-            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.organizationId", "login.organizationId.empty");
-            if (userId != null && organizationId.length() > 256) {
-                errors.rejectValue("requestObject.organizationId", "login.organizationId.long");
-            }
+        // update validation logic based on the real Data Adapter requirements
+        String userId = authRequest.getUserId();
+        String password = authRequest.getPassword();
+        String organizationId = authRequest.getOrganizationId();
+        OperationContext operationContext = authRequest.getOperationContext();
+        if (operationContext == null) {
+            errors.rejectValue(OPERATION_CONTEXT_FIELD, MISSING_OPERATION_CONTEXT_ERROR_CODE);
+        }
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.userId", "login.userId.empty");
+        if (userId != null && userId.length() > 30) {
+            errors.rejectValue("requestObject.userId", "login.userId.long");
+        }
 
-            if (passwordProtection != PasswordProtectionType.NO_PROTECTION && passwordProtection != PasswordProtectionType.PASSWORD_ENCRYPTION_AES) {
-                errors.rejectValue("requestObject.authenticationContext", "login.type.unsupported");
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, PASS_FIELD, "login.password.empty");
+        AuthenticationContext authenticationContext = authRequest.getAuthenticationContext();
+        PasswordProtectionType passwordProtection = authenticationContext.getPasswordProtection();
+        if (passwordProtection == PasswordProtectionType.NO_PROTECTION) {
+            if (password != null && password.length() > 30) {
+                errors.rejectValue(PASS_FIELD, "login.password.long");
             }
+        } else {
+            // Allow longer values in password field when password is encrypted
+            if (password != null && password.length() > 256) {
+                errors.rejectValue(PASS_FIELD, "login.password.long");
+            }
+        }
+
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, ORGANIZATION_ID_FIELD, "login.organizationId.empty");
+        if (userId != null && organizationId.length() > 256) {
+            errors.rejectValue(ORGANIZATION_ID_FIELD, "login.organizationId.long");
+        }
+
+        if (passwordProtection != PasswordProtectionType.NO_PROTECTION && passwordProtection != PasswordProtectionType.PASSWORD_ENCRYPTION_AES) {
+            errors.rejectValue("requestObject.authenticationContext", "login.type.unsupported");
         }
     }
 }

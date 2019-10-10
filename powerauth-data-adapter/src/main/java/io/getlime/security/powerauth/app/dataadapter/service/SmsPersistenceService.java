@@ -16,7 +16,6 @@
 package io.getlime.security.powerauth.app.dataadapter.service;
 
 import io.getlime.security.powerauth.app.dataadapter.configuration.DataAdapterConfiguration;
-import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
 import io.getlime.security.powerauth.app.dataadapter.repository.SmsAuthorizationRepository;
 import io.getlime.security.powerauth.app.dataadapter.repository.model.entity.SmsAuthorizationEntity;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.AuthorizationCode;

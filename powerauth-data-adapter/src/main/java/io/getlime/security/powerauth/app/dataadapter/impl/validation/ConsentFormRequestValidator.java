@@ -41,6 +41,8 @@ import java.util.List;
 @Component
 public class ConsentFormRequestValidator implements Validator {
 
+    private static final String INVALID_REQUEST_MESSAGE = "consent.invalidRequest";
+    
     /**
      * Return whether validator can validate given class.
      * @param clazz Validated class.
@@ -82,7 +84,7 @@ public class ConsentFormRequestValidator implements Validator {
             if (request.getOperationContext() != null) {
                 validateOperationName(request.getOperationContext().getName(), errors);
             }
-            validateLanguage(errors);
+            validateLanguage(request.getLang(), errors);
         } else if (objectRequest.getRequestObject() instanceof ValidateConsentFormRequest) {
             ObjectRequest<ValidateConsentFormRequest> requestObject = (ObjectRequest<ValidateConsentFormRequest>) o;
             ValidateConsentFormRequest request = requestObject.getRequestObject();
@@ -91,7 +93,7 @@ public class ConsentFormRequestValidator implements Validator {
             if (request.getOperationContext() != null) {
                 validateOperationName(request.getOperationContext().getName(), errors);
             }
-            validateLanguage(errors);
+            validateLanguage(request.getLang(), errors);
             validateOptions(request.getOptions(), errors);
         } else if (objectRequest.getRequestObject() instanceof SaveConsentFormRequest) {
             ObjectRequest<SaveConsentFormRequest> requestObject = (ObjectRequest<SaveConsentFormRequest>) o;
@@ -112,28 +114,30 @@ public class ConsentFormRequestValidator implements Validator {
     }
 
     private void validateUserId(String userId, Errors errors) {
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.userId", "consent.invalidRequest");
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.userId", INVALID_REQUEST_MESSAGE);
         if (userId != null && userId.length() > 30) {
-            errors.rejectValue("requestObject.userId", "consent.invalidRequest");
+            errors.rejectValue("requestObject.userId", INVALID_REQUEST_MESSAGE);
         }
     }
 
     private void validateOperationName(String operationName, Errors errors) {
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.operationContext.name", "consent.invalidRequest");
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.operationContext.name", INVALID_REQUEST_MESSAGE);
         if (operationName != null && operationName.length() > 32) {
-            errors.rejectValue("requestObject.operationContext.name", "consent.invalidRequest");
+            errors.rejectValue("requestObject.operationContext.name", INVALID_REQUEST_MESSAGE);
         }
     }
 
-    private void validateLanguage(Errors errors) {
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.lang", "consent.invalidRequest");
-        // Do not validate lang parameter, fallback to "en" instead, see: https://github.com/wultra/powerauth-webflow-customization/issues/104
+    private void validateLanguage(String lang, Errors errors) {
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.lang", INVALID_REQUEST_MESSAGE);
+        if (lang != null && !lang.equals("cs") && !lang.equals("en")) {
+            errors.rejectValue("requestObject.lang", INVALID_REQUEST_MESSAGE);
+        }
     }
 
     private void validateOptions(List<ConsentOption> options, Errors errors) {
-        ValidationUtils.rejectIfEmpty(errors, "requestObject.options", "consent.invalidRequest");
-        if (options != null && options.isEmpty()) {
-            errors.rejectValue("requestObject.options", "consent.invalidRequest");
+        // Allow empty options, but do not allow null value
+        if (options == null) {
+            errors.rejectValue("requestObject.options", INVALID_REQUEST_MESSAGE);
         }
     }
 }

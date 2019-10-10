@@ -83,7 +83,7 @@ public class ConsentController {
      * @throws DataAdapterRemoteException In case communication with remote system fails.
      * @throws InvalidOperationContextException In case operation context is invalid.
      */
-    @RequestMapping(value = "/init", method = RequestMethod.POST)
+    @PostMapping(value = "/init")
     public ObjectResponse<InitConsentFormResponse> initConsentForm(@Valid @RequestBody ObjectRequest<InitConsentFormRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
         logger.info("Received initConsentForm request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
@@ -103,7 +103,7 @@ public class ConsentController {
      * @throws DataAdapterRemoteException In case communication with remote system fails.
      * @throws InvalidOperationContextException In case operation context is invalid.
      */
-    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    @PostMapping(value = "/create")
     public ObjectResponse<CreateConsentFormResponse> createConsentForm(@Valid @RequestBody ObjectRequest<CreateConsentFormRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
         logger.info("Received createConsentForm request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
@@ -125,7 +125,7 @@ public class ConsentController {
      * @throws InvalidOperationContextException In case operation context is invalid.
      * @throws InvalidConsentDataException In case consent options are invalid.
      */
-    @RequestMapping(value = "/validate", method = RequestMethod.POST)
+    @PostMapping(value = "/validate")
     public ObjectResponse<ValidateConsentFormResponse> validateConsentForm(@Valid @RequestBody ObjectRequest<ValidateConsentFormRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
         logger.info("Received validateConsentForm request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
@@ -148,7 +148,7 @@ public class ConsentController {
      * @throws InvalidOperationContextException In case operation context is invalid.
      * @throws InvalidConsentDataException In case consent options are invalid.
      */
-    @RequestMapping(value = "/save", method = RequestMethod.POST)
+    @PostMapping(value = "/save")
     public ObjectResponse<SaveConsentFormResponse> saveConsentForm(@Valid @RequestBody ObjectRequest<SaveConsentFormRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
         logger.info("Received saveConsentForm request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());

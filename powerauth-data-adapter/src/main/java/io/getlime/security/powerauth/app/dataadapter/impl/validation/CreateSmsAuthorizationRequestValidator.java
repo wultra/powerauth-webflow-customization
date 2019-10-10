@@ -41,7 +41,10 @@ import java.math.BigDecimal;
 @Component
 public class CreateSmsAuthorizationRequestValidator implements Validator {
 
-    private OperationValueExtractionService operationValueExtractionService;
+    private static final String OPERATION_CONTEXT_FIELD = "requestObject.operationContext";
+    private static final String AMOUNT_EMPTY_ERROR_CODE = "smsAuthorization.amount.empty";
+    
+    private final OperationValueExtractionService operationValueExtractionService;
 
     /**
      * Validator constructor.
@@ -72,7 +75,7 @@ public class CreateSmsAuthorizationRequestValidator implements Validator {
     public void validate(@Nullable Object o, @NonNull Errors errors) {
         ObjectRequest<CreateSmsAuthorizationRequest> requestObject = (ObjectRequest<CreateSmsAuthorizationRequest>) o;
         if (requestObject == null) {
-            errors.rejectValue("requestObject.operationContext", "operationContext.missing");
+            errors.rejectValue(OPERATION_CONTEXT_FIELD, "operationContext.missing");
             return;
         }
         CreateSmsAuthorizationRequest authRequest = requestObject.getRequestObject();
@@ -82,7 +85,7 @@ public class CreateSmsAuthorizationRequestValidator implements Validator {
         String organizationId = authRequest.getOrganizationId();
         OperationContext operationContext = authRequest.getOperationContext();
         if (operationContext == null) {
-            errors.rejectValue("requestObject.operationContext", "operationContext.missing");
+            errors.rejectValue(OPERATION_CONTEXT_FIELD, "operationContext.missing");
         }
 
         String operationName = authRequest.getOperationContext().getName();
@@ -102,49 +105,53 @@ public class CreateSmsAuthorizationRequestValidator implements Validator {
             errors.rejectValue("requestObject.operationContext.name", "smsAuthorization.operationName.long");
         }
 
-        if (operationName != null) {
-            switch (operationName) {
-                case "login":
-                case "login_sca":
-                    // no field validation required
-                    break;
-                case "authorize_payment":
-                case "authorize_payment_sca":
-                    AmountAttribute amountAttribute;
-                    try {
-                        amountAttribute = operationValueExtractionService.getAmount(authRequest.getOperationContext());
-                        if (amountAttribute == null) {
-                            errors.rejectValue("requestObject.operationContext", "smsAuthorization.amount.empty");
-                        } else {
-                            BigDecimal amount = amountAttribute.getAmount();
-                            String currency = amountAttribute.getCurrency();
+        if (operationName == null) {
+            return;
+        }
+        
+        switch (operationName) {
+            case "login":
+                // no field validation required
+                break;
+            case "authorize_payment":
+                validateFieldsForPayment(authRequest, errors);
+                break;
+            default:
+                throw new IllegalStateException("Unsupported operation in validator: " + operationName);
+        }
+    }
+    
+    private void validateFieldsForPayment(CreateSmsAuthorizationRequest authRequest, Errors errors) {
+        AmountAttribute amountAttribute;
+        try {
+            amountAttribute = operationValueExtractionService.getAmount(authRequest.getOperationContext());
+            if (amountAttribute == null) {
+                errors.rejectValue(OPERATION_CONTEXT_FIELD, AMOUNT_EMPTY_ERROR_CODE);
+            } else {
+                BigDecimal amount = amountAttribute.getAmount();
+                String currency = amountAttribute.getCurrency();
 
-                            if (amount == null) {
-                                errors.rejectValue("requestObject.operationContext", "smsAuthorization.amount.empty");
-                            } else if (amount.doubleValue() <= 0) {
-                                errors.rejectValue("requestObject.operationContext", "smsAuthorization.amount.invalid");
-                            }
+                if (amount == null) {
+                    errors.rejectValue(OPERATION_CONTEXT_FIELD, AMOUNT_EMPTY_ERROR_CODE);
+                } else if (amount.doubleValue() <= 0) {
+                    errors.rejectValue(OPERATION_CONTEXT_FIELD, "smsAuthorization.amount.invalid");
+                }
 
-                            if (currency == null || currency.isEmpty()) {
-                                errors.rejectValue("requestObject.operationContext", "smsAuthorization.currency.empty");
-                            }
-                        }
-                    } catch (InvalidOperationContextException ex) {
-                        errors.rejectValue("requestObject.operationContext", "smsAuthorization.amount.empty");
-                    }
-                    String account;
-                    try {
-                        account = operationValueExtractionService.getAccount(authRequest.getOperationContext());
-                        if (account == null || account.isEmpty()) {
-                            errors.rejectValue("requestObject.operationContext", "smsAuthorization.account.empty");
-                        }
-                    } catch (InvalidOperationContextException ex) {
-                        errors.rejectValue("requestObject.operationContext", "smsAuthorization.account.empty");
-                    }
-                    break;
-                default:
-                    throw new IllegalStateException("Unsupported operation in validator: " + operationName);
+                if (currency == null || currency.isEmpty()) {
+                    errors.rejectValue(OPERATION_CONTEXT_FIELD, "smsAuthorization.currency.empty");
+                }
             }
+        } catch (InvalidOperationContextException ex) {
+            errors.rejectValue(OPERATION_CONTEXT_FIELD, AMOUNT_EMPTY_ERROR_CODE);
+        }
+        String account;
+        try {
+            account = operationValueExtractionService.getAccount(authRequest.getOperationContext());
+            if (account == null || account.isEmpty()) {
+                errors.rejectValue(OPERATION_CONTEXT_FIELD, "smsAuthorization.account.empty");
+            }
+        } catch (InvalidOperationContextException ex) {
+            errors.rejectValue(OPERATION_CONTEXT_FIELD, "smsAuthorization.account.empty");
         }
     }
 }

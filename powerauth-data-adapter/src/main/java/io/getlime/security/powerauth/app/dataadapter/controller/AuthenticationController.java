@@ -78,7 +78,7 @@ public class AuthenticationController {
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      * @throws UserNotFoundException Thrown in case that user does not exist.
      */
-    @RequestMapping(value = "/lookup", method = RequestMethod.POST)
+    @PostMapping(value = "/lookup")
     public ObjectResponse<UserDetailResponse> lookupUser(@Valid @RequestBody ObjectRequest<UserLookupRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
         logger.info("Received user lookup request, username: {}, organization ID: {}, operation ID: {}",
                 request.getRequestObject().getUsername(), request.getRequestObject().getOrganizationId(),
@@ -100,7 +100,7 @@ public class AuthenticationController {
      * @return Response with authenticated user ID.
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      */
-    @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
+    @PostMapping(value = "/authenticate")
     public ObjectResponse<UserAuthenticationResponse> authenticate(@Valid @RequestBody ObjectRequest<UserAuthenticationRequest> request) throws DataAdapterRemoteException {
         logger.info("Received authenticate request, user ID: {}, organization ID: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOrganizationId(),
@@ -125,7 +125,7 @@ public class AuthenticationController {
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      * @throws UserNotFoundException Thrown in case user is not found.
      */
-    @RequestMapping(value = "/info", method = RequestMethod.POST)
+    @PostMapping(value = "/info")
     public ObjectResponse<UserDetailResponse> fetchUserDetail(@RequestBody ObjectRequest<UserDetailRequest> request) throws DataAdapterRemoteException, UserNotFoundException {
         logger.info("Received fetchUserDetail request, user ID: {}", request.getRequestObject().getUserId());
         UserDetailRequest userDetailRequest = request.getRequestObject();
