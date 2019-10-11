@@ -51,7 +51,8 @@ public class DataAdapterService implements DataAdapter {
     @Override
     public UserDetailResponse lookupUser(String username, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
         // The sample Data Adapter code uses 1:1 mapping of username to userId. In real implementation the userId usually differs from the username, so translation of username to user ID is required.
-        // If user does not exist or user account is blocked and such error needs to be silent, return null values for user ID and organization ID.
+        // If the user does not exist, return null values for user ID and organization ID.
+        // If user account account is blocked, return AccountStatus.NOT_ACTIVE as account status.
         // The SCA login fakes SMS message delivery even for case when user ID is null to disallow fishing of usernames.
         // For case when an error should appear instead, throw a UserNotFoundException.
         return fetchUserDetail(username, organizationId, operationContext);
@@ -105,6 +106,7 @@ public class DataAdapterService implements DataAdapter {
         responseObject.setGivenName("John");
         responseObject.setFamilyName("Doe");
         responseObject.setOrganizationId(organizationId);
+        responseObject.setAccountStatus(AccountStatus.ACTIVE);
         return responseObject;
     }
 
@@ -195,14 +197,14 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
+    public CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
         CreateSmsAuthorizationResponse response = new CreateSmsAuthorizationResponse();
         // MessageId is generated as random UUID, it can be overridden to provide a real message identification
         String messageId = UUID.randomUUID().toString();
         response.setMessageId(messageId);
 
         // Fake SMS message delivery for null user ID in case of non-existent account or blocked user account
-        if (userId == null) {
+        if (userId == null || accountStatus != AccountStatus.ACTIVE) {
             // Make sure that user cannot recognize that the SMS was not sent, even the result is sent as fake success
             response.setSmsDeliveryResult(SmsDeliveryResult.SUCCEEDED);
             return response;

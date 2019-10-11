@@ -17,7 +17,7 @@ package io.getlime.security.powerauth.app.dataadapter.api;
 
 import io.getlime.security.powerauth.app.dataadapter.exception.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
-import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthInstrument;
+import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AccountStatus;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.AfsRequestParameters;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
 
@@ -100,13 +100,14 @@ public interface DataAdapter {
      * Create authorization SMS message and send it.
      * @param userId User ID.
      * @param organizationId Organization ID.
+     * @param accountStatus User account status.
      * @param operationContext Operation context.
      * @param lang Language for localization.
      * @return Message ID.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      * @throws DataAdapterRemoteException Thrown when remote communication fails or SMS message could not be delivered.
      */
-    CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
+    CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
 
     /**
      * Verify authorization code from SMS message.
