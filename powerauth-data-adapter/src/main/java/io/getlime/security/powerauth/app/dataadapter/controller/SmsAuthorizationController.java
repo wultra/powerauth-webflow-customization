@@ -23,6 +23,7 @@ import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationC
 import io.getlime.security.powerauth.app.dataadapter.impl.validation.CreateSmsAuthorizationRequestValidator;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.AuthenticationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
+import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AccountStatus;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSmsAuthorizationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifySmsAndPasswordRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifySmsAuthorizationRequest;
@@ -87,9 +88,10 @@ public class SmsAuthorizationController {
         // Create authorization SMS and persist it.
         String userId = smsRequest.getUserId();
         String organizationId = smsRequest.getOrganizationId();
+        AccountStatus accountStatus = smsRequest.getAccountStatus();
         OperationContext operationContext = smsRequest.getOperationContext();
         String lang = smsRequest.getLang();
-        CreateSmsAuthorizationResponse response = dataAdapter.createAndSendAuthorizationSms(userId, organizationId, operationContext, lang);
+        CreateSmsAuthorizationResponse response = dataAdapter.createAndSendAuthorizationSms(userId, organizationId, accountStatus, operationContext, lang);
 
         logger.info("The createAuthorizationSms request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
