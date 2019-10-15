@@ -73,15 +73,15 @@ public class DataAdapterService implements DataAdapter {
                 // The organization needs to be set in response (e.g. client authenticated against RETAIL organization or SME organization).
                 userDetail.setOrganizationId(organizationId);
                 authResponse.setUserDetail(userDetail);
-                authResponse.setAuthenticationResult(UserAuthenticationResult.VERIFIED_SUCCEEDED);
+                authResponse.setAuthenticationResult(UserAuthenticationResult.SUCCEEDED);
                 return authResponse;
             } catch (UserNotFoundException e) {
-                authResponse.setAuthenticationResult(UserAuthenticationResult.VERIFIED_FAILED);
+                authResponse.setAuthenticationResult(UserAuthenticationResult.FAILED);
                 authResponse.setErrorMessage(AUTHENTICATION_FAILED);
                 return authResponse;
             }
         }
-        authResponse.setAuthenticationResult(UserAuthenticationResult.VERIFIED_FAILED);
+        authResponse.setAuthenticationResult(UserAuthenticationResult.FAILED);
         authResponse.setErrorMessage(AUTHENTICATION_FAILED);
         // Set number of remaining attempts for this user ID in case it is available.
         // authResponse.setRemainingAttempts(5);
@@ -255,8 +255,8 @@ public class DataAdapterService implements DataAdapter {
         // Create aggregate response
         response.setSmsAuthorizationResult(smsResponse.getSmsAuthorizationResult());
         response.setUserAuthenticationResult(authResponse.getAuthenticationResult());
-        if (smsResponse.getSmsAuthorizationResult() != SmsAuthorizationResult.VERIFIED_SUCCEEDED
-                || authResponse.getAuthenticationResult() != UserAuthenticationResult.VERIFIED_SUCCEEDED) {
+        if (smsResponse.getSmsAuthorizationResult() != SmsAuthorizationResult.SUCCEEDED
+                || authResponse.getAuthenticationResult() != UserAuthenticationResult.SUCCEEDED) {
             // Provide an error message which does not allow to find out reason of failed verification.
             response.setErrorMessage(AUTHENTICATION_FAILED);
         }

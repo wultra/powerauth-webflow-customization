@@ -21,7 +21,6 @@ import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
 import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
 import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
-import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AuthInstrument;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
 import org.slf4j.Logger;
@@ -29,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 /**

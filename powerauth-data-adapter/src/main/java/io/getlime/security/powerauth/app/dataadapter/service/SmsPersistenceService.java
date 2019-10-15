@@ -96,7 +96,7 @@ public class SmsPersistenceService {
         Optional<SmsAuthorizationEntity> smsEntityOptional = smsAuthorizationRepository.findById(messageId);
         VerifySmsAuthorizationResponse response = new VerifySmsAuthorizationResponse();
         if (!smsEntityOptional.isPresent()) {
-            response.setSmsAuthorizationResult(SmsAuthorizationResult.VERIFIED_FAILED);
+            response.setSmsAuthorizationResult(SmsAuthorizationResult.FAILED);
             response.setErrorMessage("smsAuthorization.invalidMessage");
             return response;
         }
@@ -108,29 +108,29 @@ public class SmsPersistenceService {
         final Integer remainingAttempts = dataAdapterConfiguration.getSmsOtpMaxVerifyTriesPerMessage() - smsEntity.getVerifyRequestCount();
 
         if (smsEntity.getAuthorizationCode() == null || smsEntity.getAuthorizationCode().isEmpty()) {
-            response.setSmsAuthorizationResult(SmsAuthorizationResult.VERIFIED_FAILED);
+            response.setSmsAuthorizationResult(SmsAuthorizationResult.FAILED);
             response.setRemainingAttempts(remainingAttempts);
             response.setErrorMessage("smsAuthorization.invalidCode");
             return response;
         }
         if (smsEntity.isExpired()) {
-            response.setSmsAuthorizationResult(SmsAuthorizationResult.VERIFIED_FAILED);
+            response.setSmsAuthorizationResult(SmsAuthorizationResult.FAILED);
             response.setErrorMessage("smsAuthorization.expired");
             return response;
         }
         if (!allowMultipleVerifications && smsEntity.isVerified()) {
-            response.setSmsAuthorizationResult(SmsAuthorizationResult.VERIFIED_FAILED);
+            response.setSmsAuthorizationResult(SmsAuthorizationResult.FAILED);
             response.setErrorMessage("smsAuthorization.alreadyVerified");
             return response;
         }
         if (smsEntity.getVerifyRequestCount() > dataAdapterConfiguration.getSmsOtpMaxVerifyTriesPerMessage()) {
-            response.setSmsAuthorizationResult(SmsAuthorizationResult.VERIFIED_FAILED);
+            response.setSmsAuthorizationResult(SmsAuthorizationResult.FAILED);
             response.setErrorMessage("smsAuthorization.maxAttemptsExceeded");
             return response;
         }
         String authorizationCodeExpected = smsEntity.getAuthorizationCode();
         if (!authorizationCode.equals(authorizationCodeExpected)) {
-            response.setSmsAuthorizationResult(SmsAuthorizationResult.VERIFIED_FAILED);
+            response.setSmsAuthorizationResult(SmsAuthorizationResult.FAILED);
             response.setRemainingAttempts(remainingAttempts);
             response.setErrorMessage("smsAuthorization.failed");
             return response;
@@ -141,7 +141,7 @@ public class SmsPersistenceService {
         smsEntity.setTimestampVerified(new Date());
         smsAuthorizationRepository.save(smsEntity);
 
-        response.setSmsAuthorizationResult(SmsAuthorizationResult.VERIFIED_SUCCEEDED);
+        response.setSmsAuthorizationResult(SmsAuthorizationResult.SUCCEEDED);
         return response;
     }
 
