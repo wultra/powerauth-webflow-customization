@@ -113,6 +113,7 @@ public interface DataAdapter {
      * Verify authorization code from SMS message.
      * @param userId User ID.
      * @param organizationId Organization ID.
+     * @param accountStatus Current user account status.
      * @param messageId Message ID.
      * @param authorizationCode Authorization code.
      * @param operationContext Operation context.
@@ -120,12 +121,13 @@ public interface DataAdapter {
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      */
-    VerifySmsAuthorizationResponse verifyAuthorizationSms(String userId, String organizationId, String messageId, String authorizationCode, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException;
+    VerifySmsAuthorizationResponse verifyAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, String messageId, String authorizationCode, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException;
 
     /**
      * Verify authorization code from SMS message together with user password.
      * @param userId User ID.
      * @param organizationId Organization ID.
+     * @param accountStatus Current user account status.
      * @param messageId Message ID.
      * @param authorizationCode Authorization code.
      * @param operationContext Operation context.
@@ -135,7 +137,7 @@ public interface DataAdapter {
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      */
-    VerifySmsAndPasswordResponse verifyAuthorizationSmsAndPassword(String userId, String organizationId, String messageId, String authorizationCode, OperationContext operationContext, AuthenticationContext authenticationContext, String password) throws DataAdapterRemoteException, InvalidOperationContextException;
+    VerifySmsAndPasswordResponse verifyAuthorizationSmsAndPassword(String userId, String organizationId, AccountStatus accountStatus, String messageId, String authorizationCode, OperationContext operationContext, AuthenticationContext authenticationContext, String password) throws DataAdapterRemoteException, InvalidOperationContextException;
 
     /**
      * Decide whether OAuth 2.0 consent form should be displayed based on operation context.

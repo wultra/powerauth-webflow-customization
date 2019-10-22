@@ -111,11 +111,12 @@ public class SmsAuthorizationController {
         VerifySmsAuthorizationRequest verifyRequest = request.getRequestObject();
         String userId = verifyRequest.getUserId();
         String organizationId = verifyRequest.getOrganizationId();
+        AccountStatus accountStatus = verifyRequest.getAccountStatus();
         String messageId = verifyRequest.getMessageId();
         String authorizationCode = verifyRequest.getAuthorizationCode();
         OperationContext operationContext = verifyRequest.getOperationContext();
         // Verify authorization code
-        VerifySmsAuthorizationResponse response = dataAdapter.verifyAuthorizationSms(userId, organizationId, messageId, authorizationCode, operationContext);
+        VerifySmsAuthorizationResponse response = dataAdapter.verifyAuthorizationSms(userId, organizationId, accountStatus, messageId, authorizationCode, operationContext);
         logger.info("The verifyAuthorizationSms request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
@@ -134,12 +135,13 @@ public class SmsAuthorizationController {
         VerifySmsAndPasswordRequest verifyRequest = request.getRequestObject();
         String userId = verifyRequest.getUserId();
         String organizationId = verifyRequest.getOrganizationId();
+        AccountStatus accountStatus = verifyRequest.getAccountStatus();
         String messageId = verifyRequest.getMessageId();
         String authorizationCode = verifyRequest.getAuthorizationCode();
         OperationContext operationContext = verifyRequest.getOperationContext();
         String password = verifyRequest.getPassword();
         AuthenticationContext authenticationContext = verifyRequest.getAuthenticationContext();
-        VerifySmsAndPasswordResponse response = dataAdapter.verifyAuthorizationSmsAndPassword(userId, organizationId, messageId, authorizationCode, operationContext, authenticationContext, password);
+        VerifySmsAndPasswordResponse response = dataAdapter.verifyAuthorizationSmsAndPassword(userId, organizationId, accountStatus, messageId, authorizationCode, operationContext, authenticationContext, password);
         logger.info("The verifyAuthorizationSmsAndPassword request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }

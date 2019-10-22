@@ -231,7 +231,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public VerifySmsAuthorizationResponse verifyAuthorizationSms(String userId, String organizationId, String messageId, String authorizationCode, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public VerifySmsAuthorizationResponse verifyAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, String messageId, String authorizationCode, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
         // You can override this logic in case more complex handling of SMS verification is required.
         VerifySmsAuthorizationResponse response = smsPersistenceService.verifyAuthorizationSms(messageId, authorizationCode, false);
         // Set number of remaining attempts for verification in case it is available.
@@ -242,7 +242,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public VerifySmsAndPasswordResponse verifyAuthorizationSmsAndPassword(String userId, String organizationId, String messageId, String authorizationCode, OperationContext operationContext, AuthenticationContext authenticationContext, String password) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public VerifySmsAndPasswordResponse verifyAuthorizationSmsAndPassword(String userId, String organizationId, AccountStatus accountStatus, String messageId, String authorizationCode, OperationContext operationContext, AuthenticationContext authenticationContext, String password) throws DataAdapterRemoteException, InvalidOperationContextException {
         VerifySmsAndPasswordResponse response = new VerifySmsAndPasswordResponse();
 
         // Verify authorization code from SMS
