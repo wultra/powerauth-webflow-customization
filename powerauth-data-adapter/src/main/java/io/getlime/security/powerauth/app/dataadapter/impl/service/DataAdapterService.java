@@ -36,6 +36,7 @@ public class DataAdapterService implements DataAdapter {
     private static final String AUTHENTICATION_FAILED = "login.authenticationFailed";
     private static final String SMS_DELIVERY_FAILED = "smsAuthorization.deliveryFailed";
     private static final String SMS_AUTHORIZATION_FAILED = "smsAuthorization.failed";
+    private static final String INVALID_REQUEST = "error.invalidRequest";
 
     private final DataAdapterI18NService dataAdapterI18NService;
     private final SmsPersistenceService smsPersistenceService;
@@ -435,6 +436,12 @@ public class DataAdapterService implements DataAdapter {
 
     @Override
     public AfsResponse executeAfsAction(String userId, String organizationId, OperationContext operationContext, AfsRequestParameters afsRequestParameters, Map<String, Object> extras) throws DataAdapterRemoteException, InvalidOperationContextException {
+        if (userId == null || organizationId == null || operationContext == null || afsRequestParameters == null
+                || afsRequestParameters.getAfsAction() == null || afsRequestParameters.getAfsType() == null) {
+            logger.warn("Invalid AFS request received");
+            throw new InvalidOperationContextException(INVALID_REQUEST);
+        }
+
         // Call anti-fraud system and return response for Web Flow. In default implementation of Data Adapter
         // a mocked response is returned with static 2FA AFS label except for the case of payment with low amount.
         AfsResponse response = new AfsResponse();

@@ -52,8 +52,6 @@ public class AfsController {
         this.dataAdapter = dataAdapter;
     }
 
-    // TODO - implement validator
-
     /**
      * Execute an anti-fraud system action and return response for usage in Web Flow.
      * @param request AFS request.
