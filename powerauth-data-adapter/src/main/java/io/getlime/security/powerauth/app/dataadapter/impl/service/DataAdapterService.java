@@ -447,6 +447,7 @@ public class DataAdapterService implements DataAdapter {
         AfsResponse response = new AfsResponse();
         switch (afsRequestParameters.getAfsAction()) {
             case LOGIN_INIT:
+            case LOGIN_AUTH:
             case APPROVAL_AUTH:
                 // Return AFS label, but do not apply response parameters on authentication form
                 response.setAfsResponseApplied(false);
@@ -470,7 +471,6 @@ public class DataAdapterService implements DataAdapter {
                 }
                 break;
 
-            case LOGIN_AUTH:
             case LOGOUT:
                 // Do not apply response parameters
                 response.setAfsResponseApplied(false);
