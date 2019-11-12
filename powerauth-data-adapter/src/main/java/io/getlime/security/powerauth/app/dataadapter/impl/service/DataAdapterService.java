@@ -234,7 +234,18 @@ public class DataAdapterService implements DataAdapter {
     @Override
     public VerifySmsAuthorizationResponse verifyAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, String messageId, String authorizationCode, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
         // You can override this logic in case more complex handling of SMS verification is required.
-        VerifySmsAuthorizationResponse response = smsPersistenceService.verifyAuthorizationSms(messageId, authorizationCode, false);
+        VerifySmsAuthorizationResponse response;
+
+        // Skip credentials verification for non-existent user accounts or blocked user accounts, such request would always fail.
+        // Furthermore, do not leak information that account does not exist or it is blocked by providing a regular authentication error.
+        if (userId == null || accountStatus != AccountStatus.ACTIVE) {
+            response = new VerifySmsAuthorizationResponse();
+            response.setSmsAuthorizationResult(SmsAuthorizationResult.SKIPPED);
+            response.setErrorMessage("login.authenticationFailed");
+            return response;
+        }
+
+        response = smsPersistenceService.verifyAuthorizationSms(messageId, authorizationCode, false);
         // Set number of remaining attempts for verification in case it is available.
         // authResponse.setRemainingAttempts(5);
         // You can enable showing of remaining attempts for the operation.
