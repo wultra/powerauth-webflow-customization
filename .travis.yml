@@ -1,0 +1,23 @@
+language: java
+jdk:
+  - openjdk11
+branches:
+  only:
+    - master
+    - coverity_scan
+env:
+  global:
+    - secure: "ZeE+S5KU4rA0zta+udAFBIEETAqTg5SExaFtoNur/2DG79hcGGO/nC1VouwbwYnR81xNc3A5LniTsqwYjzFFstCRUPR7zjeYIq4B9v5bdNqdLiRvY/Re9Rk9f4hVf3039SnKGaEC+iCMzs/BxFW5+y68Oe1RKGh9yI0I2WKglkIw3NHLx+qI4HBhWwgso2USBNGGfEPOwJAR0940DxLywOxNFPUuMjYIFXY7Yx6Hko0L7BX+TRERmJuxK+cwoTWkFdmAzNIsau2WpSHN2/V+kIP8sr9eeUc33pY9ztW+oir3kteDhNjPeg9NA+FG6bGC8D8hPzNIMEED/OPs/Zj3G0oOLLTS/fjulSAiTAK6afkEyffNjVfh7dJQxvfGhHBJs1PDD0+a7sYogmf/eisxO6qYI+hRZMpkjjJL590Ovk6do9anzzmJ8lSSH6r8NVCANt2q5fnjp5BOOPFWGolWMvH2r699TiL3azBM1lWz3spvvk11DbtWqDJCOFmtD4SluTFAKuZjageQY69nPpB/w3Q+ThpYJqTNNrHD1i/b5daAi8aIGZud5vvwTUC5ItGzSGhjizTFxps7FOa77P//YIQhdirURvgIkuCf0A5vGBABuyeVOmz3pkx36sO4va1ZqNNYY9tbv5rdCBynU0KgmrOr6J3Q6IwMSxrc85ykSlI="
+
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+addons:
+  coverity_scan:
+    project:
+      name: "wultra/powerauth-webflow-customization"
+      description: "Build submitted via Travis CI"
+    notification_email: roman.strobl@wultra.com
+    build_command_prepend: "mvn -f powerauth-data-adapter/pom.xml clean"
+    build_command: "mvn -DskipTests=true -f powerauth-data-adapter/pom.xml compile"
+    branch_pattern: coverity_scan
