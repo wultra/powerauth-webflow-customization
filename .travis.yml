@@ -1,6 +1,7 @@
 language: java
 jdk:
   - openjdk11
+script: mvn -f powerauth-data-adapter/pom.xml clean package
 branches:
   only:
     - master
