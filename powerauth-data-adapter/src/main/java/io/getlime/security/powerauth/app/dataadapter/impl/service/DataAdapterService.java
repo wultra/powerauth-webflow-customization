@@ -191,6 +191,46 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
+    public CreateImplicitLoginOperationResponse createImplicitLoginOperation(String clientId, String[] scopes) throws DataAdapterRemoteException {
+        try {
+            final TppAppDetailResponse appDetail = tppEngineService.fetchAppDetail(clientId);
+
+            // Make sure there is only one item in scopes
+            if (scopes == null || scopes.length != 1) {
+                return null;
+            }
+            // Make sure the scope is from known enum
+            final String scope = scopes[0].toLowerCase();
+            if (!"aisp".equals(scope) && !"pisp".equals(scope)) {
+                return null;
+            }
+
+            // Build application context
+            ApplicationContext appContext = new ApplicationContext();
+            appContext.setId(clientId);
+            appContext.setName(appDetail.getName());
+            appContext.setDescription(appDetail.getDescription());
+            appContext.getOriginalScopes().add(scope);
+
+            // Build form data
+            FormData formData = new FormData();
+            formData.addTitle("login.title");
+            formData.addGreeting("login.greeting");
+            formData.addSummary("login.summary");
+
+            // Create an implicit operation
+            CreateImplicitLoginOperationResponse result = new CreateImplicitLoginOperationResponse();
+            result.setName("login_sca");
+            result.setFormData(formData);
+            result.setApplicationContext(appContext);
+
+            return result;
+        } catch (InvalidAppException e) {
+            throw new DataAdapterRemoteException("Unable to fetch application details", e);
+        }
+    }
+
+    @Override
     public void operationChangedNotification(String userId, String organizationId, OperationChange change, OperationContext operationContext) throws DataAdapterRemoteException {
         String operationId = operationContext.getId();
         // Handle operation change here (e.g. send notification to bank backend).
