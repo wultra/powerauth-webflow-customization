@@ -21,6 +21,7 @@ import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AccountSt
 import io.getlime.security.powerauth.lib.dataadapter.model.request.AfsRequestParameters;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
 
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 
@@ -35,12 +36,13 @@ public interface DataAdapter {
      * Lookup user account - map username to user ID.
      * @param username Username which user uses for authentication.
      * @param organizationId Organization ID for this request.
+     * @param clientCertificate Client TLS certificate.
      * @param operationContext Operation context.
      * @return Detail about the user.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws UserNotFoundException Thrown when user does not exist.
      */
-    UserDetailResponse lookupUser(String username, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
+    UserDetailResponse lookupUser(String username, String organizationId, X509Certificate clientCertificate, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
 
     /**
      * Authenticate user using provided credentials.

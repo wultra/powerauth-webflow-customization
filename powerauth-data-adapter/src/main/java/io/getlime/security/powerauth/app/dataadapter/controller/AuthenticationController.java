@@ -35,6 +35,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.security.cert.X509Certificate;
 
 /**
  * Controller class which handles user authentication.
@@ -86,8 +87,9 @@ public class AuthenticationController {
         UserLookupRequest lookupRequest = request.getRequestObject();
         String username = lookupRequest.getUsername();
         String organizationId = lookupRequest.getOrganizationId();
+        X509Certificate clientCertificate = lookupRequest.getClientCertificate();
         OperationContext operationContext = lookupRequest.getOperationContext();
-        UserDetailResponse response = dataAdapter.lookupUser(username, organizationId, operationContext);
+        UserDetailResponse response = dataAdapter.lookupUser(username, organizationId, clientCertificate, operationContext);
         logger.info("The user lookup request succeeded, user ID: {}, organization ID: {}, operation ID: {}",
                 response.getId(), response.getOrganizationId(), request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
