@@ -66,7 +66,7 @@ The OAuth 2.0 consent form used by Web Flow can be customized by implementing fo
 ### Initialize Consent Form
 
 The [initConsentForm](../powerauth-data-adapter/src/main/java/io/getlime/security/powerauth/app/dataadapter/api/DataAdapter.java#L177) method is used to
-allow to decide whether consent form for should be displayed for given operation context. Based on values of parameters `userId`, `organizationId`
+allow to decide whether consent form should be displayed for given operation context. Based on values of parameters `userId`, `organizationId`
 and `operationContext` a decision can be made whether to display the consent form or not. In case the consent form is always displayed,
 return true in response unconditionally.
 
