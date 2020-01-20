@@ -25,24 +25,20 @@ import io.getlime.security.powerauth.lib.dataadapter.model.request.OperationChan
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Controller class which handles notifications about changes of operation state.
  *
  * @author Roman Strobl, roman.strobl@wultra.com
  */
-@Controller
+@RestController
 @RequestMapping("/api/operation")
 public class OperationChangeController {
 
     private static final Logger logger = LoggerFactory.getLogger(OperationChangeController.class);
 
-    private DataAdapter dataAdapter;
+    private final DataAdapter dataAdapter;
 
     /**
      * Controller constructor.
@@ -60,15 +56,16 @@ public class OperationChangeController {
      * @return Object response.
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      */
-    @RequestMapping(value = "/change", method = RequestMethod.POST)
-    public @ResponseBody Response operationChangedNotification(@RequestBody ObjectRequest<OperationChangeNotificationRequest> request) throws DataAdapterRemoteException {
+    @PostMapping(value = "/change")
+    public Response operationChangedNotification(@RequestBody ObjectRequest<OperationChangeNotificationRequest> request) throws DataAdapterRemoteException {
         logger.info("Received operationChangedNotification request for user: {}, operation ID: {}",
-                new String[]{request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId()});
+                request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         OperationChangeNotificationRequest notification = request.getRequestObject();
         String userId = notification.getUserId();
+        String organizationId = notification.getOrganizationId();
         OperationContext operationContext = notification.getOperationContext();
         OperationChange operationChange = notification.getOperationChange();
-        dataAdapter.operationChangedNotification(userId, operationChange, operationContext);
+        dataAdapter.operationChangedNotification(userId, organizationId, operationChange, operationContext);
         logger.debug("The operationChangedNotification request succeeded");
         return new Response();
     }

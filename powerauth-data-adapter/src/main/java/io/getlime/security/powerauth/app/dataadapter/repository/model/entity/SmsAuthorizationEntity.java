@@ -29,7 +29,7 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "da_sms_authorization")
-public class SMSAuthorizationEntity implements Serializable {
+public class SmsAuthorizationEntity implements Serializable {
 
     private static final long serialVersionUID = 6432269422572862762L;
 
@@ -42,6 +42,9 @@ public class SMSAuthorizationEntity implements Serializable {
 
     @Column(name = "user_id")
     private String userId;
+
+    @Column(name = "organization_id")
+    private String organizationId;
 
     @Column(name = "operation_name")
     private String operationName;
@@ -116,6 +119,22 @@ public class SMSAuthorizationEntity implements Serializable {
      */
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    /**
+     * Get organization ID.
+     * @return Organization ID.
+     */
+    public String getOrganizationId() {
+        return organizationId;
+    }
+
+    /**
+     * Set organization ID.
+     * @param organizationId Organization ID.
+     */
+    public void setOrganizationId(String organizationId) {
+        this.organizationId = organizationId;
     }
 
     /**
@@ -276,7 +295,7 @@ public class SMSAuthorizationEntity implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SMSAuthorizationEntity that = (SMSAuthorizationEntity) o;
+        SmsAuthorizationEntity that = (SmsAuthorizationEntity) o;
 
         return messageId.equals(that.messageId);
     }

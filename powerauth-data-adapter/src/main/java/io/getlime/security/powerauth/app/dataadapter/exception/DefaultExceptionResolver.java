@@ -40,6 +40,10 @@ import java.util.List;
 @ControllerAdvice
 public class DefaultExceptionResolver {
 
+    private static final String LOGIN_PASS_EMPTY = "login.password.empty";
+    private static final String LOGIN_PASS_LONG = "login.password.long";
+    private static final String LOGIN_USERNAME_LONG = "login.username.long";
+    
     private static final Logger logger = LoggerFactory.getLogger(DefaultExceptionResolver.class);
 
     /**
@@ -56,35 +60,6 @@ public class DefaultExceptionResolver {
     }
 
     /**
-     * Handling of authentication failures.
-     * @param ex Authentication failure exception, with exception details.
-     * @return Response with error information.
-     */
-    @ExceptionHandler(AuthenticationFailedException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public @ResponseBody ErrorResponse handleAuthenticationError(AuthenticationFailedException ex) {
-        // regular authentication failed error
-        DataAdapterError error = new DataAdapterError(DataAdapterError.Code.AUTHENTICATION_FAILED, ex.getMessage());
-        error.setRemainingAttempts(ex.getRemainingAttempts());
-        return new ErrorResponse(error);
-    }
-
-    /**
-     * Handling of SMS OTP authorization failures.
-     *
-     * @param ex Authorization failure exception, with exception details.
-     * @return Response with error information.
-     */
-    @ExceptionHandler(SMSAuthorizationFailedException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public @ResponseBody ErrorResponse handleAuthenticationError(SMSAuthorizationFailedException ex) {
-        // regular sms authorization failed error
-        DataAdapterError error = new DataAdapterError(DataAdapterError.Code.SMS_AUTHORIZATION_FAILED, ex.getMessage());
-        error.setRemainingAttempts(ex.getRemainingAttempts());
-        return new ErrorResponse(error);
-    }
-
-    /**
      * Handling of validation errors.
      * @param ex Exception.
      * @return Response with error information.
@@ -92,53 +67,28 @@ public class DefaultExceptionResolver {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody ErrorResponse handleDefaultException(MethodArgumentNotValidException ex) {
+        logger.error("Method argument validation failed", ex);
         List<String> errorMessages = new ArrayList<>();
         final List<ObjectError> allErrors = ex.getBindingResult().getAllErrors();
-        for (ObjectError objError: allErrors) {
-            errorMessages.addAll(Arrays.asList(objError.getCodes()));
-        }
+        allErrors.stream()
+                      .filter(objError -> (objError.getCodes() != null))
+                      .forEachOrdered(objError ->
+            errorMessages.addAll(Arrays.asList(objError.getCodes()))
+        );
 
         // preparation of user friendly error messages for the UI
         String message;
         if (errorMessages.contains("login.username.empty")) {
-            if (errorMessages.contains("login.password.empty")) {
-                message = "login.username.empty login.password.empty";
-            } else {
-                if (errorMessages.contains("login.password.long")) {
-                    message = "login.username.empty login.password.long";
-                } else {
-                    message = "login.username.empty";
-                }
-            }
+            message = processErrorMessagesWhenUsernameEmpty(errorMessages);
         } else {
-            if (errorMessages.contains("login.password.empty")) {
-                if (errorMessages.contains("login.username.long")) {
-                    message = "login.password.empty login.username.long";
-                } else {
-                    message = "login.password.empty";
-                }
-            } else {
-                if (errorMessages.contains("login.username.long")) {
-                    if (errorMessages.contains("login.password.long")) {
-                        message = "login.username.long login.password.long";
-                    } else {
-                        message = "login.username.long";
-                    }
-                } else {
-                    if (errorMessages.contains("login.password.long")) {
-                        message = "login.password.long";
-                    } else {
-                        message = "login.authenticationFailed";
-                    }
-                }
-            }
+            message = processErrorMessagesWhenUsernameFilled(errorMessages);
         }
 
         DataAdapterError error = new DataAdapterError(DataAdapterError.Code.INPUT_INVALID, message);
         error.setValidationErrors(errorMessages);
         return new ErrorResponse(error);
     }
-
+    
     /**
      * Handling of user not found exception.
      * @param ex Exception.
@@ -147,7 +97,8 @@ public class DefaultExceptionResolver {
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody ErrorResponse handleUserNotFoundException(UserNotFoundException ex) {
-        DataAdapterError error = new DataAdapterError(DataAdapterError.Code.INPUT_INVALID, ex.getMessage());
+        logger.debug("User not found", ex);
+        DataAdapterError error = new DataAdapterError(DataAdapterError.Code.USER_NOT_FOUND, ex.getMessage());
         return new ErrorResponse(error);
     }
 
@@ -159,7 +110,21 @@ public class DefaultExceptionResolver {
     @ExceptionHandler(InvalidOperationContextException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody ErrorResponse handleInvalidOperationContextException(InvalidOperationContextException ex) {
+        logger.error("Invalid operation context", ex);
         DataAdapterError error = new DataAdapterError(DataAdapterError.Code.OPERATION_CONTEXT_INVALID, ex.getMessage());
+        return new ErrorResponse(error);
+    }
+
+    /**
+     * Handling of invalid consent exception.
+     * @param ex Exception.
+     * @return Response with error information.
+     */
+    @ExceptionHandler(InvalidConsentDataException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public @ResponseBody ErrorResponse handleInvalidConsentException(InvalidConsentDataException ex) {
+        logger.error("Invalid consent data", ex);
+        DataAdapterError error = new DataAdapterError(DataAdapterError.Code.CONSENT_DATA_INVALID, ex.getMessage());
         return new ErrorResponse(error);
     }
 
@@ -176,4 +141,47 @@ public class DefaultExceptionResolver {
         return new ErrorResponse(error);
     }
 
+    private String processErrorMessagesWhenUsernameEmpty(List<String> errorMessages) {
+        if (errorMessages.contains(LOGIN_PASS_EMPTY)) {
+            return "login.username.empty login.password.empty";
+        } else {
+            if (errorMessages.contains(LOGIN_PASS_LONG)) {
+                return "login.username.empty login.password.long";
+            } else {
+                return "login.username.empty";
+            }
+        }
+    }
+    
+    private String processErrorMessagesWhenUsernameFilled(List<String> errorMessages) {
+        if (errorMessages.contains(LOGIN_PASS_EMPTY)) {
+            return processErrorMessagesWhenLoginPasswordEmpty(errorMessages);
+        } else {
+            return processErrorMessagesWhenLoginPasswordFilled(errorMessages);
+        }
+    }
+    
+    private String processErrorMessagesWhenLoginPasswordEmpty(List<String> errorMessages) {
+        if (errorMessages.contains(LOGIN_USERNAME_LONG)) {
+            return "login.password.empty login.username.long";
+        } else {
+            return LOGIN_PASS_EMPTY;
+        }
+    }
+    
+    private String processErrorMessagesWhenLoginPasswordFilled(List<String> errorMessages) {
+        if (errorMessages.contains(LOGIN_USERNAME_LONG)) {
+            if (errorMessages.contains(LOGIN_PASS_LONG)) {
+                return "login.username.long login.password.long";
+            } else {
+                return LOGIN_USERNAME_LONG;
+            }
+        } else {
+            if (errorMessages.contains(LOGIN_PASS_LONG)) {
+                return LOGIN_PASS_LONG;
+            } else {
+                return "login.authenticationFailed";
+            }
+        }
+    }
 }

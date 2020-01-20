@@ -28,13 +28,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class DataAdapterI18NService {
 
-
-    /**
-     * Data adapter I18N service constructor.
-     */
-    public DataAdapterI18NService() {
-    }
-
     /**
      * Get message source with i18n data.
      *
