@@ -113,7 +113,8 @@ public class AuthenticationRequestValidator implements Validator {
         AuthenticationContext authenticationContext = authRequest.getAuthenticationContext();
         PasswordProtectionType passwordProtection = authenticationContext.getPasswordProtection();
         if (passwordProtection == PasswordProtectionType.NO_PROTECTION) {
-            if (password != null && password.length() > 30) {
+            // See: https://owasp.org/www-project-cheat-sheets/cheatsheets/Authentication_Cheat_Sheet.html#implement-proper-password-strength-controls
+            if (password != null && password.length() > 128) {
                 errors.rejectValue(PASS_FIELD, "login.password.long");
             }
         } else {
