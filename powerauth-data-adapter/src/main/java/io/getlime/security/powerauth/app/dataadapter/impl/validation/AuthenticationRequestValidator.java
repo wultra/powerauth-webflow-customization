@@ -78,13 +78,18 @@ public class AuthenticationRequestValidator implements Validator {
         // update validation logic based on the real Data Adapter requirements
         String username = authRequest.getUsername();
         String organizationId = authRequest.getOrganizationId();
+        String clientCertificate = authRequest.getClientCertificate();
         OperationContext operationContext = authRequest.getOperationContext();
         if (operationContext == null) {
             errors.rejectValue(OPERATION_CONTEXT_FIELD, MISSING_OPERATION_CONTEXT_ERROR_CODE);
         }
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.username", "login.username.empty");
-        if (username != null && username.length() > 30) {
-            errors.rejectValue("requestObject.username", "login.username.long");
+        if (clientCertificate == null) {
+            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.username", "login.username.empty");
+            if (username != null && username.length() > 30) {
+                errors.rejectValue("requestObject.username", "login.username.long");
+            }
+        } else {
+            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.clientCertificate", "error.invalidRequest");
         }
 
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, ORGANIZATION_ID_FIELD, "login.organizationId.empty");
