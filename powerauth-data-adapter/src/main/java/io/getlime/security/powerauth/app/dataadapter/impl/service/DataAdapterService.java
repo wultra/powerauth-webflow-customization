@@ -10,6 +10,7 @@ import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.Form
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.AfsRequestParameters;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
+import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -294,6 +295,13 @@ public class DataAdapterService implements DataAdapter {
         // You can enable showing of remaining attempts for the operation.
         // response.setShowRemainingAttempts(true);
         return response;
+    }
+
+    @Override
+    public VerifyCertificateResponse verifyClientCertificate(String userId, String organizationId, String clientCertificate, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+        // This method should implement client TLS certificate verification. The stub implementation always succeeds.
+        CertificateVerificationResult verificationResult = CertificateVerificationResult.SUCCEEDED;
+        return new VerifyCertificateResponse(verificationResult);
     }
 
     @Override
