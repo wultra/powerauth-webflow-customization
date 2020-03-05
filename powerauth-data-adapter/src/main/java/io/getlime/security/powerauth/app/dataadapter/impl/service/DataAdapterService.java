@@ -10,6 +10,7 @@ import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.Form
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.AfsRequestParameters;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
+import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,12 +51,20 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public UserDetailResponse lookupUser(String username, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
-        // The sample Data Adapter code uses 1:1 mapping of username to userId. In real implementation the userId usually differs from the username, so translation of username to user ID is required.
+    public UserDetailResponse lookupUser(String username, String organizationId, String clientCertificate, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
+        // The sample Data Adapter code uses 1:1 mapping of username to user ID. In real implementation the userId usually differs from the username, so translation of username to user ID is required.
         // If the user does not exist, return null values for user ID and organization ID.
         // If user account account is blocked, return AccountStatus.NOT_ACTIVE as account status.
         // The SCA login fakes SMS message delivery even for case when user ID is null to disallow fishing of usernames.
         // For case when an error should appear instead, throw a UserNotFoundException.
+
+        // In case the client certificate is used, use the certificate to obtain user details. In sample implementation
+        // a static user ID is returned.
+        if (clientCertificate != null) {
+            return fetchUserDetail("certuser", organizationId, operationContext);
+        }
+
+        // Use 1:1 mapping of username to user ID in sample implementation.
         return fetchUserDetail(username, organizationId, operationContext);
     }
 
@@ -286,6 +295,13 @@ public class DataAdapterService implements DataAdapter {
         // You can enable showing of remaining attempts for the operation.
         // response.setShowRemainingAttempts(true);
         return response;
+    }
+
+    @Override
+    public VerifyCertificateResponse verifyClientCertificate(String userId, String organizationId, String clientCertificate, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+        // This method should implement client TLS certificate verification. The stub implementation always succeeds.
+        CertificateVerificationResult verificationResult = CertificateVerificationResult.SUCCEEDED;
+        return new VerifyCertificateResponse(verificationResult);
     }
 
     @Override
