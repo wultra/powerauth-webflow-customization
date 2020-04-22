@@ -22,10 +22,10 @@ import io.getlime.security.powerauth.lib.dataadapter.model.entity.AuthorizationC
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.SmsAuthorizationResult;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.VerifySmsAuthorizationResponse;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -75,7 +75,8 @@ public class SmsPersistenceService {
         smsEntity.setMessageText(messageText);
         smsEntity.setVerifyRequestCount(0);
         smsEntity.setTimestampCreated(new Date());
-        smsEntity.setTimestampExpires(new DateTime().plusSeconds(dataAdapterConfiguration.getSmsOtpExpirationTime()).toDate());
+        ZonedDateTime timestampExpires = ZonedDateTime.now().plusSeconds(dataAdapterConfiguration.getSmsOtpExpirationTime());
+        smsEntity.setTimestampExpires(Date.from(timestampExpires.toInstant()));
         smsEntity.setTimestampVerified(null);
         smsEntity.setVerified(false);
 
