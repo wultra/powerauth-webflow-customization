@@ -10,6 +10,7 @@ import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.Form
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.AfsRequestParameters;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
+import io.getlime.security.powerauth.lib.nextstep.model.entity.ApplicationContext;
 import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,42 +202,36 @@ public class DataAdapterService implements DataAdapter {
 
     @Override
     public CreateImplicitLoginOperationResponse createImplicitLoginOperation(String clientId, String[] scopes) throws DataAdapterRemoteException {
-        try {
-            final TppAppDetailResponse appDetail = tppEngineService.fetchAppDetail(clientId);
-
-            // Make sure there is only one item in scopes
-            if (scopes == null || scopes.length != 1) {
-                return null;
-            }
-            // Make sure the scope is from known enum
-            final String scope = scopes[0].toLowerCase();
-            if (!"aisp".equals(scope) && !"pisp".equals(scope)) {
-                return null;
-            }
-
-            // Build application context
-            ApplicationContext appContext = new ApplicationContext();
-            appContext.setId(clientId);
-            appContext.setName(appDetail.getName());
-            appContext.setDescription(appDetail.getDescription());
-            appContext.getOriginalScopes().add(scope);
-
-            // Build form data
-            FormData formData = new FormData();
-            formData.addTitle("login.title");
-            formData.addGreeting("login.greeting");
-            formData.addSummary("login.summary");
-
-            // Create an implicit operation
-            CreateImplicitLoginOperationResponse result = new CreateImplicitLoginOperationResponse();
-            result.setName("login_sca");
-            result.setFormData(formData);
-            result.setApplicationContext(appContext);
-
-            return result;
-        } catch (InvalidAppException e) {
-            throw new DataAdapterRemoteException("Unable to fetch application details", e);
+        // Make sure there is only one item in scopes
+        if (scopes == null || scopes.length != 1) {
+            return null;
         }
+        // Make sure the scope is from known enum
+        final String scope = scopes[0].toLowerCase();
+        if (!"aisp".equals(scope) && !"pisp".equals(scope)) {
+            return null;
+        }
+
+        // Build application context
+        ApplicationContext appContext = new ApplicationContext();
+        appContext.setId(clientId);
+        appContext.setName(clientId);
+        appContext.setDescription("App with client ID: " + clientId);
+        appContext.getOriginalScopes().add(scope);
+
+        // Build form data
+        FormData formData = new FormData();
+        formData.addTitle("login.title");
+        formData.addGreeting("login.greeting");
+        formData.addSummary("login.summary");
+
+        // Create an implicit operation
+        CreateImplicitLoginOperationResponse result = new CreateImplicitLoginOperationResponse();
+        result.setName("login_sca");
+        result.setFormData(formData);
+        result.setApplicationContext(appContext);
+
+        return result;
     }
 
     @Override
