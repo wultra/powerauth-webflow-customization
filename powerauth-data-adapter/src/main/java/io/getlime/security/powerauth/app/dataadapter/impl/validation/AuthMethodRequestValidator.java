@@ -39,7 +39,9 @@ public class AuthMethodRequestValidator implements Validator {
     private static final String OPERATION_CONTEXT_FIELD = "requestObject.operationContext";
     private static final String MISSING_OPERATION_CONTEXT_ERROR_CODE = "operationContext.missing";
     private static final String USER_ID_FIELD = "requestObject.userId";
+    private static final String ERROR_USER_ID_LONG = "login.userId.long";
     private static final String ORGANIZATION_ID_FIELD = "requestObject.organizationId";
+    private static final String ERROR_ORGANIZATION_ID_LONG = "login.organizationId.long";
     private static final String AUTH_METHOD_FIELD = "requestObject.authMethod";
     private static final String INVALID_REQUEST_MESSAGE = "error.invalidRequest";
 
@@ -83,10 +85,10 @@ public class AuthMethodRequestValidator implements Validator {
         OperationContext operationContext = authRequest.getOperationContext();
         // allow empty user ID and organization ID before user is authenticated
         if (userId != null && userId.length() > 30) {
-            errors.rejectValue(USER_ID_FIELD, "login.userId.long");
+            errors.rejectValue(USER_ID_FIELD, ERROR_USER_ID_LONG);
         }
         if (organizationId != null && organizationId.length() > 256) {
-            errors.rejectValue(ORGANIZATION_ID_FIELD, "login.organizationId.long");
+            errors.rejectValue(ORGANIZATION_ID_FIELD, ERROR_ORGANIZATION_ID_LONG);
         }
         if (operationContext == null) {
             errors.rejectValue(OPERATION_CONTEXT_FIELD, MISSING_OPERATION_CONTEXT_ERROR_CODE);
