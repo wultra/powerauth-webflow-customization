@@ -68,6 +68,18 @@ public interface DataAdapter {
     UserDetailResponse fetchUserDetail(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
 
     /**
+     * Initialize an authentication method by providing the initial configuration.
+     * @param userId User ID.
+     * @param organizationId Organization ID.
+     * @param authMethod Authentication method.
+     * @param operationContext Operation context.
+     * @return Initialize authentication method response.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     */
+    InitAuthMethodResponse initAuthMethod(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException;
+
+    /**
      * Decorate operation form data.
      * @param userId User ID.
      * @param organizationId Organization ID.

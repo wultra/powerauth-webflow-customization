@@ -121,6 +121,13 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
+    public InitAuthMethodResponse initAuthMethod(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+        // Implement logic for initial configuration of authentication methods.
+        // Certificate-based authentication can be enabled and the certificate verification URL can be specified based on operation context.
+        return new InitAuthMethodResponse(CertificateAuthenticationMode.NOT_AVAILABLE);
+    }
+
+    @Override
     public DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
         String operationName = operationContext.getName();
         FormData formData = operationContext.getFormData();
