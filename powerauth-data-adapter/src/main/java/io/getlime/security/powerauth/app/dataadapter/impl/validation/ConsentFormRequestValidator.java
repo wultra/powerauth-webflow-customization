@@ -115,7 +115,7 @@ public class ConsentFormRequestValidator implements Validator {
 
     private void validateUserId(String userId, Errors errors) {
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.userId", INVALID_REQUEST_MESSAGE);
-        if (userId != null && userId.length() > 30) {
+        if (userId != null && userId.length() > 40) {
             errors.rejectValue("requestObject.userId", INVALID_REQUEST_MESSAGE);
         }
     }

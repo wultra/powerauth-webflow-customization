@@ -84,7 +84,7 @@ public class AuthMethodRequestValidator implements Validator {
         AuthMethod authMethod = authRequest.getAuthMethod();
         OperationContext operationContext = authRequest.getOperationContext();
         // allow empty user ID and organization ID before user is authenticated
-        if (userId != null && userId.length() > 30) {
+        if (userId != null && userId.length() > 40) {
             errors.rejectValue(USER_ID_FIELD, ERROR_USER_ID_LONG);
         }
         if (organizationId != null && organizationId.length() > 256) {
