@@ -70,8 +70,8 @@ public class SmsDeliveryService {
                 digestItems.add("login");
                 break;
 
-            case "approval":
-            case "approval_sca":
+            case "authorize_payment":
+            case "authorize_payment_sca":
                 switch (authMethod) {
                     case LOGIN_SCA:
                         digestItems.add("login");
@@ -128,8 +128,8 @@ public class SmsDeliveryService {
                 messageArgs = new String[]{authorizationCode.getCode()};
                 break;
 
-            case "approval":
-            case "approval_sca":
+            case "authorize_payment":
+            case "authorize_payment_sca":
                 switch (authMethod) {
                     case LOGIN_SCA:
                         messageResourcePrefix = "login";
