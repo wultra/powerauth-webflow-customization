@@ -128,7 +128,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
+    public DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
         String operationName = operationContext.getName();
         FormData formData = operationContext.getFormData();
         // Fetch bank account list for given user here from the bank backend.
@@ -214,7 +214,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
+    public CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
         CreateSmsAuthorizationResponse response = new CreateSmsAuthorizationResponse();
         // MessageId is generated as random UUID, it can be overridden to provide a real message identification
         String messageId = UUID.randomUUID().toString();
@@ -228,10 +228,10 @@ public class DataAdapterService implements DataAdapter {
         }
 
         // Generate authorization code
-        AuthorizationCode authorizationCode = smsDeliveryService.generateAuthorizationCode(userId, organizationId, operationContext);
+        AuthorizationCode authorizationCode = smsDeliveryService.generateAuthorizationCode(userId, organizationId, authMethod, operationContext);
 
         // Generate message text, include previously generated authorization code
-        String messageText = smsDeliveryService.generateSmsText(userId, organizationId, operationContext, authorizationCode, lang);
+        String messageText = smsDeliveryService.generateSmsText(userId, organizationId, authMethod, operationContext, authorizationCode, lang);
 
         // Persist authorization SMS message
         smsPersistenceService.createAuthorizationSms(userId, organizationId, messageId, operationContext, authorizationCode, messageText);

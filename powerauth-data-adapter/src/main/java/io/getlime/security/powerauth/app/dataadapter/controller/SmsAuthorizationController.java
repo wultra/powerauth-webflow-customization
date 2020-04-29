@@ -30,6 +30,7 @@ import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifySmsAuth
 import io.getlime.security.powerauth.lib.dataadapter.model.response.CreateSmsAuthorizationResponse;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.VerifySmsAndPasswordResponse;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.VerifySmsAuthorizationResponse;
+import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,9 +90,10 @@ public class SmsAuthorizationController {
         String userId = smsRequest.getUserId();
         String organizationId = smsRequest.getOrganizationId();
         AccountStatus accountStatus = smsRequest.getAccountStatus();
+        AuthMethod authMethod = smsRequest.getAuthMethod();
         OperationContext operationContext = smsRequest.getOperationContext();
         String lang = smsRequest.getLang();
-        CreateSmsAuthorizationResponse response = dataAdapter.createAndSendAuthorizationSms(userId, organizationId, accountStatus, operationContext, lang);
+        CreateSmsAuthorizationResponse response = dataAdapter.createAndSendAuthorizationSms(userId, organizationId, accountStatus, authMethod, operationContext, lang);
 
         logger.info("The createAuthorizationSms request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);

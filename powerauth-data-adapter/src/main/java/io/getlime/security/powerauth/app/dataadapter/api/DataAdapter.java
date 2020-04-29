@@ -83,12 +83,13 @@ public interface DataAdapter {
      * Decorate operation form data.
      * @param userId User ID.
      * @param organizationId Organization ID.
+     * @param authMethod Authentication method.
      * @param operationContext Operation context.
      * @return Response with decorated operation form data
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws UserNotFoundException Thrown when user does not exist.
      */
-    DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
+    DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
 
     /**
      * Receive notification about form data change.
@@ -115,13 +116,14 @@ public interface DataAdapter {
      * @param userId User ID.
      * @param organizationId Organization ID.
      * @param accountStatus User account status.
+     * @param authMethod Authentication method.
      * @param operationContext Operation context.
      * @param lang Language for localization.
      * @return Message ID.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      * @throws DataAdapterRemoteException Thrown when remote communication fails or SMS message could not be delivered.
      */
-    CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
+    CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
 
     /**
      * Verify authorization code from SMS message.
