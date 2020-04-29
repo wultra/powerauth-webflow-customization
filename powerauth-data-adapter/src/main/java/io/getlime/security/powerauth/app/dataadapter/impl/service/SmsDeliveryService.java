@@ -117,7 +117,7 @@ public class SmsDeliveryService {
             case APPROVAL_SCA:
             case SMS_KEY:
             case POWERAUTH_TOKEN: {
-                messageResourcePrefix = "approval";
+                messageResourcePrefix = "authorize_payment";
                 AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
                 String account = operationValueExtractionService.getAccount(operationContext);
                 BigDecimal amount = amountAttribute.getAmount();
