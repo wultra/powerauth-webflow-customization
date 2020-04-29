@@ -85,7 +85,7 @@ public class AuthenticationRequestValidator implements Validator {
         }
         if (clientCertificate == null) {
             ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.username", "login.username.empty");
-            if (username != null && username.length() > 30) {
+            if (username != null && username.length() > 40) {
                 errors.rejectValue("requestObject.username", "login.username.long");
             }
         } else {
@@ -110,7 +110,7 @@ public class AuthenticationRequestValidator implements Validator {
             errors.rejectValue(OPERATION_CONTEXT_FIELD, MISSING_OPERATION_CONTEXT_ERROR_CODE);
         }
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "requestObject.userId", "login.userId.empty");
-        if (userId != null && userId.length() > 30) {
+        if (userId != null && userId.length() > 40) {
             errors.rejectValue("requestObject.userId", "login.userId.long");
         }
 

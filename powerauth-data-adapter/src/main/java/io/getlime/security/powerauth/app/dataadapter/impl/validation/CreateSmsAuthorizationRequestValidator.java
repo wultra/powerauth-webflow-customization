@@ -91,7 +91,7 @@ public class CreateSmsAuthorizationRequestValidator implements Validator {
         String operationName = authRequest.getOperationContext().getName();
 
         // Allow null user ID for case when fake SMS message is sent
-        if (userId != null && userId.length() > 30) {
+        if (userId != null && userId.length() > 40) {
             errors.rejectValue("requestObject.userId", "smsAuthorization.userId.long");
         }
 

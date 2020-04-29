@@ -26,6 +26,7 @@ import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationConte
 import io.getlime.security.powerauth.lib.dataadapter.model.request.DecorateOperationFormDataRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.FormDataChangeNotificationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.DecorateOperationFormDataResponse;
+import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,8 +90,9 @@ public class FormDataChangeController {
         DecorateOperationFormDataRequest requestObject = request.getRequestObject();
         String userId = requestObject.getUserId();
         String organizationId = requestObject.getOrganizationId();
+        AuthMethod authMethod = requestObject.getAuthMethod();
         OperationContext operationContext = requestObject.getOperationContext();
-        DecorateOperationFormDataResponse response = dataAdapter.decorateFormData(userId, organizationId, operationContext);
+        DecorateOperationFormDataResponse response = dataAdapter.decorateFormData(userId, organizationId, authMethod, operationContext);
         logger.debug("The decorateOperationFormData request succeeded");
         return new ObjectResponse<>(response);
     }
