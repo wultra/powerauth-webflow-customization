@@ -102,6 +102,17 @@ public interface DataAdapter {
     void formDataChangedNotification(String userId, String organizationId, FormDataChange formDataChange, OperationContext operationContext) throws DataAdapterRemoteException;
 
     /**
+     * Create a new implicit login operation. This method is used in situations when operation
+     * is not created yet and default login operation needs to be created with a correct
+     * application context.
+     * @param clientId OAuth 2.0 client ID.
+     * @param scopes OAuth 2.0 scopes.
+     * @return Context of the operation that should be created.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     */
+    CreateImplicitLoginOperationResponse createImplicitLoginOperation(String clientId, String[] scopes) throws DataAdapterRemoteException;
+
+    /**
      * Receive notification about operation change.
      * @param userId User ID.
      * @param organizationId Organization ID.
