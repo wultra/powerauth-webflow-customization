@@ -10,6 +10,8 @@ import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.Form
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.AfsRequestParameters;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
+import io.getlime.security.powerauth.lib.nextstep.model.entity.ApplicationContext;
+import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,12 +52,20 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public UserDetailResponse lookupUser(String username, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
-        // The sample Data Adapter code uses 1:1 mapping of username to userId. In real implementation the userId usually differs from the username, so translation of username to user ID is required.
+    public UserDetailResponse lookupUser(String username, String organizationId, String clientCertificate, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
+        // The sample Data Adapter code uses 1:1 mapping of username to user ID. In real implementation the userId usually differs from the username, so translation of username to user ID is required.
         // If the user does not exist, return null values for user ID and organization ID.
         // If user account account is blocked, return AccountStatus.NOT_ACTIVE as account status.
         // The SCA login fakes SMS message delivery even for case when user ID is null to disallow fishing of usernames.
         // For case when an error should appear instead, throw a UserNotFoundException.
+
+        // In case the client certificate is used, use the certificate to obtain user details. In sample implementation
+        // a static user ID is returned.
+        if (clientCertificate != null) {
+            return fetchUserDetail("certuser", organizationId, operationContext);
+        }
+
+        // Use 1:1 mapping of username to user ID in sample implementation.
         return fetchUserDetail(username, organizationId, operationContext);
     }
 
@@ -112,7 +122,14 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
+    public InitAuthMethodResponse initAuthMethod(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+        // Implement logic for initial configuration of authentication methods.
+        // Certificate-based authentication can be enabled and the certificate verification URL can be specified based on operation context.
+        return new InitAuthMethodResponse(CertificateAuthenticationMode.NOT_AVAILABLE);
+    }
+
+    @Override
+    public DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
         String operationName = operationContext.getName();
         FormData formData = operationContext.getFormData();
         // Fetch bank account list for given user here from the bank backend.
@@ -191,6 +208,40 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
+    public CreateImplicitLoginOperationResponse createImplicitLoginOperation(String clientId, String[] scopes) throws DataAdapterRemoteException {
+        // Make sure there is only one item in scopes
+        if (scopes == null || scopes.length != 1) {
+            return null;
+        }
+        // Make sure the scope is from known enum
+        final String scope = scopes[0].toLowerCase();
+        if (!"aisp".equals(scope) && !"pisp".equals(scope)) {
+            return null;
+        }
+
+        // Build application context
+        ApplicationContext appContext = new ApplicationContext();
+        appContext.setId(clientId);
+        appContext.setName(clientId);
+        appContext.setDescription("App with client ID: " + clientId);
+        appContext.getOriginalScopes().add(scope);
+
+        // Build form data
+        FormData formData = new FormData();
+        formData.addTitle("login.title");
+        formData.addGreeting("login.greeting");
+        formData.addSummary("login.summary");
+
+        // Create an implicit operation
+        CreateImplicitLoginOperationResponse result = new CreateImplicitLoginOperationResponse();
+        result.setName("login_sca");
+        result.setFormData(formData);
+        result.setApplicationContext(appContext);
+
+        return result;
+    }
+
+    @Override
     public void operationChangedNotification(String userId, String organizationId, OperationChange change, OperationContext operationContext) throws DataAdapterRemoteException {
         String operationId = operationContext.getId();
         // Handle operation change here (e.g. send notification to bank backend).
@@ -198,7 +249,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
+    public CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
         CreateSmsAuthorizationResponse response = new CreateSmsAuthorizationResponse();
         // MessageId is generated as random UUID, it can be overridden to provide a real message identification
         String messageId = UUID.randomUUID().toString();
@@ -212,10 +263,10 @@ public class DataAdapterService implements DataAdapter {
         }
 
         // Generate authorization code
-        AuthorizationCode authorizationCode = smsDeliveryService.generateAuthorizationCode(userId, organizationId, operationContext);
+        AuthorizationCode authorizationCode = smsDeliveryService.generateAuthorizationCode(userId, organizationId, authMethod, operationContext);
 
         // Generate message text, include previously generated authorization code
-        String messageText = smsDeliveryService.generateSmsText(userId, organizationId, operationContext, authorizationCode, lang);
+        String messageText = smsDeliveryService.generateSmsText(userId, organizationId, authMethod, operationContext, authorizationCode, lang);
 
         // Persist authorization SMS message
         smsPersistenceService.createAuthorizationSms(userId, organizationId, messageId, operationContext, authorizationCode, messageText);
@@ -286,6 +337,13 @@ public class DataAdapterService implements DataAdapter {
         // You can enable showing of remaining attempts for the operation.
         // response.setShowRemainingAttempts(true);
         return response;
+    }
+
+    @Override
+    public VerifyCertificateResponse verifyClientCertificate(String userId, String organizationId, String clientCertificate, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+        // This method should implement client TLS certificate verification. The stub implementation always succeeds.
+        CertificateVerificationResult verificationResult = CertificateVerificationResult.SUCCEEDED;
+        return new VerifyCertificateResponse(verificationResult);
     }
 
     @Override

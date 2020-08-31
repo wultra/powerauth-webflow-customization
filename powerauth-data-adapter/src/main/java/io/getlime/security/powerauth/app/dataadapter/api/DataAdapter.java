@@ -20,6 +20,7 @@ import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AccountStatus;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.AfsRequestParameters;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
+import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
 
 import java.util.List;
 import java.util.Map;
@@ -35,12 +36,13 @@ public interface DataAdapter {
      * Lookup user account - map username to user ID.
      * @param username Username which user uses for authentication.
      * @param organizationId Organization ID for this request.
+     * @param clientCertificate Client TLS certificate.
      * @param operationContext Operation context.
      * @return Detail about the user.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws UserNotFoundException Thrown when user does not exist.
      */
-    UserDetailResponse lookupUser(String username, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
+    UserDetailResponse lookupUser(String username, String organizationId, String clientCertificate, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
 
     /**
      * Authenticate user using provided credentials.
@@ -66,15 +68,28 @@ public interface DataAdapter {
     UserDetailResponse fetchUserDetail(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
 
     /**
+     * Initialize an authentication method by providing the initial configuration.
+     * @param userId User ID.
+     * @param organizationId Organization ID.
+     * @param authMethod Authentication method.
+     * @param operationContext Operation context.
+     * @return Initialize authentication method response.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     */
+    InitAuthMethodResponse initAuthMethod(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException;
+
+    /**
      * Decorate operation form data.
      * @param userId User ID.
      * @param organizationId Organization ID.
+     * @param authMethod Authentication method.
      * @param operationContext Operation context.
      * @return Response with decorated operation form data
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws UserNotFoundException Thrown when user does not exist.
      */
-    DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
+    DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException;
 
     /**
      * Receive notification about form data change.
@@ -85,6 +100,17 @@ public interface DataAdapter {
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      */
     void formDataChangedNotification(String userId, String organizationId, FormDataChange formDataChange, OperationContext operationContext) throws DataAdapterRemoteException;
+
+    /**
+     * Create a new implicit login operation. This method is used in situations when operation
+     * is not created yet and default login operation needs to be created with a correct
+     * application context.
+     * @param clientId OAuth 2.0 client ID.
+     * @param scopes OAuth 2.0 scopes.
+     * @return Context of the operation that should be created.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     */
+    CreateImplicitLoginOperationResponse createImplicitLoginOperation(String clientId, String[] scopes) throws DataAdapterRemoteException;
 
     /**
      * Receive notification about operation change.
@@ -101,13 +127,14 @@ public interface DataAdapter {
      * @param userId User ID.
      * @param organizationId Organization ID.
      * @param accountStatus User account status.
+     * @param authMethod Authentication method.
      * @param operationContext Operation context.
      * @param lang Language for localization.
      * @return Message ID.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      * @throws DataAdapterRemoteException Thrown when remote communication fails or SMS message could not be delivered.
      */
-    CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
+    CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
 
     /**
      * Verify authorization code from SMS message.
@@ -138,6 +165,20 @@ public interface DataAdapter {
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      */
     VerifySmsAndPasswordResponse verifyAuthorizationSmsAndPassword(String userId, String organizationId, AccountStatus accountStatus, String messageId, String authorizationCode, OperationContext operationContext, AuthenticationContext authenticationContext, String password) throws DataAdapterRemoteException, InvalidOperationContextException;
+
+    /**
+     * Verify client TLS certificate.
+     * @param userId User ID.
+     * @param organizationId Organization ID.
+     * @param clientCertificate Client TLS certificate.
+     * @param authMethod Authentication method requesting certificate verification.
+     * @param accountStatus Current user account status.
+     * @param operationContext Operation context.
+     * @return Response for client TLS certificate verification.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     */
+    VerifyCertificateResponse verifyClientCertificate(String userId, String organizationId, String clientCertificate, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException;
 
     /**
      * Decide whether OAuth 2.0 consent form should be displayed based on operation context.

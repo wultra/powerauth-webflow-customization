@@ -16,12 +16,16 @@
 package io.getlime.security.powerauth.app.dataadapter.controller;
 
 import io.getlime.core.rest.model.base.request.ObjectRequest;
+import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.core.rest.model.base.response.Response;
 import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
 import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
+import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationChange;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateImplicitLoginOperationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.OperationChangeNotificationRequest;
+import io.getlime.security.powerauth.lib.dataadapter.model.response.CreateImplicitLoginOperationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +51,28 @@ public class OperationChangeController {
     @Autowired
     public OperationChangeController(DataAdapter dataAdapter) {
         this.dataAdapter = dataAdapter;
+    }
+
+    /**
+     * Create a new implicit login operation with provided OAuth 2.0 context.
+     * @param request Request with OAuth 2.0 attributes.
+     * @return Newly created response with operation details.
+     * @throws DataAdapterRemoteException In case network communication fails.
+     * @throws InvalidOperationContextException In case provided information is not sufficient for creating
+     * the correct implicit login operation.
+     */
+    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    public ObjectResponse<CreateImplicitLoginOperationResponse> createImplicitLoginOperation(@RequestBody ObjectRequest<CreateImplicitLoginOperationRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
+        final CreateImplicitLoginOperationRequest requestObject = request.getRequestObject();
+        final String clientId = requestObject.getClientId();
+        final String[] scopes = requestObject.getScopes();
+        logger.debug("Creating implicit login operation for client ID: {}, with scopes: {}", clientId, scopes);
+        CreateImplicitLoginOperationResponse response = dataAdapter.createImplicitLoginOperation(clientId, scopes);
+        if (response == null) {
+            throw new InvalidOperationContextException("Unable to create an implicit login operation");
+        }
+        logger.debug("The createImplicitLoginOperation request succeeded");
+        return new ObjectResponse<>(response);
     }
 
     /**
