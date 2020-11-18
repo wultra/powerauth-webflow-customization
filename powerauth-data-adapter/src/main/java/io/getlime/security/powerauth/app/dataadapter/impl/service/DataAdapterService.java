@@ -43,12 +43,14 @@ public class DataAdapterService implements DataAdapter {
     private final DataAdapterI18NService dataAdapterI18NService;
     private final SmsPersistenceService smsPersistenceService;
     private final SmsDeliveryService smsDeliveryService;
+    private final OperationValueExtractionService operationValueExtractionService;
 
     @Autowired
-    public DataAdapterService(DataAdapterI18NService dataAdapterI18NService, SmsPersistenceService smsPersistenceService, SmsDeliveryService smsDeliveryService) {
+    public DataAdapterService(DataAdapterI18NService dataAdapterI18NService, SmsPersistenceService smsPersistenceService, SmsDeliveryService smsDeliveryService, OperationValueExtractionService operationValueExtractionService) {
         this.dataAdapterI18NService = dataAdapterI18NService;
         this.smsPersistenceService = smsPersistenceService;
         this.smsDeliveryService = smsDeliveryService;
+        this.operationValueExtractionService = operationValueExtractionService;
     }
 
     @Override
@@ -535,8 +537,8 @@ public class DataAdapterService implements DataAdapter {
             case APPROVAL_INIT:
                 // Apply AFS response parameters on authentication form.
                 // This example performs step-down from 2FA to 1FA in case of payment in CZK with low amount.
-                AmountAttribute amountAttr = operationContext.getFormData().getAmount();
-                if (amountAttr.getCurrency().equals("CZK") && amountAttr.getAmount().intValue() < 500) {
+                AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
+                if (amountAttribute.getCurrency().equals("CZK") && amountAttribute.getAmount().intValue() < 500) {
                     // Disable password verification for low amounts
                     response.setAfsResponseApplied(true);
                     response.setAfsLabel("1FA");
