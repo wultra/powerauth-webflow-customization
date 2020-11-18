@@ -44,7 +44,11 @@ public class OperationValueExtractionService {
         if (formData == null || formData.getParameters() == null) {
             throw new InvalidOperationContextException("Operation form data is invalid");
         }
-        return formData.getAmount();
+        AmountAttribute amountAttribute = formData.getAmount();
+        if (amountAttribute == null) {
+            throw new InvalidOperationContextException("Amount attribute is missing");
+        }
+        return amountAttribute;
     }
 
     /**
