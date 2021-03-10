@@ -21,6 +21,7 @@ import io.getlime.security.powerauth.app.dataadapter.impl.service.OperationValue
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.attribute.AmountAttribute;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSmsAuthorizationRequest;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.SendAuthorizationSmsRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -39,7 +40,7 @@ import java.math.BigDecimal;
  * @author Roman Strobl, roman.strobl@wultra.com
  */
 @Component
-public class CreateSmsAuthorizationRequestValidator implements Validator {
+public class AuthorizationSmsRequestValidator implements Validator {
 
     private static final String OPERATION_CONTEXT_FIELD = "requestObject.operationContext";
     private static final String AMOUNT_EMPTY_ERROR_CODE = "smsAuthorization.amount.empty";
@@ -51,7 +52,7 @@ public class CreateSmsAuthorizationRequestValidator implements Validator {
      * @param operationValueExtractionService Operation form data service.
      */
     @Autowired
-    public CreateSmsAuthorizationRequestValidator(OperationValueExtractionService operationValueExtractionService) {
+    public AuthorizationSmsRequestValidator(OperationValueExtractionService operationValueExtractionService) {
         this.operationValueExtractionService = operationValueExtractionService;
     }
 
@@ -73,29 +74,59 @@ public class CreateSmsAuthorizationRequestValidator implements Validator {
     @Override
     @SuppressWarnings("unchecked")
     public void validate(@Nullable Object o, @NonNull Errors errors) {
-        ObjectRequest<CreateSmsAuthorizationRequest> requestObject = (ObjectRequest<CreateSmsAuthorizationRequest>) o;
-        if (requestObject == null) {
-            errors.rejectValue(OPERATION_CONTEXT_FIELD, "operationContext.missing");
+        ObjectRequest<?> objectRequest = (ObjectRequest<?>) o;
+        if (objectRequest == null || objectRequest.getRequestObject() == null) {
+            errors.reject("error.invalidRequest");
             return;
         }
-        CreateSmsAuthorizationRequest authRequest = requestObject.getRequestObject();
+        String userId;
+        String organizationId;
+        OperationContext operationContext;
+        String operationName;
+        if (objectRequest.getRequestObject() instanceof CreateSmsAuthorizationRequest) {
+            ObjectRequest<CreateSmsAuthorizationRequest> requestObject = (ObjectRequest<CreateSmsAuthorizationRequest>) o;
+            CreateSmsAuthorizationRequest authRequest = requestObject.getRequestObject();
+            userId = authRequest.getUserId();
+            organizationId = authRequest.getOrganizationId();
+            operationContext = authRequest.getOperationContext();
+            operationName = authRequest.getOperationContext().getName();
+        } else if (objectRequest.getRequestObject() instanceof SendAuthorizationSmsRequest) {
+            ObjectRequest<SendAuthorizationSmsRequest> requestObject = (ObjectRequest<SendAuthorizationSmsRequest>) o;
+            SendAuthorizationSmsRequest authRequest = requestObject.getRequestObject();
+            userId = authRequest.getUserId();
+            organizationId = authRequest.getOrganizationId();
+            operationContext = authRequest.getOperationContext();
+            operationName = authRequest.getOperationContext().getName();
+            String messageId = authRequest.getMessageId();
+            String authorizationCode = authRequest.getAuthorizationCode();
+            if (messageId == null) {
+                errors.rejectValue("requestObject.messageId", "smsAuthorization.invalidMessage");
+            }
+            if (authorizationCode == null) {
+                errors.rejectValue("requestObject.messageId", "smsAuthorization.invalidCode");
+            }
+        } else {
+            errors.reject("error.invalidRequest");
+            return;
+        }
 
         // update validation logic based on the real Data Adapter requirements
-        String userId = authRequest.getUserId();
-        String organizationId = authRequest.getOrganizationId();
-        OperationContext operationContext = authRequest.getOperationContext();
         if (operationContext == null) {
             errors.rejectValue(OPERATION_CONTEXT_FIELD, "operationContext.missing");
         }
 
-        String operationName = authRequest.getOperationContext().getName();
+        if (userId == null) {
+            errors.rejectValue("requestObject.userId", "smsAuthorization.userId.empty");
+        }
 
-        // Allow null user ID for case when fake SMS message is sent
         if (userId != null && userId.length() > 40) {
             errors.rejectValue("requestObject.userId", "smsAuthorization.userId.long");
         }
 
-        // Allow null organization ID for case when fake SMS message is sent
+        if (organizationId == null) {
+            errors.rejectValue("requestObject.organizationId", "smsAuthorization.organizationId.empty");
+        }
+
         if (organizationId != null && organizationId.length() > 256) {
             errors.rejectValue("requestObject.organizationId", "smsAuthorization.organizationId.long");
         }
@@ -116,17 +147,17 @@ public class CreateSmsAuthorizationRequestValidator implements Validator {
                 break;
             case "authorize_payment":
             case "authorize_payment_sca":
-                validateFieldsForPayment(authRequest, errors);
+                validateFieldsForPayment(operationContext, errors);
                 break;
             default:
                 throw new IllegalStateException("Unsupported operation in validator: " + operationName);
         }
     }
     
-    private void validateFieldsForPayment(CreateSmsAuthorizationRequest authRequest, Errors errors) {
+    private void validateFieldsForPayment(OperationContext operationContext, Errors errors) {
         AmountAttribute amountAttribute;
         try {
-            amountAttribute = operationValueExtractionService.getAmount(authRequest.getOperationContext());
+            amountAttribute = operationValueExtractionService.getAmount(operationContext);
             if (amountAttribute == null) {
                 errors.rejectValue(OPERATION_CONTEXT_FIELD, AMOUNT_EMPTY_ERROR_CODE);
             } else {
@@ -148,7 +179,7 @@ public class CreateSmsAuthorizationRequestValidator implements Validator {
         }
         String account;
         try {
-            account = operationValueExtractionService.getAccount(authRequest.getOperationContext());
+            account = operationValueExtractionService.getAccount(operationContext);
             if (account == null || account.isEmpty()) {
                 errors.rejectValue(OPERATION_CONTEXT_FIELD, "smsAuthorization.account.empty");
             }

@@ -137,6 +137,22 @@ public interface DataAdapter {
     CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
 
     /**
+     * Send an authorization SMS message with generated authorization code.
+     * @param userId User ID.
+     * @param organizationId Organization ID.
+     * @param accountStatus User account status.
+     * @param authMethod Authentication method.
+     * @param operationContext Operation context.
+     * @param messageId Message ID.
+     * @param authorizationCode Authorization code.
+     * @param lang Language for localization.
+     * @return Message ID.
+     * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails or SMS message could not be delivered.
+     */
+    SendAuthorizationSmsResponse sendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String messageId, String authorizationCode, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
+
+    /**
      * Verify authorization code from SMS message.
      * @param userId User ID.
      * @param organizationId Organization ID.
