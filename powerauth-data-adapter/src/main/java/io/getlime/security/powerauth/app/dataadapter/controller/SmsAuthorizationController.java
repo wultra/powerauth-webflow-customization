@@ -88,7 +88,7 @@ public class SmsAuthorizationController {
         logger.info("Received createAuthorizationSms request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         CreateSmsAuthorizationRequest smsRequest = request.getRequestObject();
 
-        // Create authorization SMS and persist it.
+        // Create authorization SMS and persist it
         String userId = smsRequest.getUserId();
         String organizationId = smsRequest.getOrganizationId();
         AccountStatus accountStatus = smsRequest.getAccountStatus();
@@ -114,7 +114,7 @@ public class SmsAuthorizationController {
         logger.info("Received sendAuthorizationSms request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         SendAuthorizationSmsRequest smsRequest = request.getRequestObject();
 
-        // Create authorization SMS and persist it.
+        // Create authorization SMS
         String userId = smsRequest.getUserId();
         String organizationId = smsRequest.getOrganizationId();
         AccountStatus accountStatus = smsRequest.getAccountStatus();
