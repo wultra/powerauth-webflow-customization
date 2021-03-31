@@ -24,8 +24,11 @@ import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationC
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationChange;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateImplicitLoginOperationRequest;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.GetPAOperationMappingRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.OperationChangeNotificationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.CreateImplicitLoginOperationResponse;
+import io.getlime.security.powerauth.lib.dataadapter.model.response.GetPAOperationMappingResponse;
+import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +97,27 @@ public class OperationChangeController {
         dataAdapter.operationChangedNotification(userId, organizationId, operationChange, operationContext);
         logger.debug("The operationChangedNotification request succeeded");
         return new Response();
+    }
+
+    /**
+     * Get mapping of Next Step operation to PowerAuth operation.
+     *
+     * @param request Operation mapping request.
+     * @return Operation mapping response.
+     * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
+     */
+    @RequestMapping(value = "/mapping", method = RequestMethod.POST)
+    public ObjectResponse<GetPAOperationMappingResponse> getPAOperationMapping(@RequestBody ObjectRequest<GetPAOperationMappingRequest> request) throws DataAdapterRemoteException {
+        logger.info("Received getPAOperationMapping request for user: {}, operation ID: {}",
+                request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
+        GetPAOperationMappingRequest mappingRequest = request.getRequestObject();
+        String userId = mappingRequest.getUserId();
+        String organizationId = mappingRequest.getOrganizationId();
+        AuthMethod authMethod = mappingRequest.getAuthMethod();
+        OperationContext operationContext = mappingRequest.getOperationContext();
+        logger.debug("The getPAOperationMapping request succeeded");
+        GetPAOperationMappingResponse response = dataAdapter.getPAOperationMapping(userId, organizationId, authMethod, operationContext);
+        return new ObjectResponse<>(response);
     }
 
 }

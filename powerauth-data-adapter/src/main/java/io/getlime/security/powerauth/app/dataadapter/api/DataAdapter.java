@@ -113,6 +113,18 @@ public interface DataAdapter {
     CreateImplicitLoginOperationResponse createImplicitLoginOperation(String clientId, String[] scopes) throws DataAdapterRemoteException;
 
     /**
+     * Get the Next Step operation mapping to PowerAuth operation mapping. This method is used for
+     * complex operations with multiple steps which include multiple PowerAuth authentications.
+     * @param userId User ID of the user for this request.
+     * @param organizationId Organization ID for this request.
+     * @param authMethod Authentication method.
+     * @param operationContext Operation context.
+     * @return Next Step operation mapping to PowerAuth operation mapping.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     */
+    GetPAOperationMappingResponse getPAOperationMapping(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException;
+
+    /**
      * Receive notification about operation change.
      * @param userId User ID.
      * @param organizationId Organization ID.
