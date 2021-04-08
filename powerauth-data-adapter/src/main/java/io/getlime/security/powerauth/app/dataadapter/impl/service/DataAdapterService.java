@@ -40,6 +40,13 @@ public class DataAdapterService implements DataAdapter {
     private static final String SMS_AUTHORIZATION_FAILED = "smsAuthorization.failed";
     private static final String INVALID_REQUEST = "error.invalidRequest";
 
+    private static final String LOGIN_TEMPLATE_NAME = "login";
+    private static final String LOGIN_OPERATION_NAME = "login";
+    private static final String LOGIN_OPERATION_DATA = "A2";
+    private static final String LOGIN_TITLE = "login.title";
+    private static final String LOGIN_GREETING = "login.greeting";
+    private static final String LOGIN_SUMMARY = "login.summary";
+
     private final DataAdapterI18NService dataAdapterI18NService;
     private final SmsPersistenceService smsPersistenceService;
     private final SmsDeliveryService smsDeliveryService;
@@ -239,6 +246,42 @@ public class DataAdapterService implements DataAdapter {
         result.setApplicationContext(appContext);
 
         return result;
+    }
+
+    @Override
+    public GetPAOperationMappingResponse getPAOperationMapping(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException {
+        GetPAOperationMappingResponse response = new GetPAOperationMappingResponse();
+        switch (operationContext.getName()) {
+
+            case "login_sca":
+            case "authorize_payment_sca":
+                // Mapping logic is required for operations which have multiple steps with a PowerAuth operation.
+                // The PowerAuth operation template name, operation name, data and form data are mapped for SCA login.
+                // Note that in actual DA implementation, the operation names may differ from Next Step defaults.
+                // For instance the "login_sca" may be called "login" and "authorize_payment_sca" may be called "authorize_payment".
+                // So, the switch needs to be updated when the "_sca" suffix is missing or operation names differ completely.
+                if (authMethod == AuthMethod.LOGIN_SCA) {
+                    response.setTemplateName(LOGIN_TEMPLATE_NAME);
+                    response.setOperationName(LOGIN_OPERATION_NAME);
+                    response.setOperationData(LOGIN_OPERATION_DATA);
+                    FormData formData = new FormData();
+                    formData.addTitle(LOGIN_TITLE);
+                    formData.addGreeting(LOGIN_GREETING);
+                    formData.addSummary(LOGIN_SUMMARY);
+                    formData.getUserInput().putAll(operationContext.getFormData().getUserInput());
+                    response.setFormData(formData);
+                    return response;
+                }
+                // Missing break is intentional, APPROVAL_SCA within authorize_payment_sca operation is handled as the default case
+
+            default:
+                // For operations which have a single step with a PowerAuth operation, there is no change required.
+                response.setTemplateName(operationContext.getName());
+                response.setOperationName(operationContext.getName());
+                response.setOperationData(operationContext.getData());
+                response.setFormData(operationContext.getFormData());
+                return response;
+        }
     }
 
     @Override

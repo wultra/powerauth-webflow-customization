@@ -113,6 +113,18 @@ public interface DataAdapter {
     CreateImplicitLoginOperationResponse createImplicitLoginOperation(String clientId, String[] scopes) throws DataAdapterRemoteException;
 
     /**
+     * Get the Next Step operation mapping to PowerAuth operation mapping. This method is used for
+     * complex operations with multiple steps which include multiple PowerAuth authentications.
+     * @param userId User ID of the user for this request.
+     * @param organizationId Organization ID for this request.
+     * @param authMethod Authentication method.
+     * @param operationContext Operation context.
+     * @return Next Step operation mapping to PowerAuth operation mapping.
+     * @throws DataAdapterRemoteException Thrown when remote communication fails.
+     */
+    GetPAOperationMappingResponse getPAOperationMapping(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException;
+
+    /**
      * Receive notification about operation change.
      * @param userId User ID.
      * @param organizationId Organization ID.
@@ -123,7 +135,8 @@ public interface DataAdapter {
     void operationChangedNotification(String userId, String organizationId, OperationChange operationChange, OperationContext operationContext) throws DataAdapterRemoteException;
 
     /**
-     * Create authorization SMS message and send it.
+     * Create authorization SMS message and send it. The authorization code is expected to be generated within this method
+     * and stored by Data Adapter because Data Adapter also handles the verification.
      * @param userId User ID.
      * @param organizationId Organization ID.
      * @param accountStatus User account status.
@@ -137,7 +150,9 @@ public interface DataAdapter {
     CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
 
     /**
-     * Send an authorization SMS message with generated authorization code.
+     * Send an authorization SMS message with generated authorization code, which is received as a parameter.
+     * The authorization code is not expected to be stored by Data Adapter because it can be verified
+     * outside of Data Adapter.
      * @param userId User ID.
      * @param organizationId Organization ID.
      * @param accountStatus User account status.

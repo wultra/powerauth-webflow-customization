@@ -75,7 +75,7 @@ public class AuthMethodRequestValidator implements Validator {
     /**
      * Validate authentication method initialization request.
      * @param authRequest Authentication method initialization request.
-     * @param errors
+     * @param errors Errors object.
      */
     private void validateInitAuthMethodRequest(InitAuthMethodRequest authRequest, Errors errors) {
         // update validation logic based on the real Data Adapter requirements
