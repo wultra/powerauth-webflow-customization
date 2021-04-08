@@ -20,14 +20,16 @@ import io.getlime.core.rest.model.base.response.ObjectResponse;
 import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
 import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
 import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
-import io.getlime.security.powerauth.app.dataadapter.impl.validation.CreateSmsAuthorizationRequestValidator;
+import io.getlime.security.powerauth.app.dataadapter.impl.validation.AuthorizationSmsRequestValidator;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.AuthenticationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationContext;
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AccountStatus;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.CreateSmsAuthorizationRequest;
+import io.getlime.security.powerauth.lib.dataadapter.model.request.SendAuthorizationSmsRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifySmsAndPasswordRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifySmsAuthorizationRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.CreateSmsAuthorizationResponse;
+import io.getlime.security.powerauth.lib.dataadapter.model.response.SendAuthorizationSmsResponse;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.VerifySmsAndPasswordResponse;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.VerifySmsAuthorizationResponse;
 import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
@@ -50,7 +52,7 @@ public class SmsAuthorizationController {
 
     private static final Logger logger = LoggerFactory.getLogger(SmsAuthorizationController.class);
 
-    private final CreateSmsAuthorizationRequestValidator requestValidator;
+    private final AuthorizationSmsRequestValidator requestValidator;
     private final DataAdapter dataAdapter;
 
     /**
@@ -59,7 +61,7 @@ public class SmsAuthorizationController {
      * @param dataAdapter Data adapter.
      */
     @Autowired
-    public SmsAuthorizationController(CreateSmsAuthorizationRequestValidator requestValidator, DataAdapter dataAdapter) {
+    public SmsAuthorizationController(AuthorizationSmsRequestValidator requestValidator, DataAdapter dataAdapter) {
         this.requestValidator = requestValidator;
         this.dataAdapter = dataAdapter;
     }
@@ -86,7 +88,7 @@ public class SmsAuthorizationController {
         logger.info("Received createAuthorizationSms request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         CreateSmsAuthorizationRequest smsRequest = request.getRequestObject();
 
-        // Create authorization SMS and persist it.
+        // Create authorization SMS and persist it
         String userId = smsRequest.getUserId();
         String organizationId = smsRequest.getOrganizationId();
         AccountStatus accountStatus = smsRequest.getAccountStatus();
@@ -96,6 +98,34 @@ public class SmsAuthorizationController {
         CreateSmsAuthorizationResponse response = dataAdapter.createAndSendAuthorizationSms(userId, organizationId, accountStatus, authMethod, operationContext, lang);
 
         logger.info("The createAuthorizationSms request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
+        return new ObjectResponse<>(response);
+    }
+
+    /**
+     * Send a new SMS OTP authorization message.
+     *
+     * @param request Request data.
+     * @return Response with message ID.
+     * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
+     * @throws InvalidOperationContextException Thrown in case operation context is invalid.
+     */
+    @PostMapping(value = "send")
+    public ObjectResponse<SendAuthorizationSmsResponse> sendAuthorizationSms(@Valid @RequestBody ObjectRequest<SendAuthorizationSmsRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
+        logger.info("Received sendAuthorizationSms request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
+        SendAuthorizationSmsRequest smsRequest = request.getRequestObject();
+
+        // Create authorization SMS
+        String userId = smsRequest.getUserId();
+        String organizationId = smsRequest.getOrganizationId();
+        AccountStatus accountStatus = smsRequest.getAccountStatus();
+        AuthMethod authMethod = smsRequest.getAuthMethod();
+        OperationContext operationContext = smsRequest.getOperationContext();
+        String messageId = smsRequest.getMessageId();
+        String authorizationCode = smsRequest.getAuthorizationCode();
+        String lang = smsRequest.getLang();
+        SendAuthorizationSmsResponse response = dataAdapter.sendAuthorizationSms(userId, organizationId, accountStatus, authMethod, operationContext, messageId, authorizationCode, lang);
+
+        logger.info("The sendAuthorizationSms request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
 

@@ -58,7 +58,6 @@ public class DataAdapterService implements DataAdapter {
         // The sample Data Adapter code uses 1:1 mapping of username to user ID. In real implementation the userId usually differs from the username, so translation of username to user ID is required.
         // If the user does not exist, return null values for user ID and organization ID.
         // If user account account is blocked, return AccountStatus.NOT_ACTIVE as account status.
-        // The SCA login fakes SMS message delivery even for case when user ID is null to disallow fishing of usernames.
         // For case when an error should appear instead, throw a UserNotFoundException.
 
         // In case the client certificate is used, use the certificate to obtain user details. In sample implementation
@@ -85,7 +84,6 @@ public class DataAdapterService implements DataAdapter {
                 UserDetailResponse userDetail = fetchUserDetail(userId, organizationId, operationContext);
                 // The organization needs to be set in response (e.g. client authenticated against RETAIL organization or SME organization).
                 userDetail.setOrganizationId(organizationId);
-                authResponse.setUserDetail(userDetail);
                 authResponse.setAuthenticationResult(UserAuthenticationResult.SUCCEEDED);
                 return authResponse;
             } catch (UserNotFoundException e) {
@@ -257,13 +255,6 @@ public class DataAdapterService implements DataAdapter {
         String messageId = UUID.randomUUID().toString();
         response.setMessageId(messageId);
 
-        // Fake SMS message delivery for null user ID in case of non-existent account or blocked user account
-        if (userId == null || accountStatus != AccountStatus.ACTIVE) {
-            // Make sure that user cannot recognize that the SMS was not sent, even the result is sent as fake success
-            response.setSmsDeliveryResult(SmsDeliveryResult.SUCCEEDED);
-            return response;
-        }
-
         // Generate authorization code
         AuthorizationCode authorizationCode = smsDeliveryService.generateAuthorizationCode(userId, organizationId, authMethod, operationContext);
 
@@ -273,7 +264,7 @@ public class DataAdapterService implements DataAdapter {
         // Persist authorization SMS message
         smsPersistenceService.createAuthorizationSms(userId, organizationId, messageId, operationContext, authorizationCode, messageText);
 
-        // Send SMS with generated text to target user.
+        // Send SMS with generated text to target user
         SmsDeliveryResult deliveryResult = smsDeliveryService.sendAuthorizationSms(userId, organizationId, messageId, messageText, operationContext);
         response.setSmsDeliveryResult(deliveryResult);
         if (!SmsDeliveryResult.SUCCEEDED.equals(deliveryResult)) {
@@ -281,6 +272,26 @@ public class DataAdapterService implements DataAdapter {
         }
 
         // Return generated message ID
+        return response;
+    }
+
+    @Override
+    public SendAuthorizationSmsResponse sendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String messageId, String authorizationCode, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
+        SendAuthorizationSmsResponse response = new SendAuthorizationSmsResponse();
+        // Message ID is taken from request
+        response.setMessageId(messageId);
+
+        // Generate message text, include previously generated authorization code (salt is not known)
+        AuthorizationCode authCode = new AuthorizationCode(authorizationCode, null);
+        String messageText = smsDeliveryService.generateSmsText(userId, organizationId, authMethod, operationContext, authCode, lang);
+
+        // Send SMS with generated text to target user
+        SmsDeliveryResult deliveryResult = smsDeliveryService.sendAuthorizationSms(userId, organizationId, messageId, messageText, operationContext);
+
+        response.setSmsDeliveryResult(deliveryResult);
+        if (!SmsDeliveryResult.SUCCEEDED.equals(deliveryResult)) {
+            response.setErrorMessage(SMS_DELIVERY_FAILED);
+        }
         return response;
     }
 
