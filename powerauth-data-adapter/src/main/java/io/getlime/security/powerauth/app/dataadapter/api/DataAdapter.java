@@ -135,7 +135,8 @@ public interface DataAdapter {
     void operationChangedNotification(String userId, String organizationId, OperationChange operationChange, OperationContext operationContext) throws DataAdapterRemoteException;
 
     /**
-     * Create authorization SMS message and send it.
+     * Create authorization SMS message and send it. The authorization code is expected to be generated within this method
+     * and stored by Data Adapter because Data Adapter also handles the verification.
      * @param userId User ID.
      * @param organizationId Organization ID.
      * @param accountStatus User account status.
@@ -149,7 +150,9 @@ public interface DataAdapter {
     CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException;
 
     /**
-     * Send an authorization SMS message with generated authorization code.
+     * Send an authorization SMS message with generated authorization code, which is received as a parameter.
+     * The authorization code is not expected to be stored by Data Adapter because it can be verified
+     * outside of Data Adapter.
      * @param userId User ID.
      * @param organizationId Organization ID.
      * @param accountStatus User account status.
