@@ -89,11 +89,11 @@ public class OperationChangeController {
     public Response operationChangedNotification(@RequestBody ObjectRequest<OperationChangeNotificationRequest> request) throws DataAdapterRemoteException {
         logger.info("Received operationChangedNotification request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
-        OperationChangeNotificationRequest notification = request.getRequestObject();
-        String userId = notification.getUserId();
-        String organizationId = notification.getOrganizationId();
-        OperationContext operationContext = notification.getOperationContext();
-        OperationChange operationChange = notification.getOperationChange();
+        final OperationChangeNotificationRequest notification = request.getRequestObject();
+        final String userId = notification.getUserId();
+        final String organizationId = notification.getOrganizationId();
+        final OperationContext operationContext = notification.getOperationContext();
+        final  OperationChange operationChange = notification.getOperationChange();
         dataAdapter.operationChangedNotification(userId, organizationId, operationChange, operationContext);
         logger.debug("The operationChangedNotification request succeeded");
         return new Response();
@@ -110,11 +110,11 @@ public class OperationChangeController {
     public ObjectResponse<GetPAOperationMappingResponse> getPAOperationMapping(@RequestBody ObjectRequest<GetPAOperationMappingRequest> request) throws DataAdapterRemoteException {
         logger.info("Received getPAOperationMapping request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
-        GetPAOperationMappingRequest mappingRequest = request.getRequestObject();
-        String userId = mappingRequest.getUserId();
-        String organizationId = mappingRequest.getOrganizationId();
-        AuthMethod authMethod = mappingRequest.getAuthMethod();
-        OperationContext operationContext = mappingRequest.getOperationContext();
+        final GetPAOperationMappingRequest mappingRequest = request.getRequestObject();
+        final String userId = mappingRequest.getUserId();
+        final String organizationId = mappingRequest.getOrganizationId();
+        final AuthMethod authMethod = mappingRequest.getAuthMethod();
+        final OperationContext operationContext = mappingRequest.getOperationContext();
         logger.debug("The getPAOperationMapping request succeeded");
         GetPAOperationMappingResponse response = dataAdapter.getPAOperationMapping(userId, organizationId, authMethod, operationContext);
         return new ObjectResponse<>(response);
