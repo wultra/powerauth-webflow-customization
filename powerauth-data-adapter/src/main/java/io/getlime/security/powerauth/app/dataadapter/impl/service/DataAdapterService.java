@@ -125,6 +125,8 @@ public class DataAdapterService implements DataAdapter {
         responseObject.setFamilyName("Doe");
         responseObject.setOrganizationId(organizationId);
         responseObject.setAccountStatus(AccountStatus.ACTIVE);
+        // Any additional details related to the user can be stored in extras:
+        // responseObject.getExtras().putAll(userAttributes);
         return responseObject;
     }
 
