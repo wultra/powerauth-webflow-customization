@@ -147,7 +147,9 @@ public class AuthorizationSmsRequestValidator implements Validator {
                 break;
             case "authorize_payment":
             case "authorize_payment_sca":
-                validateFieldsForPayment(operationContext, errors);
+                if (operationContext != null) {
+                    validateFieldsForPayment(operationContext, errors);
+                }
                 break;
             default:
                 throw new IllegalStateException("Unsupported operation in validator: " + operationName);
