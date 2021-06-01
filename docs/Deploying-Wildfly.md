@@ -87,7 +87,5 @@ Data Adapter Spring application uses the `ext` Spring profile which activates ov
 
 ### Bouncy Castle Installation
 
-The Bouncy Castle module for JBoss / Wildfly needs to be enabled as a global module for Data Adapter.
-
-Follow the instructions in the [Installing Bouncy Castle](https://github.com/wultra/powerauth-server/blob/develop/docs/Installing-Bouncy-Castle.md) chapter of PowerAuth Server documentation. 
-Note that the instructions differ based on Java version and application server type.
+The Bouncy Castle library for JBoss / Wildfly is included in the Data Adapter war file. The library is configured
+using the `jboss-deployment-structure.xml` descriptor. Global module configuration of Bouncy Castle is no longer required.
