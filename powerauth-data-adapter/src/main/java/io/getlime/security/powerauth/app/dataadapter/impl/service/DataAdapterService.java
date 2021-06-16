@@ -40,6 +40,13 @@ public class DataAdapterService implements DataAdapter {
     private static final String SMS_AUTHORIZATION_FAILED = "smsAuthorization.failed";
     private static final String INVALID_REQUEST = "error.invalidRequest";
 
+    private static final String LOGIN_TEMPLATE_NAME = "login";
+    private static final String LOGIN_OPERATION_NAME = "login";
+    private static final String LOGIN_OPERATION_DATA = "A2";
+    private static final String LOGIN_TITLE = "login.title";
+    private static final String LOGIN_GREETING = "login.greeting";
+    private static final String LOGIN_SUMMARY = "login.summary";
+
     private final DataAdapterI18NService dataAdapterI18NService;
     private final SmsPersistenceService smsPersistenceService;
     private final SmsDeliveryService smsDeliveryService;
@@ -58,7 +65,6 @@ public class DataAdapterService implements DataAdapter {
         // The sample Data Adapter code uses 1:1 mapping of username to user ID. In real implementation the userId usually differs from the username, so translation of username to user ID is required.
         // If the user does not exist, return null values for user ID and organization ID.
         // If user account account is blocked, return AccountStatus.NOT_ACTIVE as account status.
-        // The SCA login fakes SMS message delivery even for case when user ID is null to disallow fishing of usernames.
         // For case when an error should appear instead, throw a UserNotFoundException.
 
         // In case the client certificate is used, use the certificate to obtain user details. In sample implementation
@@ -85,7 +91,6 @@ public class DataAdapterService implements DataAdapter {
                 UserDetailResponse userDetail = fetchUserDetail(userId, organizationId, operationContext);
                 // The organization needs to be set in response (e.g. client authenticated against RETAIL organization or SME organization).
                 userDetail.setOrganizationId(organizationId);
-                authResponse.setUserDetail(userDetail);
                 authResponse.setAuthenticationResult(UserAuthenticationResult.SUCCEEDED);
                 return authResponse;
             } catch (UserNotFoundException e) {
@@ -120,6 +125,8 @@ public class DataAdapterService implements DataAdapter {
         responseObject.setFamilyName("Doe");
         responseObject.setOrganizationId(organizationId);
         responseObject.setAccountStatus(AccountStatus.ACTIVE);
+        // Any additional details related to the user can be stored in extras:
+        // responseObject.getExtras().putAll(userAttributes);
         return responseObject;
     }
 
@@ -244,6 +251,42 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
+    public GetPAOperationMappingResponse getPAOperationMapping(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException {
+        GetPAOperationMappingResponse response = new GetPAOperationMappingResponse();
+        switch (operationContext.getName()) {
+
+            case "login_sca":
+            case "authorize_payment_sca":
+                // Mapping logic is required for operations which have multiple steps with a PowerAuth operation.
+                // The PowerAuth operation template name, operation name, data and form data are mapped for SCA login.
+                // Note that in actual DA implementation, the operation names may differ from Next Step defaults.
+                // For instance the "login_sca" may be called "login" and "authorize_payment_sca" may be called "authorize_payment".
+                // So, the switch needs to be updated when the "_sca" suffix is missing or operation names differ completely.
+                if (authMethod == AuthMethod.LOGIN_SCA) {
+                    response.setTemplateName(LOGIN_TEMPLATE_NAME);
+                    response.setOperationName(LOGIN_OPERATION_NAME);
+                    response.setOperationData(LOGIN_OPERATION_DATA);
+                    FormData formData = new FormData();
+                    formData.addTitle(LOGIN_TITLE);
+                    formData.addGreeting(LOGIN_GREETING);
+                    formData.addSummary(LOGIN_SUMMARY);
+                    formData.getUserInput().putAll(operationContext.getFormData().getUserInput());
+                    response.setFormData(formData);
+                    return response;
+                }
+                // Missing break is intentional, APPROVAL_SCA within authorize_payment_sca operation is handled as the default case
+
+            default:
+                // For operations which have a single step with a PowerAuth operation, there is no change required.
+                response.setTemplateName(operationContext.getName());
+                response.setOperationName(operationContext.getName());
+                response.setOperationData(operationContext.getData());
+                response.setFormData(operationContext.getFormData());
+                return response;
+        }
+    }
+
+    @Override
     public void operationChangedNotification(String userId, String organizationId, OperationChange change, OperationContext operationContext) throws DataAdapterRemoteException {
         String operationId = operationContext.getId();
         // Handle operation change here (e.g. send notification to bank backend).
@@ -257,13 +300,6 @@ public class DataAdapterService implements DataAdapter {
         String messageId = UUID.randomUUID().toString();
         response.setMessageId(messageId);
 
-        // Fake SMS message delivery for null user ID in case of non-existent account or blocked user account
-        if (userId == null || accountStatus != AccountStatus.ACTIVE) {
-            // Make sure that user cannot recognize that the SMS was not sent, even the result is sent as fake success
-            response.setSmsDeliveryResult(SmsDeliveryResult.SUCCEEDED);
-            return response;
-        }
-
         // Generate authorization code
         AuthorizationCode authorizationCode = smsDeliveryService.generateAuthorizationCode(userId, organizationId, authMethod, operationContext);
 
@@ -273,7 +309,7 @@ public class DataAdapterService implements DataAdapter {
         // Persist authorization SMS message
         smsPersistenceService.createAuthorizationSms(userId, organizationId, messageId, operationContext, authorizationCode, messageText);
 
-        // Send SMS with generated text to target user.
+        // Send SMS with generated text to target user
         SmsDeliveryResult deliveryResult = smsDeliveryService.sendAuthorizationSms(userId, organizationId, messageId, messageText, operationContext);
         response.setSmsDeliveryResult(deliveryResult);
         if (!SmsDeliveryResult.SUCCEEDED.equals(deliveryResult)) {
@@ -281,6 +317,26 @@ public class DataAdapterService implements DataAdapter {
         }
 
         // Return generated message ID
+        return response;
+    }
+
+    @Override
+    public SendAuthorizationSmsResponse sendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String messageId, String authorizationCode, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
+        SendAuthorizationSmsResponse response = new SendAuthorizationSmsResponse();
+        // Message ID is taken from request
+        response.setMessageId(messageId);
+
+        // Generate message text, include previously generated authorization code (salt is not known)
+        AuthorizationCode authCode = new AuthorizationCode(authorizationCode, null);
+        String messageText = smsDeliveryService.generateSmsText(userId, organizationId, authMethod, operationContext, authCode, lang);
+
+        // Send SMS with generated text to target user
+        SmsDeliveryResult deliveryResult = smsDeliveryService.sendAuthorizationSms(userId, organizationId, messageId, messageText, operationContext);
+
+        response.setSmsDeliveryResult(deliveryResult);
+        if (!SmsDeliveryResult.SUCCEEDED.equals(deliveryResult)) {
+            response.setErrorMessage(SMS_DELIVERY_FAILED);
+        }
         return response;
     }
 

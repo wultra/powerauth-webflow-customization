@@ -7,11 +7,20 @@ Data Adapter contains the following configuration in `jboss-deployment-structure
 ```
 <?xml version="1.0"?>
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
-	<deployment>
-		<exclude-subsystems>
-			<!-- disable the logging subsystem because the application manages its own logging independently -->
-			<subsystem name="logging" />
-		</exclude-subsystems>
+    <deployment>
+        <exclusions>
+            <module name="org.apache.xerces" />
+            <module name="org.apache.xalan" />
+        </exclusions>
+        <exclude-subsystems>
+            <!-- disable the logging subsystem because the application manages its own logging independently -->
+            <subsystem name="logging" />
+        </exclude-subsystems>
+
+        <resources>
+            <!-- use WAR provided Bouncy Castle -->
+            <resource-root path="WEB-INF/lib/bcprov-jdk15on-${BC_VERSION}.jar" use-physical-code-source="true"/>
+        </resources>
 
 		<dependencies>
 			<module name="com.wultra.powerauth.data-adapter.conf" />
@@ -87,7 +96,5 @@ Data Adapter Spring application uses the `ext` Spring profile which activates ov
 
 ### Bouncy Castle Installation
 
-The Bouncy Castle module for JBoss / Wildfly needs to be enabled as a global module for Data Adapter.
-
-Follow the instructions in the [Installing Bouncy Castle](https://github.com/wultra/powerauth-server/blob/develop/docs/Installing-Bouncy-Castle.md) chapter of PowerAuth Server documentation. 
-Note that the instructions differ based on Java version and application server type.
+The Bouncy Castle library for JBoss / Wildfly is included in the Data Adapter war file. The library is configured
+using the `jboss-deployment-structure.xml` descriptor. Global module configuration of Bouncy Castle is no longer required.
