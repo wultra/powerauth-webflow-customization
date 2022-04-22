@@ -108,11 +108,6 @@
         </dependency>
         <dependency>
             <groupId>io.getlime.security</groupId>
-            <artifactId>powerauth-tpp-engine-client</artifactId>
-            <version>1.2.5</version>
-        </dependency>
-        <dependency>
-            <groupId>io.getlime.security</groupId>
             <artifactId>powerauth-java-crypto</artifactId>
             <version>1.2.0</version>
         </dependency>
