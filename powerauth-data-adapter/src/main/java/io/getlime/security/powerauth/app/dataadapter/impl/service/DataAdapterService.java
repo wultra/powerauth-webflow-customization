@@ -1,3 +1,18 @@
+/*
+ * Copyright 2017 Wultra s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.getlime.security.powerauth.app.dataadapter.impl.service;
 
 import io.getlime.security.powerauth.app.dataadapter.api.DataAdapter;
@@ -405,13 +420,13 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public InitConsentFormResponse initConsentForm(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public InitConsentFormResponse initConsentForm(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
         // Override this logic in case consent form should be displayed conditionally for given operation context.
         return new InitConsentFormResponse(true);
     }
 
     @Override
-    public CreateConsentFormResponse createConsentForm(String userId, String organizationId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public CreateConsentFormResponse createConsentForm(String userId, String organizationId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
         // Fallback to English for unsupported languages, see: https://github.com/wultra/powerauth-webflow-customization/issues/104
         if (!"cs".equals(lang) && !"en".equals(lang)) {
             lang = "en";

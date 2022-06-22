@@ -82,9 +82,10 @@ public class ConsentController {
      * @return Initialize consent form response.
      * @throws DataAdapterRemoteException In case communication with remote system fails.
      * @throws InvalidOperationContextException In case operation context is invalid.
+     * @throws InvalidConsentDataException In case consent options are invalid.
      */
     @PostMapping(value = "/init")
-    public ObjectResponse<InitConsentFormResponse> initConsentForm(@Valid @RequestBody ObjectRequest<InitConsentFormRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public ObjectResponse<InitConsentFormResponse> initConsentForm(@Valid @RequestBody ObjectRequest<InitConsentFormRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
         logger.info("Received initConsentForm request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         InitConsentFormRequest createRequest = request.getRequestObject();
@@ -102,9 +103,10 @@ public class ConsentController {
      * @return Create consent form response.
      * @throws DataAdapterRemoteException In case communication with remote system fails.
      * @throws InvalidOperationContextException In case operation context is invalid.
+     * @throws InvalidConsentDataException In case consent options are invalid.
      */
     @PostMapping(value = "/create")
-    public ObjectResponse<CreateConsentFormResponse> createConsentForm(@Valid @RequestBody ObjectRequest<CreateConsentFormRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public ObjectResponse<CreateConsentFormResponse> createConsentForm(@Valid @RequestBody ObjectRequest<CreateConsentFormRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
         logger.info("Received createConsentForm request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());
         CreateConsentFormRequest createRequest = request.getRequestObject();

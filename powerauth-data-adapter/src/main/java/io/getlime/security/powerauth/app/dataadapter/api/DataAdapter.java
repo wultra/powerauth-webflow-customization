@@ -219,8 +219,9 @@ public interface DataAdapter {
      * @return Response with information whether consent form should be displayed.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     * @throws InvalidConsentDataException Thrown when consent data is invalid.
      */
-    InitConsentFormResponse initConsentForm(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException;
+    InitConsentFormResponse initConsentForm(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException;
 
     /**
      * Create OAuth 2.0 consent form - prepare HTML text of consent form and add form options.
@@ -231,8 +232,9 @@ public interface DataAdapter {
      * @return Consent form contents with HTML text and form options.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
+     * @throws InvalidConsentDataException Thrown when consent options are invalid.
      */
-    CreateConsentFormResponse createConsentForm(String userId, String organizationId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException;
+    CreateConsentFormResponse createConsentForm(String userId, String organizationId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException;
 
     /**
      * Validate consent form values and generate response with validation result with optional error messages in case validation fails.
@@ -244,7 +246,7 @@ public interface DataAdapter {
      * @return Consent form validation result with optional error messages in case validation fails.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
-     * @throws InvalidConsentDataException In case consent options are invalid.
+     * @throws InvalidConsentDataException Thrown when consent options are invalid.
      */
     ValidateConsentFormResponse validateConsentForm(String userId, String organizationId, OperationContext operationContext, String lang, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException;
 
@@ -257,7 +259,7 @@ public interface DataAdapter {
      * @return Response with result of saving the consent form.
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
-     * @throws InvalidConsentDataException In case consent options are invalid.
+     * @throws InvalidConsentDataException Thrown when consent options are invalid.
      */
     SaveConsentFormResponse saveConsentForm(String userId, String organizationId, OperationContext operationContext, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException;
 
