@@ -79,15 +79,16 @@ public class CertificateController {
     @PostMapping(value = "verify")
     public ObjectResponse<VerifyCertificateResponse> verifyCertificate(@Valid @RequestBody ObjectRequest<VerifyCertificateRequest> request) throws InvalidOperationContextException, DataAdapterRemoteException {
         logger.info("Received verifyCertificate request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
-        VerifyCertificateRequest verifyRequest = request.getRequestObject();
-        String clientCertificate = verifyRequest.getClientCertificate();
-        AuthMethod authMethod = verifyRequest.getAuthMethod();
-        String userId = verifyRequest.getUserId();
-        String organizationId = verifyRequest.getOrganizationId();
-        AccountStatus accountStatus = verifyRequest.getAccountStatus();
-        OperationContext operationContext = verifyRequest.getOperationContext();
+        final VerifyCertificateRequest verifyRequest = request.getRequestObject();
+        final String certificate = verifyRequest.getCertificate();
+        final String signature = verifyRequest.getSignature();
+        final AuthMethod authMethod = verifyRequest.getAuthMethod();
+        final String userId = verifyRequest.getUserId();
+        final String organizationId = verifyRequest.getOrganizationId();
+        final AccountStatus accountStatus = verifyRequest.getAccountStatus();
+        final OperationContext operationContext = verifyRequest.getOperationContext();
         // Verify authorization code
-        VerifyCertificateResponse response = dataAdapter.verifyClientCertificate(userId, organizationId, clientCertificate, authMethod, accountStatus, operationContext);
+        final VerifyCertificateResponse response = dataAdapter.verifyCertificate(userId, organizationId, certificate, signature, authMethod, accountStatus, operationContext);
         logger.info("The verifyCertificate request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
