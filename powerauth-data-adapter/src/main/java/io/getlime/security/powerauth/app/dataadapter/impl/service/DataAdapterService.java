@@ -413,8 +413,8 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public VerifyCertificateResponse verifyCertificate(String userId, String organizationId, String certificate, String signature, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
-        // This method should implement client TLS certificate verification. The stub implementation always succeeds.
+    public VerifyCertificateResponse verifyCertificate(String userId, String organizationId, String certificate, String signedMessage, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+        // This method should implement client TLS certificate and/or qualified certificate verification. The stub implementation always succeeds.
         CertificateVerificationResult verificationResult = CertificateVerificationResult.SUCCEEDED;
         return new VerifyCertificateResponse(verificationResult);
     }

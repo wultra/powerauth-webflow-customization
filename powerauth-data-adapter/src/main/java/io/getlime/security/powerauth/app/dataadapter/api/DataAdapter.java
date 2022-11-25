@@ -201,8 +201,8 @@ public interface DataAdapter {
      * Verify client TLS certificate.
      * @param userId User ID.
      * @param organizationId Organization ID.
-     * @param certificate Certificate in PEM format.
-     * @param signature Optional signature created using certificate.
+     * @param certificate Certificate in PEM format for client TLS verification.
+     * @param signedMessage Signed message created using qualified certificate including the certificate.
      * @param authMethod Authentication method requesting certificate verification.
      * @param accountStatus Current user account status.
      * @param operationContext Operation context.
@@ -210,7 +210,7 @@ public interface DataAdapter {
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      */
-    VerifyCertificateResponse verifyCertificate(String userId, String organizationId, String certificate, String signature, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException;
+    VerifyCertificateResponse verifyCertificate(String userId, String organizationId, String certificate, String signedMessage, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException;
 
     /**
      * Decide whether OAuth 2.0 consent form should be displayed based on operation context.

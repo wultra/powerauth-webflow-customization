@@ -81,14 +81,14 @@ public class CertificateController {
         logger.info("Received verifyCertificate request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         final VerifyCertificateRequest verifyRequest = request.getRequestObject();
         final String certificate = verifyRequest.getCertificate();
-        final String signature = verifyRequest.getSignature();
+        final String signedMessage = verifyRequest.getSignedMessage();
         final AuthMethod authMethod = verifyRequest.getAuthMethod();
         final String userId = verifyRequest.getUserId();
         final String organizationId = verifyRequest.getOrganizationId();
         final AccountStatus accountStatus = verifyRequest.getAccountStatus();
         final OperationContext operationContext = verifyRequest.getOperationContext();
-        // Verify authorization code
-        final VerifyCertificateResponse response = dataAdapter.verifyCertificate(userId, organizationId, certificate, signature, authMethod, accountStatus, operationContext);
+        // Verify certificate
+        final VerifyCertificateResponse response = dataAdapter.verifyCertificate(userId, organizationId, certificate, signedMessage, authMethod, accountStatus, operationContext);
         logger.info("The verifyCertificate request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
