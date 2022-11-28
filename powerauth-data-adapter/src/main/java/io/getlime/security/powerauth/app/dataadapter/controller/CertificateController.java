@@ -25,6 +25,7 @@ import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationConte
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AccountStatus;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifyCertificateRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.VerifyCertificateResponse;
+import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthInstrument;
 import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,13 +83,14 @@ public class CertificateController {
         final VerifyCertificateRequest verifyRequest = request.getRequestObject();
         final String certificate = verifyRequest.getCertificate();
         final String signedMessage = verifyRequest.getSignedMessage();
+        final AuthInstrument authInstrument = verifyRequest.getAuthInstrument();
         final AuthMethod authMethod = verifyRequest.getAuthMethod();
         final String userId = verifyRequest.getUserId();
         final String organizationId = verifyRequest.getOrganizationId();
         final AccountStatus accountStatus = verifyRequest.getAccountStatus();
         final OperationContext operationContext = verifyRequest.getOperationContext();
         // Verify certificate
-        final VerifyCertificateResponse response = dataAdapter.verifyCertificate(userId, organizationId, certificate, signedMessage, authMethod, accountStatus, operationContext);
+        final VerifyCertificateResponse response = dataAdapter.verifyCertificate(userId, organizationId, certificate, signedMessage, authInstrument, authMethod, accountStatus, operationContext);
         logger.info("The verifyCertificate request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }

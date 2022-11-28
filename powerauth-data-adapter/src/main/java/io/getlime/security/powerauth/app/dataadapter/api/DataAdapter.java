@@ -20,6 +20,7 @@ import io.getlime.security.powerauth.lib.dataadapter.model.entity.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AccountStatus;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.AfsRequestParameters;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
+import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthInstrument;
 import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
 
 import java.util.List;
@@ -203,6 +204,7 @@ public interface DataAdapter {
      * @param organizationId Organization ID.
      * @param certificate Certificate in PEM format for client TLS verification.
      * @param signedMessage Signed message created using qualified certificate including the certificate.
+     * @param authInstrument Type of certificate used for verification.
      * @param authMethod Authentication method requesting certificate verification.
      * @param accountStatus Current user account status.
      * @param operationContext Operation context.
@@ -210,7 +212,7 @@ public interface DataAdapter {
      * @throws DataAdapterRemoteException Thrown when remote communication fails.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
      */
-    VerifyCertificateResponse verifyCertificate(String userId, String organizationId, String certificate, String signedMessage, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException;
+    VerifyCertificateResponse verifyCertificate(String userId, String organizationId, String certificate, String signedMessage, AuthInstrument authInstrument, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException;
 
     /**
      * Decide whether OAuth 2.0 consent form should be displayed based on operation context.

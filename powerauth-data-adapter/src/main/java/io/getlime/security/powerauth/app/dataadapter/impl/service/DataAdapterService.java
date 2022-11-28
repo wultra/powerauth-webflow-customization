@@ -26,6 +26,7 @@ import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.*;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.AfsRequestParameters;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.*;
 import io.getlime.security.powerauth.lib.nextstep.model.entity.ApplicationContext;
+import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthInstrument;
 import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -413,7 +414,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public VerifyCertificateResponse verifyCertificate(String userId, String organizationId, String certificate, String signedMessage, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public VerifyCertificateResponse verifyCertificate(String userId, String organizationId, String certificate, String signedMessage, AuthInstrument authInstrument, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
         // This method should implement client TLS certificate and/or qualified certificate verification. The stub implementation always succeeds.
         CertificateVerificationResult verificationResult = CertificateVerificationResult.SUCCEEDED;
         return new VerifyCertificateResponse(verificationResult);
