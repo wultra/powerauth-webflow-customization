@@ -14,4 +14,4 @@ jobs:
       project-name: ${{ github.event.repository.name }}
       version: ${{ github.sha }}
       description: ${{ github.ref }}
-      directory: powerauth-data-adapter
+      directory_path: powerauth-data-adapter
