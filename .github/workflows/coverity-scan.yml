@@ -8,9 +8,10 @@ on:
 
 jobs:
   coverity-scan:
-    uses: wultra/wultra-infrastructure/.github/workflows/coverity-scan.yml@develop
+    uses: wultra/wultra-infrastructure/.github/workflows/coverity-scan.yml@issues/14_add_directory_parameter
     secrets: inherit
     with:
       project-name: ${{ github.event.repository.name }}
       version: ${{ github.sha }}
       description: ${{ github.ref }}
+      directory: powerauth-data-adapter
