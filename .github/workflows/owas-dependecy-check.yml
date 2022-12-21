@@ -1,0 +1,14 @@
+name: Run OWASP Dependency Check
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - 'develop'
+
+jobs:
+  owasp-check:
+      uses: wultra/wultra-infrastructure/.github/workflows/owasp-dependency-check.yml@develop
+      secrets: inherit
+      with:
+        directory_path: powerauth-data-adapter
