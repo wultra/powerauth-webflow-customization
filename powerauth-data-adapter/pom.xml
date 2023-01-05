@@ -245,16 +245,6 @@
             <properties>
                 <maven.deploy.skip>true</maven.deploy.skip>
             </properties>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>ossrh-snapshots-distribution</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-                </snapshotRepository>
-                <repository>
-                    <id>ossrh-staging-distribution</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-            </distributionManagement>
         </profile>
     </profiles>
 
