@@ -25,6 +25,7 @@ import io.getlime.security.powerauth.lib.dataadapter.model.entity.OperationConte
 import io.getlime.security.powerauth.lib.dataadapter.model.enumeration.AccountStatus;
 import io.getlime.security.powerauth.lib.dataadapter.model.request.VerifyCertificateRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.VerifyCertificateResponse;
+import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthInstrument;
 import io.getlime.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,15 +80,17 @@ public class CertificateController {
     @PostMapping(value = "verify")
     public ObjectResponse<VerifyCertificateResponse> verifyCertificate(@Valid @RequestBody ObjectRequest<VerifyCertificateRequest> request) throws InvalidOperationContextException, DataAdapterRemoteException {
         logger.info("Received verifyCertificate request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
-        VerifyCertificateRequest verifyRequest = request.getRequestObject();
-        String clientCertificate = verifyRequest.getClientCertificate();
-        AuthMethod authMethod = verifyRequest.getAuthMethod();
-        String userId = verifyRequest.getUserId();
-        String organizationId = verifyRequest.getOrganizationId();
-        AccountStatus accountStatus = verifyRequest.getAccountStatus();
-        OperationContext operationContext = verifyRequest.getOperationContext();
-        // Verify authorization code
-        VerifyCertificateResponse response = dataAdapter.verifyClientCertificate(userId, organizationId, clientCertificate, authMethod, accountStatus, operationContext);
+        final VerifyCertificateRequest verifyRequest = request.getRequestObject();
+        final String certificate = verifyRequest.getCertificate();
+        final String signedMessage = verifyRequest.getSignedMessage();
+        final AuthInstrument authInstrument = verifyRequest.getAuthInstrument();
+        final AuthMethod authMethod = verifyRequest.getAuthMethod();
+        final String userId = verifyRequest.getUserId();
+        final String organizationId = verifyRequest.getOrganizationId();
+        final AccountStatus accountStatus = verifyRequest.getAccountStatus();
+        final OperationContext operationContext = verifyRequest.getOperationContext();
+        // Verify certificate
+        final VerifyCertificateResponse response = dataAdapter.verifyCertificate(userId, organizationId, certificate, signedMessage, authInstrument, authMethod, accountStatus, operationContext);
         logger.info("The verifyCertificate request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
         return new ObjectResponse<>(response);
     }
