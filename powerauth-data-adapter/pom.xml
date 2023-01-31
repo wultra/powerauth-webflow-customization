@@ -66,6 +66,9 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <maven-war-plugin.version>3.3.2</maven-war-plugin.version>
+
+        <powerauth-crypto.version>1.4.0</powerauth-crypto.version>
+        <powerauth-webflow.version>1.4.0</powerauth-webflow.version>
     </properties>
 
     <dependencies>
@@ -104,12 +107,12 @@
         <dependency>
             <groupId>io.getlime.security</groupId>
             <artifactId>powerauth-data-adapter-model</artifactId>
-            <version>1.4.0-SNAPSHOT</version>
+            <version>${powerauth-webflow.version}</version>
         </dependency>
         <dependency>
             <groupId>io.getlime.security</groupId>
             <artifactId>powerauth-java-crypto</artifactId>
-            <version>1.4.0-SNAPSHOT</version>
+            <version>${powerauth-crypto.version}</version>
         </dependency>
 
         <!-- Other Dependencies -->
