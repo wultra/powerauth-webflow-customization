@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="1" logicalFilePath="powerauth-data-adapter/1.4.x/20230326-init-db.xml" author="Lubos Racansky">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="da_sms_authorization"/>
+            </not>
+        </preConditions>
+        <comment>Create a new table da_sms_authorization</comment>
+        <createTable tableName="da_sms_authorization" remarks="Table da_sms_authorization stores data for SMS OTP authorization.">
+            <column name="message_id" type="varchar(256)" remarks="SMS message ID, ID of SMS OTP.">
+                <constraints primaryKey="true" />
+            </column>
+            <column name="operation_id" type="varchar(256)" remarks="Operation ID.">
+                <constraints nullable="false" />
+            </column>
+            <column name="user_id" type="varchar(256)" remarks="User ID.">
+                <constraints nullable="false" />
+            </column>
+            <column name="organization_id" type="varchar(256)" remarks="Organization ID." />
+            <column name="operation_name" type="varchar(32)" remarks="Name of the operation that triggered the SMS (login, authorize_payment, ...).">
+                <constraints nullable="false" />
+            </column>
+            <column name="authorization_code" type="varchar(32)" remarks="Value of the authorization code sent in the SMS.">
+                <constraints nullable="false" />
+            </column>
+            <column name="salt" type="${blob_type}" remarks="Salt used for authorization code calculation.">
+                <constraints nullable="false" />
+            </column>
+            <column name="message_text" type="text" remarks="Full SMS message text.">
+                <constraints nullable="false" />
+            </column>
+            <column name="verify_request_count" type="integer" remarks="Number of verification attempts." />
+            <column name="verified" type="boolean" defaultValueBoolean="false" remarks="Flag indicating if this SMS OTP was successfully verified." />
+            <column name="timestamp_created" type="timestamp" defaultValueDate="${now}" remarks="Timestamp when the SMS OTP was generated." />
+            <column name="timestamp_verified" type="timestamp" remarks="Timestamp when the SMS OTP was successfully validated." />
+            <column name="timestamp_expires" type="timestamp" remarks="Timestamp when the SMS OTP expires." />
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" logicalFilePath="powerauth-data-adapter/1.4.x/20230326-init-db.xml" author="Lubos Racansky">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="da_user_credentials"/>
+            </not>
+        </preConditions>
+        <comment>Create a new table da_user_credentials</comment>
+        <createTable tableName="da_user_credentials" remarks="Table da_user_credentials stores built-in users for the data adapter.">
+            <column name="user_id" type="varchar(128)" remarks="User ID. Technical identifier of the user.">
+                <constraints primaryKey="true" />
+            </column>
+            <column name="username" type="varchar(256)" remarks="Username, the displayable value that users use to sign in.">
+                <constraints nullable="false" />
+            </column>
+            <column name="password_hash" type="varchar(256)" remarks="Bcrypt hash of the password.">
+                <constraints nullable="false" />
+            </column>
+            <column name="family_name" type="varchar(256)" remarks="User family name.">
+                <constraints nullable="false" />
+            </column>
+            <column name="given_name" type="varchar(256)" remarks="User given name.">
+                <constraints nullable="false" />
+            </column>
+            <column name="organization_id" type="varchar(64)" remarks="User organization ID.">
+                <constraints nullable="false" />
+            </column>
+            <column name="phone_number" type="varchar(256)" remarks="Full phone number, should be stored in format that allows easy SMS message sending.">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
