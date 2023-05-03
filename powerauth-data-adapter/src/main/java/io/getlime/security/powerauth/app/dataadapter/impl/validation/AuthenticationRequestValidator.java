@@ -30,7 +30,7 @@ import org.springframework.validation.Validator;
 
 /**
  * Defines validations for input fields in user lookup and authentication requests.
- *
+ * <p>
  * Additional validation logic can be added if applicable.
  *
  * @author Roman Strobl, roman.strobl@wultra.com
@@ -60,7 +60,7 @@ public class AuthenticationRequestValidator implements Validator {
      */
     @Override
     public void validate(@Nullable Object o, @NonNull Errors errors) {
-        ObjectRequest objectRequest = (ObjectRequest) o;
+        final ObjectRequest<?> objectRequest = (ObjectRequest<?>) o;
         if (objectRequest == null) {
             errors.rejectValue(OPERATION_CONTEXT_FIELD, MISSING_OPERATION_CONTEXT_ERROR_CODE);
             return;
@@ -72,7 +72,7 @@ public class AuthenticationRequestValidator implements Validator {
         }
     }
     
-    private void validateUserLookupRequest(ObjectRequest objectRequest, Errors errors) {
+    private void validateUserLookupRequest(ObjectRequest<?> objectRequest, Errors errors) {
         UserLookupRequest authRequest = (UserLookupRequest) objectRequest.getRequestObject();
 
         // update validation logic based on the real Data Adapter requirements
@@ -98,7 +98,7 @@ public class AuthenticationRequestValidator implements Validator {
         }
     }
     
-    private void validateUserAuthenticationRequest(ObjectRequest objectRequest, Errors errors) {
+    private void validateUserAuthenticationRequest(ObjectRequest<?> objectRequest, Errors errors) {
         UserAuthenticationRequest authRequest = (UserAuthenticationRequest) objectRequest.getRequestObject();
 
         // update validation logic based on the real Data Adapter requirements

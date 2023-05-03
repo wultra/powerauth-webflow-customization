@@ -34,7 +34,7 @@ import java.math.BigDecimal;
 
 /**
  * Validator for SMS OTP authorization requests.
- *
+ * <p>
  * Additional validation logic can be added if applicable.
  *
  * @author Roman Strobl, roman.strobl@wultra.com

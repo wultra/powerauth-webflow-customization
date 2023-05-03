@@ -77,7 +77,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public UserDetailResponse lookupUser(String username, String organizationId, String clientCertificate, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
+    public UserDetailResponse lookupUser(String username, String organizationId, String clientCertificate, OperationContext operationContext) {
         // The sample Data Adapter code uses 1:1 mapping of username to user ID. In real implementation the userId usually differs from the username, so translation of username to user ID is required.
         // If the user does not exist, return null values for user ID and organization ID.
         // If user account account is blocked, return AccountStatus.NOT_ACTIVE as account status.
@@ -94,7 +94,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public UserAuthenticationResponse authenticateUser(String userId, String password, AuthenticationContext authenticationContext, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException {
+    public UserAuthenticationResponse authenticateUser(String userId, String password, AuthenticationContext authenticationContext, String organizationId, OperationContext operationContext) {
         // Here will be the real authentication - call to the backend providing authentication.
         // Return a response with UserAuthenticationResult based on the actual authentication result.
         // The password is optionally encrypted, the authentication context contains information about encryption.
@@ -103,17 +103,11 @@ public class DataAdapterService implements DataAdapter {
         PasswordProtectionType passwordProtection = authenticationContext.getPasswordProtection();
         UserAuthenticationResponse authResponse = new UserAuthenticationResponse();
         if (passwordProtection == PasswordProtectionType.NO_PROTECTION && "test".equals(password)) {
-            try {
-                UserDetailResponse userDetail = fetchUserDetail(userId, organizationId, operationContext);
-                // The organization needs to be set in response (e.g. client authenticated against RETAIL organization or SME organization).
-                userDetail.setOrganizationId(organizationId);
-                authResponse.setAuthenticationResult(UserAuthenticationResult.SUCCEEDED);
-                return authResponse;
-            } catch (UserNotFoundException e) {
-                authResponse.setAuthenticationResult(UserAuthenticationResult.FAILED);
-                authResponse.setErrorMessage(AUTHENTICATION_FAILED);
-                return authResponse;
-            }
+            UserDetailResponse userDetail = fetchUserDetail(userId, organizationId, operationContext);
+            // The organization needs to be set in response (e.g. client authenticated against RETAIL organization or SME organization).
+            userDetail.setOrganizationId(organizationId);
+            authResponse.setAuthenticationResult(UserAuthenticationResult.SUCCEEDED);
+            return authResponse;
         }
         authResponse.setAuthenticationResult(UserAuthenticationResult.FAILED);
         authResponse.setErrorMessage(AUTHENTICATION_FAILED);
@@ -131,7 +125,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public UserDetailResponse fetchUserDetail(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
+    public UserDetailResponse fetchUserDetail(String userId, String organizationId, OperationContext operationContext) {
         // Fetch user details here ...
         // In case that user is not found, throw a UserNotFoundException.
         // The operation context may be null in case the method is called outside of an active operation (e.g. OAuth user profile request).
@@ -147,14 +141,14 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public InitAuthMethodResponse initAuthMethod(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public InitAuthMethodResponse initAuthMethod(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) {
         // Implement logic for initial configuration of authentication methods.
         // Certificate-based authentication can be enabled and the certificate verification URL can be specified based on operation context.
         return new InitAuthMethodResponse(CertificateAuthenticationMode.NOT_AVAILABLE);
     }
 
     @Override
-    public DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException, UserNotFoundException {
+    public DecorateOperationFormDataResponse decorateFormData(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) {
         String operationName = operationContext.getName();
         FormData formData = operationContext.getFormData();
         // Fetch bank account list for given user here from the bank backend.
@@ -216,16 +210,14 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public void formDataChangedNotification(String userId, String organizationId, FormDataChange change, OperationContext operationContext) throws DataAdapterRemoteException {
+    public void formDataChangedNotification(String userId, String organizationId, FormDataChange change, OperationContext operationContext) {
         String operationId = operationContext.getId();
-        if (change instanceof BankAccountChoice) {
+        if (change instanceof final BankAccountChoice bankAccountChoice) {
             // Handle bank account choice here (e.g. send notification to bank backend).
-            BankAccountChoice bankAccountChoice = (BankAccountChoice) change;
             logger.info("Bank account chosen: {}, operation ID: {}", bankAccountChoice.getBankAccountId(), operationId);
             return;
-        } else if (change instanceof AuthMethodChoice) {
+        } else if (change instanceof final AuthMethodChoice authMethodChoice) {
             // Handle authorization method choice here (e.g. send notification to bank backend).
-            AuthMethodChoice authMethodChoice = (AuthMethodChoice) change;
             logger.info("Authorization method chosen: {}, operation ID: {}", authMethodChoice.getChosenAuthMethod().toString(), operationId);
             return;
         }
@@ -233,7 +225,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public CreateImplicitLoginOperationResponse createImplicitLoginOperation(String clientId, String[] scopes) throws DataAdapterRemoteException {
+    public CreateImplicitLoginOperationResponse createImplicitLoginOperation(String clientId, String[] scopes) {
         // Make sure there is only one item in scopes
         if (scopes == null || scopes.length != 1) {
             return null;
@@ -267,7 +259,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public GetPAOperationMappingResponse getPAOperationMapping(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws DataAdapterRemoteException {
+    public GetPAOperationMappingResponse getPAOperationMapping(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) {
         GetPAOperationMappingResponse response = new GetPAOperationMappingResponse();
         switch (operationContext.getName()) {
 
@@ -303,14 +295,14 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public void operationChangedNotification(String userId, String organizationId, OperationChange change, OperationContext operationContext) throws DataAdapterRemoteException {
+    public void operationChangedNotification(String userId, String organizationId, OperationChange change, OperationContext operationContext) {
         String operationId = operationContext.getId();
         // Handle operation change here (e.g. send notification to bank backend).
         logger.info("Operation changed, status: {}, operation ID: {}", change.toString(), operationId);
     }
 
     @Override
-    public CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
+    public CreateSmsAuthorizationResponse createAndSendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String lang) throws InvalidOperationContextException {
         CreateSmsAuthorizationResponse response = new CreateSmsAuthorizationResponse();
         // MessageId is generated as random UUID, it can be overridden to provide a real message identification
         String messageId = UUID.randomUUID().toString();
@@ -337,7 +329,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public SendAuthorizationSmsResponse sendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String messageId, String authorizationCode, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
+    public SendAuthorizationSmsResponse sendAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, AuthMethod authMethod, OperationContext operationContext, String messageId, String authorizationCode, String lang) throws InvalidOperationContextException {
         SendAuthorizationSmsResponse response = new SendAuthorizationSmsResponse();
         // Message ID is taken from request
         response.setMessageId(messageId);
@@ -357,7 +349,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public VerifySmsAuthorizationResponse verifyAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, String messageId, String authorizationCode, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public VerifySmsAuthorizationResponse verifyAuthorizationSms(String userId, String organizationId, AccountStatus accountStatus, String messageId, String authorizationCode, OperationContext operationContext) {
         // You can override this logic in case more complex handling of SMS verification is required.
         VerifySmsAuthorizationResponse response;
 
@@ -379,7 +371,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public VerifySmsAndPasswordResponse verifyAuthorizationSmsAndPassword(String userId, String organizationId, AccountStatus accountStatus, String messageId, String authorizationCode, OperationContext operationContext, AuthenticationContext authenticationContext, String password) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public VerifySmsAndPasswordResponse verifyAuthorizationSmsAndPassword(String userId, String organizationId, AccountStatus accountStatus, String messageId, String authorizationCode, OperationContext operationContext, AuthenticationContext authenticationContext, String password) {
         VerifySmsAndPasswordResponse response = new VerifySmsAndPasswordResponse();
 
         // Skip credentials verification for non-existent user accounts or blocked user accounts, such request would always fail.
@@ -414,20 +406,20 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public VerifyCertificateResponse verifyCertificate(String userId, String organizationId, String certificate, String signedMessage, AuthInstrument authInstrument, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public VerifyCertificateResponse verifyCertificate(String userId, String organizationId, String certificate, String signedMessage, AuthInstrument authInstrument, AuthMethod authMethod, AccountStatus accountStatus, OperationContext operationContext) {
         // This method should implement client TLS certificate and/or qualified certificate verification. The stub implementation always succeeds.
         CertificateVerificationResult verificationResult = CertificateVerificationResult.SUCCEEDED;
         return new VerifyCertificateResponse(verificationResult);
     }
 
     @Override
-    public InitConsentFormResponse initConsentForm(String userId, String organizationId, OperationContext operationContext) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
+    public InitConsentFormResponse initConsentForm(String userId, String organizationId, OperationContext operationContext) {
         // Override this logic in case consent form should be displayed conditionally for given operation context.
         return new InitConsentFormResponse(true);
     }
 
     @Override
-    public CreateConsentFormResponse createConsentForm(String userId, String organizationId, OperationContext operationContext, String lang) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
+    public CreateConsentFormResponse createConsentForm(String userId, String organizationId, OperationContext operationContext, String lang) throws InvalidOperationContextException {
         // Fallback to English for unsupported languages, see: https://github.com/wultra/powerauth-webflow-customization/issues/104
         if (!"cs".equals(lang) && !"en".equals(lang)) {
             lang = "en";
@@ -488,7 +480,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public ValidateConsentFormResponse validateConsentForm(String userId, String organizationId, OperationContext operationContext, String lang, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
+    public ValidateConsentFormResponse validateConsentForm(String userId, String organizationId, OperationContext operationContext, String lang, List<ConsentOption> options) throws InvalidOperationContextException, InvalidConsentDataException {
         // Fallback to English for unsupported languages, see: https://github.com/wultra/powerauth-webflow-customization/issues/104
         if (!"cs".equals(lang) && !"en".equals(lang)) {
             lang = "en";
@@ -577,7 +569,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public SaveConsentFormResponse saveConsentForm(String userId, String organizationId, OperationContext operationContext, List<ConsentOption> options) throws DataAdapterRemoteException, InvalidOperationContextException, InvalidConsentDataException {
+    public SaveConsentFormResponse saveConsentForm(String userId, String organizationId, OperationContext operationContext, List<ConsentOption> options) {
         // Save consent form options selected by the user. The sample implementation only logs the selected options.
         logger.info("Saving consent form for user: {}, operation ID: {}", userId, operationContext.getId());
         for (ConsentOption option: options) {
@@ -587,7 +579,7 @@ public class DataAdapterService implements DataAdapter {
     }
 
     @Override
-    public AfsResponse executeAfsAction(String userId, String organizationId, OperationContext operationContext, AfsRequestParameters afsRequestParameters, Map<String, Object> extras) throws DataAdapterRemoteException, InvalidOperationContextException {
+    public AfsResponse executeAfsAction(String userId, String organizationId, OperationContext operationContext, AfsRequestParameters afsRequestParameters, Map<String, Object> extras) throws InvalidOperationContextException {
         if (userId == null || organizationId == null || operationContext == null || afsRequestParameters == null
                 || afsRequestParameters.getAfsAction() == null || afsRequestParameters.getAfsType() == null) {
             logger.warn("Invalid AFS request received");
@@ -598,15 +590,12 @@ public class DataAdapterService implements DataAdapter {
         // a mocked response is returned with static 2FA AFS label except for the case of payment with low amount.
         AfsResponse response = new AfsResponse();
         switch (afsRequestParameters.getAfsAction()) {
-            case LOGIN_INIT:
-            case LOGIN_AUTH:
-            case APPROVAL_AUTH:
+            case LOGIN_INIT, LOGIN_AUTH, APPROVAL_AUTH -> {
                 // Return AFS label, but do not apply response parameters on authentication form
                 response.setAfsResponseApplied(false);
                 response.setAfsLabel("2FA");
-                break;
-
-            case APPROVAL_INIT:
+            }
+            case APPROVAL_INIT -> {
                 // Apply AFS response parameters on authentication form.
                 // This example performs step-down from 2FA to 1FA in case of payment in CZK with low amount.
                 AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
@@ -621,13 +610,10 @@ public class DataAdapterService implements DataAdapter {
                     response.setAfsResponseApplied(false);
                     response.setAfsLabel("2FA");
                 }
-                break;
-
-            case LOGOUT:
+            }
+            case LOGOUT ->
                 // Do not apply response parameters
-                response.setAfsResponseApplied(false);
-                break;
-
+                    response.setAfsResponseApplied(false);
         }
         return response;
     }
