@@ -28,13 +28,12 @@ import io.getlime.security.powerauth.lib.dataadapter.model.request.UserDetailReq
 import io.getlime.security.powerauth.lib.dataadapter.model.request.UserLookupRequest;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.UserAuthenticationResponse;
 import io.getlime.security.powerauth.lib.dataadapter.model.response.UserDetailResponse;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
 
 /**
  * Controller class which handles user authentication.
