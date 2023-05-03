@@ -59,7 +59,7 @@ public class AfsController {
      * @throws DataAdapterRemoteException In case communication with remote system fails.
      * @throws InvalidOperationContextException In case operation context is invalid.
      */
-    @RequestMapping(value = "/execute", method = RequestMethod.POST)
+    @PostMapping("/execute")
     public ObjectResponse<AfsResponse> executeAfsAction(@RequestBody ObjectRequest<AfsRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
         logger.info("Received executeAfsAction request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());

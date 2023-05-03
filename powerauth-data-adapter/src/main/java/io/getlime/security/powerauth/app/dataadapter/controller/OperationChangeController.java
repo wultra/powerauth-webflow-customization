@@ -64,7 +64,7 @@ public class OperationChangeController {
      * @throws InvalidOperationContextException In case provided information is not sufficient for creating
      * the correct implicit login operation.
      */
-    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    @PostMapping("/create")
     public ObjectResponse<CreateImplicitLoginOperationResponse> createImplicitLoginOperation(@RequestBody ObjectRequest<CreateImplicitLoginOperationRequest> request) throws DataAdapterRemoteException, InvalidOperationContextException {
         final CreateImplicitLoginOperationRequest requestObject = request.getRequestObject();
         final String clientId = requestObject.getClientId();
@@ -106,7 +106,7 @@ public class OperationChangeController {
      * @return Operation mapping response.
      * @throws DataAdapterRemoteException Thrown in case of remote communication errors.
      */
-    @RequestMapping(value = "/mapping", method = RequestMethod.POST)
+    @PostMapping("/mapping")
     public ObjectResponse<GetPAOperationMappingResponse> getPAOperationMapping(@RequestBody ObjectRequest<GetPAOperationMappingRequest> request) throws DataAdapterRemoteException {
         logger.info("Received getPAOperationMapping request for user: {}, operation ID: {}",
                 request.getRequestObject().getUserId(), request.getRequestObject().getOperationContext().getId());

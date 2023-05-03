@@ -35,7 +35,7 @@ import java.util.Date;
  * @author Petr Dvorak, petr@wultra.com
  */
 @RestController
-@RequestMapping(value = "/api/service")
+@RequestMapping("/api/service")
 public class ServiceController {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceController.class);
