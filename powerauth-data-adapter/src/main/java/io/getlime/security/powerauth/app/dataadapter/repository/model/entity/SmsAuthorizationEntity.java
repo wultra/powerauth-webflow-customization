@@ -20,6 +20,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -32,6 +33,7 @@ import java.util.Date;
 @Table(name = "da_sms_authorization")
 public class SmsAuthorizationEntity implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 6432269422572862762L;
 
     @Id

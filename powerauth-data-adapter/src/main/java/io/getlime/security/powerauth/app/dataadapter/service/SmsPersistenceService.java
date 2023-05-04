@@ -96,7 +96,7 @@ public class SmsPersistenceService {
     public VerifySmsAuthorizationResponse verifyAuthorizationSms(String messageId, String authorizationCode, boolean allowMultipleVerifications) {
         Optional<SmsAuthorizationEntity> smsEntityOptional = smsAuthorizationRepository.findById(messageId);
         VerifySmsAuthorizationResponse response = new VerifySmsAuthorizationResponse();
-        if (!smsEntityOptional.isPresent()) {
+        if (smsEntityOptional.isEmpty()) {
             response.setSmsAuthorizationResult(SmsAuthorizationResult.FAILED);
             response.setErrorMessage("smsAuthorization.invalidMessage");
             return response;

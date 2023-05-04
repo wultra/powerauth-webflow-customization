@@ -15,7 +15,6 @@
  */
 package io.getlime.security.powerauth.app.dataadapter.impl.service;
 
-import io.getlime.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
 import io.getlime.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
 import io.getlime.security.powerauth.app.dataadapter.service.DataAdapterI18NService;
 import io.getlime.security.powerauth.crypto.server.util.DataDigest;
@@ -59,27 +58,16 @@ public class SmsDeliveryService {
      * @param operationContext Operation context.
      * @return Authorization code.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
-     * @throws DataAdapterRemoteException Thrown when remote communication fails.
      */
-    public AuthorizationCode generateAuthorizationCode(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws InvalidOperationContextException, DataAdapterRemoteException {
+    public AuthorizationCode generateAuthorizationCode(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext) throws InvalidOperationContextException {
         String operationName = operationContext.getName();
         List<String> digestItems = new ArrayList<>();
         switch (operationName) {
-            case "login":
-            case "login_sca":
-                digestItems.add("login");
-                break;
-
-            case "authorize_payment":
-            case "authorize_payment_sca":
+            case "login", "login_sca" -> digestItems.add("login");
+            case "authorize_payment", "authorize_payment_sca" -> {
                 switch (authMethod) {
-                    case LOGIN_SCA:
-                        digestItems.add("login");
-                        break;
-
-                    case APPROVAL_SCA:
-                    case SMS_KEY:
-                    case POWERAUTH_TOKEN:
+                    case LOGIN_SCA -> digestItems.add("login");
+                    case APPROVAL_SCA, SMS_KEY, POWERAUTH_TOKEN -> {
                         AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
                         String account = operationValueExtractionService.getAccount(operationContext);
                         BigDecimal amount = amountAttribute.getAmount();
@@ -87,16 +75,13 @@ public class SmsDeliveryService {
                         digestItems.add(amount.toPlainString());
                         digestItems.add(currency);
                         digestItems.add(account);
-                        break;
-
-                    default:
-                        throw new InvalidOperationContextException("Unsupported authentication method: " + authMethod);
+                    }
+                    default -> throw new InvalidOperationContextException("Unsupported authentication method: " + authMethod);
                 }
-                break;
+            }
 
             // Add new operations here.
-            default:
-                throw new InvalidOperationContextException("Unsupported operation: " + operationName);
+            default -> throw new InvalidOperationContextException("Unsupported operation: " + operationName);
         }
 
         final DataDigest.Result digestResult = new DataDigest().generateDigest(digestItems);
@@ -115,46 +100,36 @@ public class SmsDeliveryService {
      * @param lang Language for localization.
      * @return Generated SMS text with authorization code.
      * @throws InvalidOperationContextException Thrown when operation context is invalid.
-     * @throws DataAdapterRemoteException Thrown when remote communication fails.
      */
-    public String generateSmsText(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException, DataAdapterRemoteException {
+    public String generateSmsText(String userId, String organizationId, AuthMethod authMethod, OperationContext operationContext, AuthorizationCode authorizationCode, String lang) throws InvalidOperationContextException {
         String operationName = operationContext.getName();
         String[] messageArgs;
         String messageResourcePrefix;
         switch (operationName) {
-            case "login":
-            case "login_sca":
+            case "login", "login_sca" -> {
                 messageResourcePrefix = "login";
                 messageArgs = new String[]{authorizationCode.getCode()};
-                break;
-
-            case "authorize_payment":
-            case "authorize_payment_sca":
+            }
+            case "authorize_payment", "authorize_payment_sca" -> {
                 switch (authMethod) {
-                    case LOGIN_SCA:
+                    case LOGIN_SCA -> {
                         messageResourcePrefix = "login";
                         messageArgs = new String[]{authorizationCode.getCode()};
-                        break;
-
-                    case APPROVAL_SCA:
-                    case SMS_KEY:
-                    case POWERAUTH_TOKEN:
+                    }
+                    case APPROVAL_SCA, SMS_KEY, POWERAUTH_TOKEN -> {
                         messageResourcePrefix = "authorize_payment";
                         AmountAttribute amountAttribute = operationValueExtractionService.getAmount(operationContext);
                         String account = operationValueExtractionService.getAccount(operationContext);
                         BigDecimal amount = amountAttribute.getAmount();
                         String currency = amountAttribute.getCurrency();
                         messageArgs = new String[]{amount.toPlainString(), currency, account, authorizationCode.getCode()};
-                        break;
-
-                    default:
-                        throw new InvalidOperationContextException("Unsupported authentication method: " + authMethod);
+                    }
+                    default -> throw new InvalidOperationContextException("Unsupported authentication method: " + authMethod);
                 }
-                break;
+            }
 
             // Add new operations here.
-            default:
-                throw new InvalidOperationContextException("Unsupported operation: " + operationName);
+            default -> throw new InvalidOperationContextException("Unsupported operation: " + operationName);
         }
 
         return dataAdapterI18NService.messageSource().getMessage(messageResourcePrefix + ".smsText", messageArgs, new Locale(lang));
@@ -167,10 +142,8 @@ public class SmsDeliveryService {
      * @param messageId Message ID.
      * @param messageText Text of SMS message.
      * @param operationContext Operation context.
-     * @throws InvalidOperationContextException Thrown when operation context is invalid.
-     * @throws DataAdapterRemoteException Thrown when remote communication fails or SMS message could not be delivered.
      */
-    public SmsDeliveryResult sendAuthorizationSms(String userId, String organizationId, String messageId, String messageText, OperationContext operationContext) throws InvalidOperationContextException, DataAdapterRemoteException {
+    public SmsDeliveryResult sendAuthorizationSms(String userId, String organizationId, String messageId, String messageText, OperationContext operationContext) {
         // Add here code to send the SMS OTP message to user identified by userId with messageText.
         // The message entity can be extracted using message ID from table da_sms_authorization.
         // In case message delivery fails, throw a DataAdapterRemoteException.

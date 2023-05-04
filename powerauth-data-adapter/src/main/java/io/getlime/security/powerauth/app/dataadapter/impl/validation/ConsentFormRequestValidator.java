@@ -33,7 +33,7 @@ import java.util.List;
 
 /**
  * Validator for request to create OAuth 2.0 consent form.
- *
+ * <p>
  * Additional validation logic can be added if applicable.
  *
  * @author Roman Strobl, roman.strobl@wultra.com
@@ -61,7 +61,7 @@ public class ConsentFormRequestValidator implements Validator {
     @Override
     @SuppressWarnings("unchecked")
     public void validate(@Nullable Object o, @NonNull Errors errors) {
-        ObjectRequest objectRequest = (ObjectRequest) o;
+        final ObjectRequest<?> objectRequest = (ObjectRequest<?>) o;
         if (objectRequest == null) {
             errors.rejectValue("requestObject.operationContext", "operationContext.missing");
             return;
