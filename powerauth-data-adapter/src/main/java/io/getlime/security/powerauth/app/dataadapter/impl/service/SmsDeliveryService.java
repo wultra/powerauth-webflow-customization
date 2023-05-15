@@ -108,13 +108,13 @@ public class SmsDeliveryService {
         switch (operationName) {
             case "login", "login_sca" -> {
                 messageResourcePrefix = "login";
-                messageArgs = new String[]{authorizationCode.getCode()};
+                messageArgs = new String[]{authorizationCode.code()};
             }
             case "authorize_payment", "authorize_payment_sca" -> {
                 switch (authMethod) {
                     case LOGIN_SCA -> {
                         messageResourcePrefix = "login";
-                        messageArgs = new String[]{authorizationCode.getCode()};
+                        messageArgs = new String[]{authorizationCode.code()};
                     }
                     case APPROVAL_SCA, SMS_KEY, POWERAUTH_TOKEN -> {
                         messageResourcePrefix = "authorize_payment";
@@ -122,7 +122,7 @@ public class SmsDeliveryService {
                         String account = operationValueExtractionService.getAccount(operationContext);
                         BigDecimal amount = amountAttribute.getAmount();
                         String currency = amountAttribute.getCurrency();
-                        messageArgs = new String[]{amount.toPlainString(), currency, account, authorizationCode.getCode()};
+                        messageArgs = new String[]{amount.toPlainString(), currency, account, authorizationCode.code()};
                     }
                     default -> throw new InvalidOperationContextException("Unsupported authentication method: " + authMethod);
                 }

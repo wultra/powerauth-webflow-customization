@@ -70,8 +70,8 @@ public class SmsPersistenceService {
         smsEntity.setUserId(userId);
         smsEntity.setOrganizationId(organizationId);
         smsEntity.setOperationName(operationContext.getName());
-        smsEntity.setAuthorizationCode(authorizationCode.getCode());
-        smsEntity.setSalt(authorizationCode.getSalt());
+        smsEntity.setAuthorizationCode(authorizationCode.code());
+        smsEntity.setSalt(authorizationCode.salt());
         smsEntity.setMessageText(messageText);
         smsEntity.setVerifyRequestCount(0);
         smsEntity.setTimestampCreated(new Date());
