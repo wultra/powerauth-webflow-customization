@@ -64,6 +64,7 @@
     <properties>
         <springdoc-openapi-starter-webmvc-ui.version>2.2.0</springdoc-openapi-starter-webmvc-ui.version>
         <logstash.version>7.4</logstash.version>
+        <bcprov-jdk18on.version>1.76</bcprov-jdk18on.version>
 
         <powerauth-crypto.version>1.5.1</powerauth-crypto.version>
         <powerauth-webflow.version>1.5.0</powerauth-webflow.version>
@@ -131,7 +132,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.76</version>
+            <version>${bcprov-jdk18on.version}</version>
         </dependency>
 
         <!-- Logging -->
@@ -162,6 +163,20 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <webResources>
+                        <webResource>
+                            <directory>src/main/webapp/WEB-INF</directory>
+                            <targetPath>WEB-INF</targetPath>
+                            <filtering>true</filtering>
+                        </webResource>
+                    </webResources>
+                </configuration>
             </plugin>
 
             <plugin>
