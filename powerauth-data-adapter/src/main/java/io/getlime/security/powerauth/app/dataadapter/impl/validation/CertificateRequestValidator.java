@@ -26,7 +26,7 @@ import org.springframework.validation.Validator;
 
 /**
  * Validator for certificate verification requests.
- *
+ * <p>
  * Additional validation logic can be added if applicable.
  *
  * @author Roman Strobl, roman.strobl@wultra.com

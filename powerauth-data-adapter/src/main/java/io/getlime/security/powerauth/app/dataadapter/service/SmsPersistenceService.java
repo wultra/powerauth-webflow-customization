@@ -70,8 +70,8 @@ public class SmsPersistenceService {
         smsEntity.setUserId(userId);
         smsEntity.setOrganizationId(organizationId);
         smsEntity.setOperationName(operationContext.getName());
-        smsEntity.setAuthorizationCode(authorizationCode.getCode());
-        smsEntity.setSalt(authorizationCode.getSalt());
+        smsEntity.setAuthorizationCode(authorizationCode.code());
+        smsEntity.setSalt(authorizationCode.salt());
         smsEntity.setMessageText(messageText);
         smsEntity.setVerifyRequestCount(0);
         smsEntity.setTimestampCreated(new Date());
@@ -96,7 +96,7 @@ public class SmsPersistenceService {
     public VerifySmsAuthorizationResponse verifyAuthorizationSms(String messageId, String authorizationCode, boolean allowMultipleVerifications) {
         Optional<SmsAuthorizationEntity> smsEntityOptional = smsAuthorizationRepository.findById(messageId);
         VerifySmsAuthorizationResponse response = new VerifySmsAuthorizationResponse();
-        if (!smsEntityOptional.isPresent()) {
+        if (smsEntityOptional.isEmpty()) {
             response.setSmsAuthorizationResult(SmsAuthorizationResult.FAILED);
             response.setErrorMessage("smsAuthorization.invalidMessage");
             return response;

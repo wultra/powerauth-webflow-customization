@@ -28,7 +28,7 @@ import org.springframework.validation.Validator;
 
 /**
  * Defines validations for input fields in authentication method requests.
- *
+ * <p>
  * Additional validation logic can be added if applicable.
  *
  * @author Roman Strobl, roman.strobl@wultra.com
@@ -62,7 +62,7 @@ public class AuthMethodRequestValidator implements Validator {
      */
     @Override
     public void validate(@Nullable Object o, @NonNull Errors errors) {
-        ObjectRequest objectRequest = (ObjectRequest) o;
+        final ObjectRequest<?> objectRequest = (ObjectRequest<?>) o;
         if (objectRequest == null) {
             errors.rejectValue(OPERATION_CONTEXT_FIELD, MISSING_OPERATION_CONTEXT_ERROR_CODE);
             return;

@@ -15,8 +15,11 @@
  */
 package io.getlime.security.powerauth.app.dataadapter;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.security.Security;
 
 /**
  * Spring Boot application main class.
@@ -26,6 +29,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class DataAdapterApplication {
 
     public static void main(String[] args) {
+        Security.addProvider(new BouncyCastleProvider());
         SpringApplication.run(DataAdapterApplication.class, args);
     }
 }
