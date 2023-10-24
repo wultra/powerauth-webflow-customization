@@ -70,6 +70,16 @@
         <powerauth-webflow.version>1.5.0</powerauth-webflow.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-tomcat</artifactId>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- Spring Dependencies -->
         <dependency>
@@ -79,10 +89,6 @@
                 <exclusion>
                     <artifactId>log4j-to-slf4j</artifactId>
                     <groupId>org.apache.logging.log4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-tomcat</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -260,17 +266,6 @@
             <properties>
                 <maven.deploy.skip>true</maven.deploy.skip>
             </properties>
-        </profile>
-
-        <profile>
-            <id>standalone</id>
-            <dependencies>
-                <dependency>
-                    <artifactId>tomcat-embed-websocket</artifactId>
-                    <groupId>org.apache.tomcat.embed</groupId>
-                    <scope>provided</scope>
-                </dependency>
-            </dependencies>
         </profile>
 
         <profile>
