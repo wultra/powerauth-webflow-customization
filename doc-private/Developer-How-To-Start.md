@@ -6,7 +6,6 @@
 
 ### Standalone Run
 
-- Enable maven profile `standalone`
 - Use IntelliJ Idea run configuration at `../.run/DataAdapterApplication.run.xml`
 - Open [http://localhost:9090/powerauth-data-adapter/actuator/health](http://localhost:9090/powerauth-data-adapter/actuator/health) and you should get `{"status":"UP"}`
 
