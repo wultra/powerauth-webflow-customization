@@ -5,7 +5,7 @@
 
     <artifactId>powerauth-data-adapter</artifactId>
     <groupId>io.getlime.security</groupId>
-    <version>1.6.0-SNAPSHOT</version>
+    <version>1.6.0</version>
     <packaging>war</packaging>
 
     <name>powerauth-data-adapter</name>
@@ -69,7 +69,7 @@
         <logback.version>1.4.14</logback.version>
 
         <powerauth-crypto.version>1.6.0</powerauth-crypto.version>
-        <powerauth-webflow.version>1.5.0</powerauth-webflow.version>
+        <powerauth-webflow.version>1.6.0</powerauth-webflow.version>
     </properties>
 
     <dependencyManagement>
@@ -77,6 +77,11 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-tomcat</artifactId>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
                 <scope>provided</scope>
             </dependency>
         </dependencies>
