@@ -67,7 +67,7 @@
         <bcprov-jdk18on.version>1.77</bcprov-jdk18on.version>
 
         <powerauth-crypto.version>1.7.0</powerauth-crypto.version>
-        <powerauth-webflow.version>1.7.0-SNAPSHOT</powerauth-webflow.version>
+        <powerauth-webflow.version>1.7.0</powerauth-webflow.version>
     </properties>
 
     <dependencyManagement>
