@@ -62,7 +62,7 @@
     </issueManagement>
 
     <properties>
-        <springdoc-openapi-starter-webmvc-ui.version>2.3.0</springdoc-openapi-starter-webmvc-ui.version>
+        <springdoc-openapi-starter-webmvc-ui.version>2.4.0</springdoc-openapi-starter-webmvc-ui.version>
         <logstash.version>7.4</logstash.version>
         <bcprov-jdk18on.version>1.77</bcprov-jdk18on.version>
 
