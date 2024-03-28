@@ -15,4 +15,3 @@ jobs:
       version: ${{ github.sha }}
       description: ${{ github.ref }}
       directory_path: powerauth-data-adapter
-      java_version: 21
