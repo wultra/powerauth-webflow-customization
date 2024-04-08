@@ -64,7 +64,7 @@
     <properties>
         <springdoc-openapi-starter-webmvc-ui.version>2.4.0</springdoc-openapi-starter-webmvc-ui.version>
         <logstash.version>7.4</logstash.version>
-        <bcprov-jdk18on.version>1.77</bcprov-jdk18on.version>
+        <bcprov-jdk18on.version>1.78</bcprov-jdk18on.version>
 
         <powerauth-crypto.version>1.7.0</powerauth-crypto.version>
         <powerauth-webflow.version>1.7.0-SNAPSHOT</powerauth-webflow.version>
