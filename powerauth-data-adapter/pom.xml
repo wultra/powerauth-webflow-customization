@@ -5,7 +5,7 @@
 
     <artifactId>powerauth-data-adapter</artifactId>
     <groupId>io.getlime.security</groupId>
-    <version>1.6.0</version>
+    <version>1.7.0</version>
     <packaging>war</packaging>
 
     <name>powerauth-data-adapter</name>
@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.6</version>
+        <version>3.2.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -62,14 +62,12 @@
     </issueManagement>
 
     <properties>
-        <springdoc-openapi-starter-webmvc-ui.version>2.3.0</springdoc-openapi-starter-webmvc-ui.version>
+        <springdoc-openapi-starter-webmvc-ui.version>2.5.0</springdoc-openapi-starter-webmvc-ui.version>
         <logstash.version>7.4</logstash.version>
         <bcprov-jdk18on.version>1.77</bcprov-jdk18on.version>
-        <!--  TODO (racansky, 2023-12-08) temporarily override the version 1.4.11 from spring boot version because of CVE  -->
-        <logback.version>1.4.14</logback.version>
 
-        <powerauth-crypto.version>1.6.0</powerauth-crypto.version>
-        <powerauth-webflow.version>1.6.0</powerauth-webflow.version>
+        <powerauth-crypto.version>1.7.0</powerauth-crypto.version>
+        <powerauth-webflow.version>1.7.0</powerauth-webflow.version>
     </properties>
 
     <dependencyManagement>
@@ -160,6 +158,25 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc-openapi-starter-webmvc-ui.version}</version>
+        </dependency>
+
+        <!-- Monitoring -->
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core-micrometer</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
+
+        <!-- For run at Apple M1 architecture -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-resolver-dns-native-macos</artifactId>
+            <scope>runtime</scope>
+            <classifier>osx-aarch_64</classifier>
         </dependency>
     </dependencies>
 
