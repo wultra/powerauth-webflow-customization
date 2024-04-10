@@ -5,7 +5,7 @@
 
     <artifactId>powerauth-data-adapter</artifactId>
     <groupId>io.getlime.security</groupId>
-    <version>1.7.0</version>
+    <version>1.8.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>powerauth-data-adapter</name>
@@ -66,8 +66,8 @@
         <logstash.version>7.4</logstash.version>
         <bcprov-jdk18on.version>1.77</bcprov-jdk18on.version>
 
-        <powerauth-crypto.version>1.7.0</powerauth-crypto.version>
-        <powerauth-webflow.version>1.7.0</powerauth-webflow.version>
+        <powerauth-crypto.version>1.8.0-SNAPSHOT</powerauth-crypto.version>
+        <powerauth-webflow.version>1.8.0-SNAPSHOT</powerauth-webflow.version>
     </properties>
 
     <dependencyManagement>
