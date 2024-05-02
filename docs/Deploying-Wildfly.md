@@ -6,21 +6,12 @@ Data Adapter contains the following configuration in `jboss-deployment-structure
 
 ```
 <?xml version="1.0"?>
-<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.3">
     <deployment>
-        <exclusions>
-            <module name="org.apache.xerces" />
-            <module name="org.apache.xalan" />
-        </exclusions>
         <exclude-subsystems>
             <!-- disable the logging subsystem because the application manages its own logging independently -->
             <subsystem name="logging" />
         </exclude-subsystems>
-
-        <resources>
-            <!-- use WAR provided Bouncy Castle -->
-            <resource-root path="WEB-INF/lib/bcprov-jdk18on-${BC_VERSION}.jar" use-physical-code-source="true"/>
-        </resources>
 
 		<dependencies>
 			<module name="com.wultra.powerauth.data-adapter.conf" />
@@ -89,12 +80,14 @@ Use the `logback.xml` file to configure logging, for example:
 
 The `application-ext.properties` file is used to override default configuration properties, for example:
 ```
+# Database Configuration
+spring.datasource.jndi-name=java:/jdbc/powerauth
+
 powerauth.dataAdapter.service.applicationEnvironment=TEST
 ```
 
+Mind that you should specify `spring.datasource.jndi-name` to use the application server datasource (its declaration is out of the scope of this guideline).
+When configure `spring.datasource.url`, the hikari connection pool is used.
+Spring Boot running on WildFly or JBoos initializes [JtaTransactionManager](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/jta/JtaTransactionManager.html).
+
 Data Adapter Spring application uses the `ext` Spring profile which activates overriding of default properties by `application-ext.properties`.
-
-### Bouncy Castle Installation
-
-The Bouncy Castle library for JBoss / Wildfly is included in the Data Adapter war file. The library is configured
-using the `jboss-deployment-structure.xml` descriptor. Global module configuration of Bouncy Castle is no longer required.
