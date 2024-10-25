@@ -19,6 +19,7 @@ jobs:
           cache: maven
       - name: Run Maven Package Step
         run: |
+          cd powerauth-data-adapter
           mvn -B -U package -Dmaven.test.skip=true -DuseInternalRepo=true
         env:
           INTERNAL_USERNAME: ${{ secrets.JFROG_USERNAME }}
