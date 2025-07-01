@@ -249,8 +249,8 @@
                     <url>https://wultra.jfrog.io/artifactory/internal-maven-repository</url>
                 </repository>
                 <repository>
-                    <id>ossrh-snapshots</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+                    <id>central-portal-snapshots</id>
+                    <url>https://central.sonatype.com/repository/maven-snapshots/</url>
                     <releases>
                         <enabled>false</enabled>
                     </releases>
@@ -313,8 +313,8 @@
 
     <repositories>
         <repository>
-            <id>ossrh-snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <id>central-portal-snapshots</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
