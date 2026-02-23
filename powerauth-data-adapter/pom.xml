@@ -67,7 +67,7 @@
         <central.publishing.plugin.version>0.10.0</central.publishing.plugin.version>
 
         <powerauth-crypto.version>1.10.0</powerauth-crypto.version>
-        <powerauth-webflow.version>1.10.2</powerauth-webflow.version>
+        <powerauth-webflow.version>1.10.3</powerauth-webflow.version>
     </properties>
 
     <dependencyManagement>
