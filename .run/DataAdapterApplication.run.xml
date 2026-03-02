@@ -2,7 +2,7 @@
   <configuration default="false" name="DataAdapterApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <option name="ACTIVE_PROFILES" value="dev" />
     <module name="powerauth-data-adapter" />
-    <option name="SPRING_BOOT_MAIN_CLASS" value="io.getlime.security.powerauth.app.dataadapter.DataAdapterApplication" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="com.wultra.security.powerauth.app.dataadapter.DataAdapterApplication" />
     <option name="VM_PARAMETERS" value="-Dserver.servlet.context-path=/powerauth-data-adapter -Dserver.port=9090" />
     <method v="2">
       <option name="Make" enabled="true" />
