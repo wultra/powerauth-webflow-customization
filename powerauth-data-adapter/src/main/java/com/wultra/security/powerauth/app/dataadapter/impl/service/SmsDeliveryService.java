@@ -89,7 +89,7 @@ public class SmsDeliveryService {
         try {
             digestResult = new DataDigest().generateDigest("4.0", digestItems);
         } catch (GenericCryptoException e) {
-            throw new InvalidOperationContextException("Digest generation failed");
+            throw new InvalidOperationContextException("Digest generation failed", e);
         }
         return new AuthorizationCode(digestResult.getDigest(), digestResult.getSalt());
     }
