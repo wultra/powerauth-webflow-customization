@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powerauth-data-adapter</artifactId>
-    <groupId>io.getlime.security</groupId>
-    <version>2.0.0-SNAPSHOT</version>
+    <groupId>com.wultra.security</groupId>
+    <version>2.0.0</version>
     <packaging>war</packaging>
 
     <name>powerauth-data-adapter</name>
@@ -66,8 +66,8 @@
         <logstash.version>8.1</logstash.version>
         <central.publishing.plugin.version>0.10.0</central.publishing.plugin.version>
 
-        <powerauth-crypto.version>1.10.0</powerauth-crypto.version>
-        <powerauth-webflow.version>1.10.2</powerauth-webflow.version>
+        <powerauth-crypto.version>2.0.1</powerauth-crypto.version>
+        <powerauth-webflow.version>2.0.0</powerauth-webflow.version>
     </properties>
 
     <dependencyManagement>
@@ -125,12 +125,12 @@
 
         <!-- PowerAuth Dependencies -->
         <dependency>
-            <groupId>io.getlime.security</groupId>
+            <groupId>com.wultra.security</groupId>
             <artifactId>powerauth-data-adapter-model</artifactId>
             <version>${powerauth-webflow.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.getlime.security</groupId>
+            <groupId>com.wultra.security</groupId>
             <artifactId>powerauth-java-crypto</artifactId>
             <version>${powerauth-crypto.version}</version>
         </dependency>

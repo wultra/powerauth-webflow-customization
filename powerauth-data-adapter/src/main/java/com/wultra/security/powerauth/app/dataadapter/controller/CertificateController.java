@@ -1,0 +1,98 @@
+/*
+ * Copyright 2020 Wultra s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.wultra.security.powerauth.app.dataadapter.controller;
+
+import com.wultra.core.rest.model.base.request.ObjectRequest;
+import com.wultra.core.rest.model.base.response.ObjectResponse;
+import com.wultra.security.powerauth.app.dataadapter.api.DataAdapter;
+import com.wultra.security.powerauth.app.dataadapter.exception.DataAdapterRemoteException;
+import com.wultra.security.powerauth.app.dataadapter.exception.InvalidOperationContextException;
+import com.wultra.security.powerauth.app.dataadapter.impl.validation.CertificateRequestValidator;
+import com.wultra.security.powerauth.lib.dataadapter.model.entity.OperationContext;
+import com.wultra.security.powerauth.lib.dataadapter.model.enumeration.AccountStatus;
+import com.wultra.security.powerauth.lib.dataadapter.model.request.VerifyCertificateRequest;
+import com.wultra.security.powerauth.lib.dataadapter.model.response.VerifyCertificateResponse;
+import com.wultra.security.powerauth.lib.nextstep.model.enumeration.AuthInstrument;
+import com.wultra.security.powerauth.lib.nextstep.model.enumeration.AuthMethod;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
+
+
+/**
+ * Controller class which handles SMS OTP authorization.
+ *
+ * @author Roman Strobl, roman.strobl@wultra.com
+ */
+@RestController
+@RequestMapping("/api/auth/certificate")
+public class CertificateController {
+
+    private static final Logger logger = LoggerFactory.getLogger(CertificateController.class);
+
+    private final CertificateRequestValidator requestValidator;
+    private final DataAdapter dataAdapter;
+
+    /**
+     * Controller constructor.
+     * @param requestValidator Validator for SMS requests.
+     * @param dataAdapter Data adapter.
+     */
+    @Autowired
+    public CertificateController(CertificateRequestValidator requestValidator, DataAdapter dataAdapter) {
+        this.requestValidator = requestValidator;
+        this.dataAdapter = dataAdapter;
+    }
+
+    /**
+     * Initializes the request validator.
+     * @param binder Data binder.
+     */
+    @InitBinder
+    private void initBinder(WebDataBinder binder) {
+        binder.setValidator(requestValidator);
+    }
+
+    /**
+     * Verify authorization code from SMS message.
+     *
+     * @param request Request data.
+     * @return Authorization response.
+     * @throws DataAdapterRemoteException Thrown in case communication with remote system fails.
+     * @throws InvalidOperationContextException Thrown in case operation context is invalid.
+     */
+    @PostMapping(value = "verify")
+    public ObjectResponse<VerifyCertificateResponse> verifyCertificate(@Valid @RequestBody ObjectRequest<VerifyCertificateRequest> request) throws InvalidOperationContextException, DataAdapterRemoteException {
+        logger.info("Received verifyCertificate request, operation ID: {}", request.getRequestObject().getOperationContext().getId());
+        final VerifyCertificateRequest verifyRequest = request.getRequestObject();
+        final String certificate = verifyRequest.getCertificate();
+        final String signedMessage = verifyRequest.getSignedMessage();
+        final AuthInstrument authInstrument = verifyRequest.getAuthInstrument();
+        final AuthMethod authMethod = verifyRequest.getAuthMethod();
+        final String userId = verifyRequest.getUserId();
+        final String organizationId = verifyRequest.getOrganizationId();
+        final AccountStatus accountStatus = verifyRequest.getAccountStatus();
+        final OperationContext operationContext = verifyRequest.getOperationContext();
+        // Verify certificate
+        final VerifyCertificateResponse response = dataAdapter.verifyCertificate(userId, organizationId, certificate, signedMessage, authInstrument, authMethod, accountStatus, operationContext);
+        logger.info("The verifyCertificate request succeeded, operation ID: {}", request.getRequestObject().getOperationContext().getId());
+        return new ObjectResponse<>(response);
+    }
+
+}
